@@ -68,6 +68,12 @@ $ uv run bash scripts/test.sh
 
 The tests run with Pytest. Modify existing tests or add new ones in `./backend/tests/`.
 
+The suite uses a dedicated database configured by `TEST_DATABASE_URL` (default `app_test` in `.env.example`) and refuses to start unless its name ends with `_test`. `scripts/test.sh` creates the database if it is missing; the test session then runs the Alembic migrations against it. To create it manually:
+
+```console
+$ uv run bash scripts/create-test-db.sh
+```
+
 If you use GitHub Actions, the tests will run automatically.
 
 ### Test a Running Stack

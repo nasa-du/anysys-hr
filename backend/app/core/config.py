@@ -29,10 +29,13 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AnySys"
     SENTRY_DSN: HttpUrl | None = None
     DATABASE_URL: PostgresDsn
+    TEST_DATABASE_URL: PostgresDsn | None = None
 
-    @field_validator("DATABASE_URL", mode="before")
+    @field_validator("DATABASE_URL", "TEST_DATABASE_URL", mode="before")
     @classmethod
-    def _use_psycopg_driver(cls, value: str | PostgresDsn) -> str:
+    def _use_psycopg_driver(cls, value: str | PostgresDsn | None) -> str | None:
+        if value is None:
+            return None
         database_url = str(value)
         for scheme in ("postgres://", "postgresql://"):
             if database_url.startswith(scheme):

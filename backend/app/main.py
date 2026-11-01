@@ -50,4 +50,9 @@ if not is_development:
         raise HTTPException(status_code=404, detail="页面不存在")
 
 
-app.frontend("/", directory=FRONTEND_DIR)
+# The static mount raises on requests when the directory is missing, and in
+# development the Vite server serves the UI, so only mount an existing build.
+if FRONTEND_DIR.exists():
+    app.frontend("/", directory=FRONTEND_DIR)
+elif not is_development:
+    raise RuntimeError(f"The frontend build is missing at {FRONTEND_DIR}")

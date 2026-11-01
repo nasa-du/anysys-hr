@@ -112,7 +112,6 @@ test("App shell is localized", async ({ page }) => {
 
   await expect(page.getByText("你好，")).toBeVisible()
   await expect(page.getByRole("link", { name: "仪表盘" })).toBeVisible()
-  await expect(page.getByRole("link", { name: "条目" })).toBeVisible()
   await expect(page.getByRole("link", { name: "管理后台" })).toBeVisible()
 
   await page.getByTestId("user-menu").click()

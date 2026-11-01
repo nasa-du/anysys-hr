@@ -38,10 +38,6 @@ AnySys is a full-stack web application with a React frontend and a FastAPI backe
 
 ![AnySys dashboard](img/dashboard.png)
 
-### Items
-
-![AnySys items page](img/dashboard-items.png)
-
 ### Admin
 
 ![AnySys admin page](img/dashboard-admin.png)

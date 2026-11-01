@@ -5,6 +5,30 @@ export type ClientOptions = {
 };
 
 /**
+ * Blocker
+ *
+ * A reference that prevents a delete or deactivate operation.
+ */
+export type Blocker = {
+    /**
+     * Type
+     */
+    type: 'company' | 'department' | 'position' | 'cost_center' | 'employee';
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Label
+     */
+    label: string;
+};
+
+/**
  * Body_login-login_access_token
  */
 export type Body_login_login_access_token = {
@@ -32,6 +56,129 @@ export type Body_login_login_access_token = {
      * Client Secret
      */
     client_secret?: string | null;
+};
+
+/**
+ * CompaniesPublic
+ */
+export type CompaniesPublic = {
+    /**
+     * Data
+     */
+    data: Array<CompanyPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * CompanyCreate
+ */
+export type CompanyCreate = {
+    /**
+     * Company Code
+     */
+    company_code: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Is Active
+     */
+    is_active?: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * CompanyPublic
+ */
+export type CompanyPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Code
+     */
+    company_code: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * CompanyUpdate
+ */
+export type CompanyUpdate = {
+    /**
+     * Company Name
+     */
+    company_name?: string | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * ErrorDetail
+ */
+export type ErrorDetail = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Field Errors
+     */
+    field_errors?: {
+        [key: string]: string;
+    };
+    /**
+     * Blockers
+     */
+    blockers?: Array<Blocker>;
+    /**
+     * Blocker Count
+     */
+    blocker_count?: number;
+};
+
+/**
+ * ErrorResponse
+ */
+export type ErrorResponse = {
+    detail: ErrorDetail;
 };
 
 /**
@@ -655,6 +802,203 @@ export type usersUpdateUserResponses = {
 };
 
 export type usersUpdateUserResponse = usersUpdateUserResponses[keyof usersUpdateUserResponses];
+
+export type companiesReadCompaniesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Is Active
+         */
+        is_active?: boolean | null;
+    };
+    url: '/api/v1/companies/';
+};
+
+export type companiesReadCompaniesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type companiesReadCompaniesError = companiesReadCompaniesErrors[keyof companiesReadCompaniesErrors];
+
+export type companiesReadCompaniesResponses = {
+    /**
+     * Successful Response
+     */
+    200: CompaniesPublic;
+};
+
+export type companiesReadCompaniesResponse = companiesReadCompaniesResponses[keyof companiesReadCompaniesResponses];
+
+export type companiesCreateCompanyData = {
+    body: CompanyCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/companies/';
+};
+
+export type companiesCreateCompanyErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type companiesCreateCompanyError = companiesCreateCompanyErrors[keyof companiesCreateCompanyErrors];
+
+export type companiesCreateCompanyResponses = {
+    /**
+     * Successful Response
+     */
+    201: CompanyPublic;
+};
+
+export type companiesCreateCompanyResponse = companiesCreateCompanyResponses[keyof companiesCreateCompanyResponses];
+
+export type companiesDeleteCompanyData = {
+    body?: never;
+    path: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    query?: never;
+    url: '/api/v1/companies/{company_id}';
+};
+
+export type companiesDeleteCompanyErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type companiesDeleteCompanyError = companiesDeleteCompanyErrors[keyof companiesDeleteCompanyErrors];
+
+export type companiesDeleteCompanyResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type companiesDeleteCompanyResponse = companiesDeleteCompanyResponses[keyof companiesDeleteCompanyResponses];
+
+export type companiesReadCompanyData = {
+    body?: never;
+    path: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    query?: never;
+    url: '/api/v1/companies/{company_id}';
+};
+
+export type companiesReadCompanyErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type companiesReadCompanyError = companiesReadCompanyErrors[keyof companiesReadCompanyErrors];
+
+export type companiesReadCompanyResponses = {
+    /**
+     * Successful Response
+     */
+    200: CompanyPublic;
+};
+
+export type companiesReadCompanyResponse = companiesReadCompanyResponses[keyof companiesReadCompanyResponses];
+
+export type companiesUpdateCompanyData = {
+    body: CompanyUpdate;
+    path: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    query?: never;
+    url: '/api/v1/companies/{company_id}';
+};
+
+export type companiesUpdateCompanyErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type companiesUpdateCompanyError = companiesUpdateCompanyErrors[keyof companiesUpdateCompanyErrors];
+
+export type companiesUpdateCompanyResponses = {
+    /**
+     * Successful Response
+     */
+    200: CompanyPublic;
+};
+
+export type companiesUpdateCompanyResponse = companiesUpdateCompanyResponses[keyof companiesUpdateCompanyResponses];
 
 export type utilsTestEmailData = {
     body?: never;

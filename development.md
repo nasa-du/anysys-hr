@@ -44,6 +44,16 @@ The frontend development server uses the backend at `http://localhost:8000`, as 
 
 The interactive API documentation is only registered when `FASTAPI_ENV=development`. With `FASTAPI_ENV=production`, `/docs` and `/redoc` return 404.
 
+### Development Seed Data
+
+From the `backend` directory, seed the demo companies (`C1` 荣新建设, `C2` 荣新科技, `C3` 荣新物流):
+
+```bash
+uv run python -m app.seed_dev
+```
+
+The script is idempotent — it inserts by business code and never overwrites existing rows — and refuses to run unless `FASTAPI_ENV=development`. It is not part of `prestart.sh`; run it manually when you want demo data.
+
 ### Frontend Served by FastAPI
 
 Build the frontend from the `frontend` directory:

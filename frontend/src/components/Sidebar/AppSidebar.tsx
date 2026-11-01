@@ -1,4 +1,4 @@
-import { Home, Users } from "lucide-react"
+import { Building2, Home, Users } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -9,17 +9,26 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar"
 import useAuth from "@/hooks/useAuth"
-import { type Item, Main } from "./Main"
+import { Main, type NavGroup } from "./Main"
 import { User } from "./User"
-
-const baseItems: Item[] = [{ icon: Home, title: "仪表盘", path: "/" }]
 
 export function AppSidebar() {
   const { user: currentUser } = useAuth()
 
-  const items = currentUser?.is_superuser
-    ? [...baseItems, { icon: Users, title: "管理后台", path: "/admin" }]
-    : baseItems
+  const groups: NavGroup[] = [
+    { items: [{ icon: Home, title: "仪表盘", path: "/" }] },
+    {
+      label: "基础管理",
+      items: [{ icon: Building2, title: "公司", path: "/companies" }],
+    },
+  ]
+
+  if (currentUser?.is_superuser) {
+    groups.push({
+      label: "系统",
+      items: [{ icon: Users, title: "管理后台", path: "/admin" }],
+    })
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -27,7 +36,7 @@ export function AppSidebar() {
         <Logo variant="responsive" />
       </SidebarHeader>
       <SidebarContent>
-        <Main items={items} />
+        <Main groups={groups} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarAppearance />

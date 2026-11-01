@@ -8,7 +8,11 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
-from app.core.errors import validation_exception_handler
+from app.core.errors import (
+    DomainError,
+    domain_error_handler,
+    validation_exception_handler,
+)
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 
@@ -31,6 +35,7 @@ app = FastAPI(
 )
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(DomainError, domain_error_handler)
 
 app.add_middleware(
     CORSMiddleware,

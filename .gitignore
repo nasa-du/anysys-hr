@@ -36,3 +36,5 @@ Thumbs.db
 # Local agent tooling
 .claude/
 .agents/
+
+*requirement.html

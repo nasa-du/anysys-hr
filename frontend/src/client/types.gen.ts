@@ -147,6 +147,233 @@ export type CompanyUpdate = {
 };
 
 /**
+ * DepartmentCreate
+ */
+export type DepartmentCreate = {
+    /**
+     * Dept Code
+     */
+    dept_code: string;
+    /**
+     * Dept Name
+     */
+    dept_name: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    /**
+     * Order No
+     */
+    order_no?: number;
+    /**
+     * Is Active
+     */
+    is_active?: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * DepartmentPublic
+ */
+export type DepartmentPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Dept Code
+     */
+    dept_code: string;
+    /**
+     * Dept Name
+     */
+    dept_name: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    /**
+     * Order No
+     */
+    order_no: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Parent Name
+     */
+    parent_name?: string | null;
+    /**
+     * Manager Name
+     */
+    manager_name?: string | null;
+    manager_status?: EmployeeStatus | null;
+};
+
+/**
+ * DepartmentTreeNode
+ */
+export type DepartmentTreeNode = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Dept Code
+     */
+    dept_code: string;
+    /**
+     * Dept Name
+     */
+    dept_name: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    /**
+     * Order No
+     */
+    order_no: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Parent Name
+     */
+    parent_name?: string | null;
+    /**
+     * Manager Name
+     */
+    manager_name?: string | null;
+    manager_status?: EmployeeStatus | null;
+    /**
+     * Children
+     */
+    children?: Array<DepartmentTreeNode>;
+};
+
+/**
+ * DepartmentTreePublic
+ */
+export type DepartmentTreePublic = {
+    /**
+     * Data
+     */
+    data: Array<DepartmentTreeNode>;
+};
+
+/**
+ * DepartmentUpdate
+ */
+export type DepartmentUpdate = {
+    /**
+     * Dept Name
+     */
+    dept_name?: string | null;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    /**
+     * Order No
+     */
+    order_no?: number | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * DepartmentsPublic
+ */
+export type DepartmentsPublic = {
+    /**
+     * Data
+     */
+    data: Array<DepartmentPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * EmployeeStatus
+ */
+export type EmployeeStatus = 'active' | 'probation' | 'resigned';
+
+/**
  * ErrorDetail
  */
 export type ErrorDetail = {
@@ -999,6 +1226,253 @@ export type companiesUpdateCompanyResponses = {
 };
 
 export type companiesUpdateCompanyResponse = companiesUpdateCompanyResponses[keyof companiesUpdateCompanyResponses];
+
+export type departmentsReadDepartmentsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Parent Id
+         */
+        parent_id?: string | null;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Is Active
+         */
+        is_active?: boolean | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/departments/';
+};
+
+export type departmentsReadDepartmentsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type departmentsReadDepartmentsError = departmentsReadDepartmentsErrors[keyof departmentsReadDepartmentsErrors];
+
+export type departmentsReadDepartmentsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DepartmentsPublic;
+};
+
+export type departmentsReadDepartmentsResponse = departmentsReadDepartmentsResponses[keyof departmentsReadDepartmentsResponses];
+
+export type departmentsCreateDepartmentData = {
+    body: DepartmentCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/departments/';
+};
+
+export type departmentsCreateDepartmentErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type departmentsCreateDepartmentError = departmentsCreateDepartmentErrors[keyof departmentsCreateDepartmentErrors];
+
+export type departmentsCreateDepartmentResponses = {
+    /**
+     * Successful Response
+     */
+    201: DepartmentPublic;
+};
+
+export type departmentsCreateDepartmentResponse = departmentsCreateDepartmentResponses[keyof departmentsCreateDepartmentResponses];
+
+export type departmentsReadDepartmentTreeData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Is Active
+         */
+        is_active?: boolean | null;
+    };
+    url: '/api/v1/departments/tree';
+};
+
+export type departmentsReadDepartmentTreeErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type departmentsReadDepartmentTreeError = departmentsReadDepartmentTreeErrors[keyof departmentsReadDepartmentTreeErrors];
+
+export type departmentsReadDepartmentTreeResponses = {
+    /**
+     * Successful Response
+     */
+    200: DepartmentTreePublic;
+};
+
+export type departmentsReadDepartmentTreeResponse = departmentsReadDepartmentTreeResponses[keyof departmentsReadDepartmentTreeResponses];
+
+export type departmentsDeleteDepartmentData = {
+    body?: never;
+    path: {
+        /**
+         * Department Id
+         */
+        department_id: string;
+    };
+    query?: never;
+    url: '/api/v1/departments/{department_id}';
+};
+
+export type departmentsDeleteDepartmentErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type departmentsDeleteDepartmentError = departmentsDeleteDepartmentErrors[keyof departmentsDeleteDepartmentErrors];
+
+export type departmentsDeleteDepartmentResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type departmentsDeleteDepartmentResponse = departmentsDeleteDepartmentResponses[keyof departmentsDeleteDepartmentResponses];
+
+export type departmentsReadDepartmentData = {
+    body?: never;
+    path: {
+        /**
+         * Department Id
+         */
+        department_id: string;
+    };
+    query?: never;
+    url: '/api/v1/departments/{department_id}';
+};
+
+export type departmentsReadDepartmentErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type departmentsReadDepartmentError = departmentsReadDepartmentErrors[keyof departmentsReadDepartmentErrors];
+
+export type departmentsReadDepartmentResponses = {
+    /**
+     * Successful Response
+     */
+    200: DepartmentPublic;
+};
+
+export type departmentsReadDepartmentResponse = departmentsReadDepartmentResponses[keyof departmentsReadDepartmentResponses];
+
+export type departmentsUpdateDepartmentData = {
+    body: DepartmentUpdate;
+    path: {
+        /**
+         * Department Id
+         */
+        department_id: string;
+    };
+    query?: never;
+    url: '/api/v1/departments/{department_id}';
+};
+
+export type departmentsUpdateDepartmentErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type departmentsUpdateDepartmentError = departmentsUpdateDepartmentErrors[keyof departmentsUpdateDepartmentErrors];
+
+export type departmentsUpdateDepartmentResponses = {
+    /**
+     * Successful Response
+     */
+    200: DepartmentPublic;
+};
+
+export type departmentsUpdateDepartmentResponse = departmentsUpdateDepartmentResponses[keyof departmentsUpdateDepartmentResponses];
 
 export type utilsTestEmailData = {
     body?: never;

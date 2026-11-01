@@ -1,4 +1,4 @@
-import { Building2, Home, Users } from "lucide-react"
+import { Building2, Home, Network, Users } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -19,7 +19,10 @@ export function AppSidebar() {
     { items: [{ icon: Home, title: "仪表盘", path: "/" }] },
     {
       label: "基础管理",
-      items: [{ icon: Building2, title: "公司", path: "/companies" }],
+      items: [
+        { icon: Building2, title: "公司", path: "/companies" },
+        { icon: Network, title: "部门", path: "/departments" },
+      ],
     },
   ]
 

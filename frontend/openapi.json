@@ -784,6 +784,401 @@
         }
       }
     },
+    "/api/v1/departments/": {
+      "get": {
+        "tags": ["departments"],
+        "summary": "Read Departments",
+        "description": "List the company's departments ordered by order number and code.",
+        "operationId": "departments-read_departments",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "parent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Parent Id"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "maxLength": 100 },
+                { "type": "null" }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Is Active"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DepartmentsPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["departments"],
+        "summary": "Create Department",
+        "description": "Create a department; the code and company cannot change afterwards.",
+        "operationId": "departments-create_department",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DepartmentCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DepartmentPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/departments/tree": {
+      "get": {
+        "tags": ["departments"],
+        "summary": "Read Department Tree",
+        "description": "Return the company's department tree with nested ``children`` arrays.",
+        "operationId": "departments-read_department_tree",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Is Active"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartmentTreePublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/departments/{department_id}": {
+      "get": {
+        "tags": ["departments"],
+        "summary": "Read Department",
+        "description": "Get one department by id.",
+        "operationId": "departments-read_department",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "department_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Department Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DepartmentPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["departments"],
+        "summary": "Update Department",
+        "description": "Update a department; structural changes follow the active rules.",
+        "operationId": "departments-update_department",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "department_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Department Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DepartmentUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DepartmentPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["departments"],
+        "summary": "Delete Department",
+        "description": "Hard delete a department without children or employee references.",
+        "operationId": "departments-delete_department",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "department_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Department Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/utils/test-email/": {
       "post": {
         "tags": ["utils"],
@@ -1034,6 +1429,277 @@
         "additionalProperties": false,
         "type": "object",
         "title": "CompanyUpdate"
+      },
+      "DepartmentCreate": {
+        "properties": {
+          "dept_code": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "pattern": "^[A-Z0-9_-]{1,32}$",
+            "title": "Dept Code"
+          },
+          "dept_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Dept Name"
+          },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "parent_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Parent Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "order_no": { "type": "integer", "title": "Order No", "default": 0 },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["dept_code", "dept_name", "company_id"],
+        "title": "DepartmentCreate"
+      },
+      "DepartmentPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "dept_code": { "type": "string", "title": "Dept Code" },
+          "dept_name": { "type": "string", "title": "Dept Name" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "parent_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Parent Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "order_no": { "type": "integer", "title": "Order No" },
+          "is_active": { "type": "boolean", "title": "Is Active" },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "company_name": { "type": "string", "title": "Company Name" },
+          "parent_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Parent Name"
+          },
+          "manager_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Manager Name"
+          },
+          "manager_status": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/EmployeeStatus" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "dept_code",
+          "dept_name",
+          "company_id",
+          "order_no",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "company_name"
+        ],
+        "title": "DepartmentPublic"
+      },
+      "DepartmentTreeNode": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "dept_code": { "type": "string", "title": "Dept Code" },
+          "dept_name": { "type": "string", "title": "Dept Name" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "parent_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Parent Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "order_no": { "type": "integer", "title": "Order No" },
+          "is_active": { "type": "boolean", "title": "Is Active" },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "company_name": { "type": "string", "title": "Company Name" },
+          "parent_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Parent Name"
+          },
+          "manager_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Manager Name"
+          },
+          "manager_status": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/EmployeeStatus" },
+              { "type": "null" }
+            ]
+          },
+          "children": {
+            "items": { "$ref": "#/components/schemas/DepartmentTreeNode" },
+            "type": "array",
+            "title": "Children"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "dept_code",
+          "dept_name",
+          "company_id",
+          "order_no",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "company_name"
+        ],
+        "title": "DepartmentTreeNode"
+      },
+      "DepartmentTreePublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/DepartmentTreeNode" },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "DepartmentTreePublic"
+      },
+      "DepartmentUpdate": {
+        "properties": {
+          "dept_name": {
+            "anyOf": [
+              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "type": "null" }
+            ],
+            "title": "Dept Name"
+          },
+          "parent_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Parent Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "order_no": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Order No"
+          },
+          "is_active": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Is Active"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DepartmentUpdate"
+      },
+      "DepartmentsPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/DepartmentPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "DepartmentsPublic"
+      },
+      "EmployeeStatus": {
+        "type": "string",
+        "enum": ["active", "probation", "resigned"],
+        "title": "EmployeeStatus"
       },
       "ErrorDetail": {
         "properties": {

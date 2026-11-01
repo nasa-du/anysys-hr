@@ -8,7 +8,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
 from app.core.errors import Blocker, BlockerType, DomainError
-from app.enums import EmployeeStatus
 from app.models import (
     Company,
     CostCenter,
@@ -24,7 +23,12 @@ from app.schemas_basic import (
     CompanyPublic,
     CompanyUpdate,
 )
-from app.services.common import BlockerQuery, collect_blockers, paginate
+from app.services.common import (
+    ACTIVE_EMPLOYEE_STATUSES,
+    BlockerQuery,
+    collect_blockers,
+    paginate,
+)
 
 NOT_FOUND_MESSAGE = "公司不存在"
 DUPLICATE_CODE_MESSAGE = "公司编码已存在"
@@ -145,9 +149,7 @@ def _organization_blocker_queries(
         department_conditions.append(col(Department.is_active).is_(True))
         position_conditions.append(col(Position.is_active).is_(True))
         cost_center_conditions.append(col(CostCenter.is_active).is_(True))
-        employee_conditions.append(
-            col(Employee.status).in_([EmployeeStatus.ACTIVE, EmployeeStatus.PROBATION])
-        )
+        employee_conditions.append(col(Employee.status).in_(ACTIVE_EMPLOYEE_STATUSES))
 
     employee_query = BlockerQuery(
         type="employee",

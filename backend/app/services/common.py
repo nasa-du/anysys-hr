@@ -7,8 +7,13 @@ from sqlmodel import Session
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.core.errors import Blocker, BlockerType
+from app.enums import EmployeeStatus
 
 MAX_BLOCKERS = 20
+
+# Employees in these states block deactivation and may be assigned as managers;
+# resigned employees never block and cannot be newly assigned.
+ACTIVE_EMPLOYEE_STATUSES = (EmployeeStatus.ACTIVE, EmployeeStatus.PROBATION)
 
 
 def normalize_code(value: str) -> str:

@@ -12,6 +12,12 @@ export const randomCompanyCode = () =>
 export const randomCompanyName = () =>
   `测试公司 ${Math.random().toString(36).substring(2, 8).toUpperCase()}`
 
+export const randomDepartmentCode = () =>
+  `D${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+
+export const randomDepartmentName = () =>
+  `测试部门 ${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+
 export const slugify = (text: string) =>
   text
     .toLowerCase()

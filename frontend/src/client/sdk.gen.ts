@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -328,6 +328,100 @@ export class CompaniesService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/companies/{company_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
+export class DepartmentsService {
+    /**
+     * Read Departments
+     *
+     * List the company's departments ordered by order number and code.
+     */
+    public static readDepartments<ThrowOnError extends boolean = true>(options: Options<departmentsReadDepartmentsData, ThrowOnError>) {
+        return (options.client ?? client).get<departmentsReadDepartmentsResponses, departmentsReadDepartmentsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/departments/',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Department
+     *
+     * Create a department; the code and company cannot change afterwards.
+     */
+    public static createDepartment<ThrowOnError extends boolean = true>(options: Options<departmentsCreateDepartmentData, ThrowOnError>) {
+        return (options.client ?? client).post<departmentsCreateDepartmentResponses, departmentsCreateDepartmentErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/departments/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Read Department Tree
+     *
+     * Return the company's department tree with nested ``children`` arrays.
+     */
+    public static readDepartmentTree<ThrowOnError extends boolean = true>(options: Options<departmentsReadDepartmentTreeData, ThrowOnError>) {
+        return (options.client ?? client).get<departmentsReadDepartmentTreeResponses, departmentsReadDepartmentTreeErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/departments/tree',
+            ...options
+        });
+    }
+    
+    /**
+     * Delete Department
+     *
+     * Hard delete a department without children or employee references.
+     */
+    public static deleteDepartment<ThrowOnError extends boolean = true>(options: Options<departmentsDeleteDepartmentData, ThrowOnError>) {
+        return (options.client ?? client).delete<departmentsDeleteDepartmentResponses, departmentsDeleteDepartmentErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/departments/{department_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Department
+     *
+     * Get one department by id.
+     */
+    public static readDepartment<ThrowOnError extends boolean = true>(options: Options<departmentsReadDepartmentData, ThrowOnError>) {
+        return (options.client ?? client).get<departmentsReadDepartmentResponses, departmentsReadDepartmentErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/departments/{department_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Department
+     *
+     * Update a department; structural changes follow the active rules.
+     */
+    public static updateDepartment<ThrowOnError extends boolean = true>(options: Options<departmentsUpdateDepartmentData, ThrowOnError>) {
+        return (options.client ?? client).patch<departmentsUpdateDepartmentResponses, departmentsUpdateDepartmentErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/departments/{department_id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',

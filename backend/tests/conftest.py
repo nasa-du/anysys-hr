@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import PostgresDsn, TypeAdapter
+from sqlalchemy import text
 from sqlmodel import Session, delete
 
 from app.core.config import settings
@@ -58,6 +59,20 @@ def db() -> Generator[Session]:
         session.commit()
 
 
+@pytest.fixture(autouse=True)
+def _clean_database(db: Session) -> Generator[None]:
+    """Start every test with empty organizations and only the first superuser.
+
+    ``TRUNCATE company CASCADE`` also empties department, position,
+    cost_center, and employee. The first superuser is retained so login
+    fixtures keep working.
+    """
+    db.execute(text("TRUNCATE TABLE company CASCADE"))
+    db.execute(delete(User).where(User.email != settings.FIRST_SUPERUSER))
+    db.commit()
+    yield
+
+
 @pytest.fixture(scope="module")
 def client() -> Generator[TestClient]:
     with TestClient(app) as c:
@@ -69,7 +84,7 @@ def superuser_token_headers(client: TestClient) -> dict[str, str]:
     return get_superuser_token_headers(client)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]:
     return authentication_token_from_email(
         client=client, email=settings.EMAIL_TEST_USER, db=db

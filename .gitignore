@@ -1,0 +1,38 @@
+.vscode/*
+!.vscode/extensions.json
+node_modules/
+backend/app/frontend/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Local environment (copy the matching .env.example to create these)
+/.env
+/frontend/.env
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+*.log
+
+# Local agent tooling
+.claude/
+.agents/

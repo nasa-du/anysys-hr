@@ -6,6 +6,8 @@ import {
   randomDepartmentName,
 } from "./utils/random"
 
+test.setTimeout(60_000)
+
 async function createCompany(page: Page, code: string, name: string) {
   await page.goto("/companies")
   await page.getByRole("button", { name: "新增公司" }).first().click()

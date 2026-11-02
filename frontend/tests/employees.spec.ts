@@ -11,6 +11,7 @@ import {
   createPosition,
   resignEmployee,
 } from "./utils/api"
+import { setActiveCompany } from "./utils/company"
 import { todayShanghai } from "./utils/date"
 import {
   randomCompanyCode,
@@ -26,8 +27,6 @@ import {
 } from "./utils/random"
 
 test.setTimeout(120_000)
-
-const COMPANY_STORAGE_KEY = "basic-management.company_id"
 
 interface Organization {
   company: ApiCompany
@@ -79,12 +78,7 @@ async function setupOrganization(
       })
     : null
 
-  await page.addInitScript(
-    ([key, companyId]: [string, string]) => {
-      window.localStorage.setItem(key, companyId)
-    },
-    [COMPANY_STORAGE_KEY, company.id],
-  )
+  await setActiveCompany(page, company.id)
   await page.goto("/employees")
   await expect(
     page.getByRole("heading", { name: "员工", exact: true }),

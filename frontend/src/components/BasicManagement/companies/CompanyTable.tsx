@@ -108,5 +108,9 @@ export function CompanyTable({
     [onDelete, onEdit, onSwitch, selectedCompanyId],
   )
 
-  return <DataTable columns={columns} data={companies} />
+  return (
+    <div data-testid="company-table">
+      <DataTable columns={columns} data={companies} />
+    </div>
+  )
 }

@@ -52,6 +52,13 @@ From the `backend` directory, seed the demo companies (`C1` 荣新建设, `C2` �
 uv run python -m app.seed_dev
 ```
 
+With the Docker Compose stack running, run the same script inside the backend
+container (from the repository root):
+
+```bash
+docker compose exec backend python -m app.seed_dev
+```
+
 `C1` gets a three-level tree (`D1 总部` → `D2 生产部` → `D3 一车间` / `D4 二车间`, plus `D5 运营部` and `D6 财务部`), including the inactive `D7 旧项目部` for the inactive-state demo. `C2` gets a two-level tree, and `C3` stays empty for empty-state and company-switching demos.
 
 `C1` also gets six positions (`P1 项目经理` through `P6 行政专员`), including positions with default departments and `P6` without one; `C2` gets two positions (`K1 研发工程师`, `K2 市场专员`).
@@ -61,6 +68,25 @@ uv run python -m app.seed_dev
 `C1` also gets 16 employees (`E1001` 张建国 through `E1016` 周敏) with managers, a mix of active, probation, and resigned records, varied contract types, and two employees whose cost center is 「未分配」; `C2` gets four employees (`E2001` 李雷 through `E2004` 张军). Seeded employees have no login accounts.
 
 The script is idempotent — it inserts by business code and never overwrites existing rows — and refuses to run unless `FASTAPI_ENV=development`. It is not part of `prestart.sh`; run it manually when you want demo data.
+
+The complete dataset, API/error model, migration chain, backup steps, and demo script are documented in [docs/basic-management.md](./docs/basic-management.md).
+
+### Migrations and Backups
+
+From the `backend` directory:
+
+```bash
+uv run alembic upgrade head
+uv run alembic downgrade base   # development and test databases only
+uv run alembic upgrade head
+```
+
+Back up a shared database with `pg_dump` before applying the Basic Management
+migrations: dropping the legacy `item` table is irreversible, and the downgrade
+recreates only an empty table. For a local development reset, use
+`docker compose down -v` and seed the fresh database again. See
+[docs/basic-management.md](./docs/basic-management.md) for the full chain and a
+backup example.
 
 ### Frontend Served by FastAPI
 

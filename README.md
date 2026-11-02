@@ -45,6 +45,7 @@ AnySys is a full-stack web application with a React frontend and a FastAPI backe
 ## Getting Started
 
 - Development guide: [development.md](./development.md)
+- Basic Management guide (API, error model, seed, migrations, demo): [docs/basic-management.md](./docs/basic-management.md)
 - Backend guide: [backend/README.md](./backend/README.md)
 - Frontend guide: [frontend/README.md](./frontend/README.md)
 - Deployment guide: [deployment-docker-compose.md](./deployment-docker-compose.md). Docker Compose is the only supported deployment path.

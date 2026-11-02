@@ -45,6 +45,9 @@ jobs:
         run: cp .env.example .env
       - name: Run pre-commit hooks
         run: uv run prek run --from-ref origin/${GITHUB_BASE_REF} --to-ref HEAD --show-diff-on-failure
+      - name: Build frontend
+        run: bun run build
+        working-directory: frontend
 
   # https://github.com/marketplace/actions/alls-green#why
   pre-commit-alls-green:  # This job does nothing and is only used for the branch protection

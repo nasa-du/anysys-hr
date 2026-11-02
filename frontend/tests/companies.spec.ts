@@ -1,7 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
+import { COMPANY_STORAGE_KEY } from "./utils/company"
 import { randomCompanyCode, randomCompanyName } from "./utils/random"
-
-const COMPANY_STORAGE_KEY = "basic-management.company_id"
 
 async function createCompanyViaUi(
   page: Page,

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { formatDateTimeShanghai } from "@/lib/datetime"
 import { MANAGER_STATUS_LABELS } from "@/lib/enums"
+import { DepartmentPositions } from "./DepartmentPositions"
 
 interface DepartmentDetailProps {
   department: DepartmentPublic
@@ -159,6 +160,10 @@ export function DepartmentDetail({
           </ul>
         )}
       </div>
+
+      <Separator className="my-6" />
+
+      <DepartmentPositions department={department} />
     </div>
   )
 }

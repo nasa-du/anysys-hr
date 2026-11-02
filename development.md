@@ -54,6 +54,8 @@ uv run python -m app.seed_dev
 
 `C1` gets a three-level tree (`D1 总部` → `D2 生产部` → `D3 一车间` / `D4 二车间`, plus `D5 运营部` and `D6 财务部`), including the inactive `D7 旧项目部` for the inactive-state demo. `C2` gets a two-level tree, and `C3` stays empty for empty-state and company-switching demos.
 
+`C1` also gets six positions (`P1 项目经理` through `P6 行政专员`), including positions with default departments and `P6` without one; `C2` gets two positions (`K1 研发工程师`, `K2 市场专员`).
+
 The script is idempotent — it inserts by business code and never overwrites existing rows — and refuses to run unless `FASTAPI_ENV=development`. It is not part of `prestart.sh`; run it manually when you want demo data.
 
 ### Frontend Served by FastAPI

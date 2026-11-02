@@ -443,6 +443,134 @@ export type NewPassword = {
 };
 
 /**
+ * PositionCreate
+ */
+export type PositionCreate = {
+    /**
+     * Position Code
+     */
+    position_code: string;
+    /**
+     * Position Name
+     */
+    position_name: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Dept Id
+     */
+    dept_id?: string | null;
+    /**
+     * Order No
+     */
+    order_no?: number;
+    /**
+     * Is Active
+     */
+    is_active?: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * PositionPublic
+ */
+export type PositionPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Position Code
+     */
+    position_code: string;
+    /**
+     * Position Name
+     */
+    position_name: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Dept Id
+     */
+    dept_id?: string | null;
+    /**
+     * Order No
+     */
+    order_no: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Dept Name
+     */
+    dept_name?: string | null;
+};
+
+/**
+ * PositionUpdate
+ */
+export type PositionUpdate = {
+    /**
+     * Position Name
+     */
+    position_name?: string | null;
+    /**
+     * Dept Id
+     */
+    dept_id?: string | null;
+    /**
+     * Order No
+     */
+    order_no?: number | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * PositionsPublic
+ */
+export type PositionsPublic = {
+    /**
+     * Data
+     */
+    data: Array<PositionPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * PrivateUserCreate
  */
 export type PrivateUserCreate = {
@@ -1473,6 +1601,211 @@ export type departmentsUpdateDepartmentResponses = {
 };
 
 export type departmentsUpdateDepartmentResponse = departmentsUpdateDepartmentResponses[keyof departmentsUpdateDepartmentResponses];
+
+export type positionsReadPositionsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Dept Id
+         */
+        dept_id?: string | null;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Is Active
+         */
+        is_active?: boolean | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/positions/';
+};
+
+export type positionsReadPositionsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type positionsReadPositionsError = positionsReadPositionsErrors[keyof positionsReadPositionsErrors];
+
+export type positionsReadPositionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PositionsPublic;
+};
+
+export type positionsReadPositionsResponse = positionsReadPositionsResponses[keyof positionsReadPositionsResponses];
+
+export type positionsCreatePositionData = {
+    body: PositionCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/positions/';
+};
+
+export type positionsCreatePositionErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type positionsCreatePositionError = positionsCreatePositionErrors[keyof positionsCreatePositionErrors];
+
+export type positionsCreatePositionResponses = {
+    /**
+     * Successful Response
+     */
+    201: PositionPublic;
+};
+
+export type positionsCreatePositionResponse = positionsCreatePositionResponses[keyof positionsCreatePositionResponses];
+
+export type positionsDeletePositionData = {
+    body?: never;
+    path: {
+        /**
+         * Position Id
+         */
+        position_id: string;
+    };
+    query?: never;
+    url: '/api/v1/positions/{position_id}';
+};
+
+export type positionsDeletePositionErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type positionsDeletePositionError = positionsDeletePositionErrors[keyof positionsDeletePositionErrors];
+
+export type positionsDeletePositionResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type positionsDeletePositionResponse = positionsDeletePositionResponses[keyof positionsDeletePositionResponses];
+
+export type positionsReadPositionData = {
+    body?: never;
+    path: {
+        /**
+         * Position Id
+         */
+        position_id: string;
+    };
+    query?: never;
+    url: '/api/v1/positions/{position_id}';
+};
+
+export type positionsReadPositionErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type positionsReadPositionError = positionsReadPositionErrors[keyof positionsReadPositionErrors];
+
+export type positionsReadPositionResponses = {
+    /**
+     * Successful Response
+     */
+    200: PositionPublic;
+};
+
+export type positionsReadPositionResponse = positionsReadPositionResponses[keyof positionsReadPositionResponses];
+
+export type positionsUpdatePositionData = {
+    body: PositionUpdate;
+    path: {
+        /**
+         * Position Id
+         */
+        position_id: string;
+    };
+    query?: never;
+    url: '/api/v1/positions/{position_id}';
+};
+
+export type positionsUpdatePositionErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type positionsUpdatePositionError = positionsUpdatePositionErrors[keyof positionsUpdatePositionErrors];
+
+export type positionsUpdatePositionResponses = {
+    /**
+     * Successful Response
+     */
+    200: PositionPublic;
+};
+
+export type positionsUpdatePositionResponse = positionsUpdatePositionResponses[keyof positionsUpdatePositionResponses];
 
 export type utilsTestEmailData = {
     body?: never;

@@ -6,13 +6,18 @@ from sqlmodel import Session, select
 from app import seed_dev
 from app.core.db import engine
 from app.enums import EmployeeStatus
-from app.models import Company, Department, Employee
+from app.models import Company, Department, Employee, Position
 
 SEEDED_CODES = ["C1", "C2", "C3"]
 SEEDED_NAMES = ["荣新建设", "荣新科技", "荣新物流"]
 SEEDED_DEPARTMENTS = {
     "C1": ["D1", "D2", "D3", "D4", "D5", "D6", "D7"],
     "C2": ["K1", "K2", "K3"],
+    "C3": [],
+}
+SEEDED_POSITIONS = {
+    "C1": ["P1", "P2", "P3", "P4", "P5", "P6"],
+    "C2": ["K1", "K2"],
     "C3": [],
 }
 
@@ -36,6 +41,22 @@ def _departments_by_company() -> dict[str, list[Department]]:
         ).all():
             departments[company_codes[department.company_id]].append(department)
         return departments
+
+
+def _positions_by_company() -> dict[str, list[Position]]:
+    with Session(engine) as session:
+        company_codes = {
+            company.id: company.company_code
+            for company in session.exec(select(Company)).all()
+        }
+        positions: dict[str, list[Position]] = {
+            code: [] for code in company_codes.values()
+        }
+        for position in session.exec(
+            select(Position).order_by(Position.position_code)
+        ).all():
+            positions[company_codes[position.company_id]].append(position)
+        return positions
 
 
 @pytest.mark.parametrize("environment", ["production", None])
@@ -115,6 +136,60 @@ def test_seed_includes_one_inactive_department_without_active_employees() -> Non
 
     assert [department.dept_code for department in inactive_departments] == ["D7"]
     assert active_employees == []
+
+
+def test_seed_inserts_positions_once() -> None:
+    seed_dev.main()
+    seed_dev.main()
+
+    positions = _positions_by_company()
+
+    for company_code, expected_codes in SEEDED_POSITIONS.items():
+        assert [p.position_code for p in positions[company_code]] == expected_codes
+
+    full_company = {p.position_code: p for p in positions["C1"]}
+    assert full_company["P1"].dept_id is not None
+    assert full_company["P2"].dept_id is not None
+    assert full_company["P6"].dept_id is None
+    assert all(p.is_active for p in positions["C1"])
+
+
+def test_seed_position_default_departments_use_the_same_company() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        departments = {
+            department.id: department
+            for department in session.exec(select(Department)).all()
+        }
+        positions = session.exec(select(Position)).all()
+
+        for position in positions:
+            if position.dept_id is None:
+                continue
+            assert departments[position.dept_id].company_id == position.company_id
+
+
+def test_seed_does_not_overwrite_existing_position_edits() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        position = session.exec(
+            select(Position).where(Position.position_code == "P1")
+        ).one()
+        position.position_name = "用户修改后的岗位"
+        position.order_no = 42
+        session.add(position)
+        session.commit()
+
+    seed_dev.main()
+
+    with Session(engine) as session:
+        position = session.exec(
+            select(Position).where(Position.position_code == "P1")
+        ).one()
+        assert position.position_name == "用户修改后的岗位"
+        assert position.order_no == 42
 
 
 def test_seed_does_not_overwrite_existing_department_edits() -> None:

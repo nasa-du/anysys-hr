@@ -12,7 +12,7 @@ from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.core.db import engine
-from app.models import Company, Department
+from app.models import Company, Department, Position
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +101,69 @@ DEPARTMENTS: list[dict[str, Any]] = [
 ]
 
 
+# Positions are company-level and reference their default department by code.
+# ``dept_code`` is resolved within the position's company.
+POSITIONS: list[dict[str, Any]] = [
+    {
+        "company_code": "C1",
+        "position_code": "P1",
+        "position_name": "项目经理",
+        "dept_code": "D5",
+        "order_no": 0,
+    },
+    {
+        "company_code": "C1",
+        "position_code": "P2",
+        "position_name": "生产主管",
+        "dept_code": "D2",
+        "order_no": 0,
+    },
+    {
+        "company_code": "C1",
+        "position_code": "P3",
+        "position_name": "车间工人",
+        "dept_code": "D3",
+        "order_no": 1,
+    },
+    {
+        "company_code": "C1",
+        "position_code": "P4",
+        "position_name": "财务会计",
+        "dept_code": "D6",
+        "order_no": 0,
+    },
+    {
+        "company_code": "C1",
+        "position_code": "P5",
+        "position_name": "运营专员",
+        "dept_code": "D5",
+        "order_no": 1,
+    },
+    {
+        # No default department: the employee form must not prefill one.
+        "company_code": "C1",
+        "position_code": "P6",
+        "position_name": "行政专员",
+        "dept_code": None,
+        "order_no": 2,
+    },
+    {
+        "company_code": "C2",
+        "position_code": "K1",
+        "position_name": "研发工程师",
+        "dept_code": "K2",
+        "order_no": 0,
+    },
+    {
+        "company_code": "C2",
+        "position_code": "K2",
+        "position_name": "市场专员",
+        "dept_code": "K3",
+        "order_no": 0,
+    },
+]
+
+
 def _seed_companies(session: Session) -> dict[str, Company]:
     companies = {
         company.company_code: company for company in session.exec(select(Company)).all()
@@ -115,7 +178,9 @@ def _seed_companies(session: Session) -> dict[str, Company]:
     return companies
 
 
-def _seed_departments(session: Session, companies: dict[str, Company]) -> None:
+def _seed_departments(
+    session: Session, companies: dict[str, Company]
+) -> dict[tuple[Any, str], Department]:
     departments = {
         (department.company_id, department.dept_code): department
         for department in session.exec(select(Department)).all()
@@ -150,11 +215,54 @@ def _seed_departments(session: Session, companies: dict[str, Company]) -> None:
         session.add(department)
         session.flush()
         departments[key] = department
+    return departments
+
+
+def _seed_positions(
+    session: Session,
+    companies: dict[str, Company],
+    departments: dict[tuple[Any, str], Department],
+) -> None:
+    positions = {
+        (position.company_id, position.position_code): position
+        for position in session.exec(select(Position)).all()
+    }
+    for data in POSITIONS:
+        company = companies[data["company_code"]]
+        key = (company.id, data["position_code"])
+        if key in positions:
+            continue
+
+        dept_id = None
+        dept_code = data["dept_code"]
+        if dept_code is not None:
+            department = departments.get((company.id, dept_code))
+            if department is None:
+                logger.warning(
+                    "Skipping seed position %s: default department %s is missing",
+                    data["position_code"],
+                    dept_code,
+                )
+                continue
+            dept_id = department.id
+
+        position = Position(
+            company_id=company.id,
+            position_code=data["position_code"],
+            position_name=data["position_name"],
+            dept_id=dept_id,
+            order_no=data["order_no"],
+            is_active=data.get("is_active", True),
+        )
+        session.add(position)
+        session.flush()
+        positions[key] = position
 
 
 def seed(session: Session) -> None:
     companies = _seed_companies(session)
-    _seed_departments(session, companies)
+    departments = _seed_departments(session, companies)
+    _seed_positions(session, companies, departments)
     session.commit()
 
 

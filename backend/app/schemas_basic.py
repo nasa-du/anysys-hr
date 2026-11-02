@@ -159,3 +159,70 @@ class DepartmentsPublic(SQLModel):
 
 class DepartmentTreePublic(SQLModel):
     data: list[DepartmentTreeNode]
+
+
+class PositionCreate(SQLModel):
+    model_config = SQLModelConfig(extra="forbid")
+
+    position_code: str = Field(min_length=1, max_length=32, pattern=CODE_PATTERN)
+    position_name: str = Field(min_length=1, max_length=100)
+    company_id: uuid.UUID
+    dept_id: uuid.UUID | None = None
+    order_no: int = 0
+    is_active: bool = True
+    note: str | None = Field(default=None, max_length=500)
+
+    @field_validator("position_code", mode="before")
+    @classmethod
+    def _normalize_code(cls, value: Any) -> Any:
+        return normalize_code(value) if isinstance(value, str) else value
+
+    @field_validator("note", mode="before")
+    @classmethod
+    def _normalize_note(cls, value: Any) -> Any:
+        return normalize_note(value)
+
+
+class PositionUpdate(SQLModel):
+    model_config = SQLModelConfig(extra="forbid")
+
+    position_name: str | None = Field(default=None, min_length=1, max_length=100)
+    dept_id: uuid.UUID | None = None
+    order_no: int | None = None
+    is_active: bool | None = None
+    note: str | None = Field(default=None, max_length=500)
+
+    @field_validator("note", mode="before")
+    @classmethod
+    def _normalize_note(cls, value: Any) -> Any:
+        return normalize_note(value)
+
+    @field_validator("position_name", "order_no", "is_active")
+    @classmethod
+    def _not_null(cls, value: Any) -> Any:
+        # Defaults are not validated, so this only fires for an explicit null.
+        if value is None:
+            raise ValueError("该字段不能为空")
+        return value
+
+
+class PositionPublic(SQLModel):
+    model_config = SQLModelConfig(from_attributes=True)
+
+    id: uuid.UUID
+    position_code: str
+    position_name: str
+    company_id: uuid.UUID
+    dept_id: uuid.UUID | None = None
+    order_no: int
+    is_active: bool
+    note: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    company_name: str
+    dept_name: str | None = None
+
+
+class PositionsPublic(SQLModel):
+    data: list[PositionPublic]
+    count: int

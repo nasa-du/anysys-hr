@@ -46,7 +46,7 @@ The interactive API documentation is only registered when `FASTAPI_ENV=developme
 
 ### Development Seed Data
 
-From the `backend` directory, seed the demo companies (`C1` 荣新建设, `C2` 荣新科技, `C3` 荣新物流) and their departments:
+From the `backend` directory, seed the demo companies (`C1` 荣新建设, `C2` 荣新科技, `C3` 荣新物流) and their departments, positions, and cost centers:
 
 ```bash
 uv run python -m app.seed_dev
@@ -55,6 +55,8 @@ uv run python -m app.seed_dev
 `C1` gets a three-level tree (`D1 总部` → `D2 生产部` → `D3 一车间` / `D4 二车间`, plus `D5 运营部` and `D6 财务部`), including the inactive `D7 旧项目部` for the inactive-state demo. `C2` gets a two-level tree, and `C3` stays empty for empty-state and company-switching demos.
 
 `C1` also gets six positions (`P1 项目经理` through `P6 行政专员`), including positions with default departments and `P6` without one; `C2` gets two positions (`K1 研发工程师`, `K2 市场专员`).
+
+`C1` gets a multi-level cost center tree (`K1 总部成本中心` → `K2 生产成本中心` → `K3 一车间成本中心` / `K4 二车间成本中心`, plus `K5 运营成本中心`), including the inactive `K6 旧项目成本中心` for the inactive-state demo; `C2` gets two cost centers (`K1 总部成本中心`, `K2 研发成本中心`).
 
 The script is idempotent — it inserts by business code and never overwrites existing rows — and refuses to run unless `FASTAPI_ENV=development`. It is not part of `prestart.sh`; run it manually when you want demo data.
 

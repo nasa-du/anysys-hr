@@ -6,13 +6,14 @@ rows that are missing by business code, so user edits are never overwritten.
 """
 
 import logging
+from decimal import Decimal
 from typing import Any
 
 from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.core.db import engine
-from app.models import Company, Department, Position
+from app.models import Company, CostCenter, Department, Position
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +165,88 @@ POSITIONS: list[dict[str, Any]] = [
 ]
 
 
+# Multi-level cost center tree for the full company, a two-level tree for the
+# small company, and an inactive node without employee references. Parents are
+# listed before their children so one pass can resolve every ``parent_code``.
+COST_CENTERS: list[dict[str, Any]] = [
+    {
+        "company_code": "C1",
+        "cost_org_code": "K1",
+        "cost_org_name": "总部成本中心",
+        "parent_code": None,
+        "budget": Decimal("5000000.00"),
+        "warn_pct": 85,
+        "order_no": 0,
+    },
+    {
+        "company_code": "C1",
+        "cost_org_code": "K2",
+        "cost_org_name": "生产成本中心",
+        "parent_code": "K1",
+        "budget": Decimal("3200000.00"),
+        "warn_pct": 90,
+        "order_no": 0,
+    },
+    {
+        "company_code": "C1",
+        "cost_org_code": "K3",
+        "cost_org_name": "一车间成本中心",
+        "parent_code": "K2",
+        "budget": Decimal("1800000.00"),
+        "warn_pct": 95,
+        "order_no": 0,
+    },
+    {
+        "company_code": "C1",
+        "cost_org_code": "K4",
+        "cost_org_name": "二车间成本中心",
+        "parent_code": "K2",
+        "budget": Decimal("1200000.00"),
+        "warn_pct": 90,
+        "order_no": 1,
+    },
+    {
+        "company_code": "C1",
+        "cost_org_code": "K5",
+        "cost_org_name": "运营成本中心",
+        "parent_code": "K1",
+        "budget": Decimal("800000.00"),
+        "warn_pct": 85,
+        "order_no": 1,
+    },
+    {
+        # Inactive cost center without active employee references, used to
+        # demonstrate the inactive state; keep seeded employees elsewhere.
+        "company_code": "C1",
+        "cost_org_code": "K6",
+        "cost_org_name": "旧项目成本中心",
+        "parent_code": "K1",
+        "budget": Decimal("0.00"),
+        "warn_pct": 80,
+        "order_no": 9,
+        "is_active": False,
+    },
+    {
+        "company_code": "C2",
+        "cost_org_code": "K1",
+        "cost_org_name": "总部成本中心",
+        "parent_code": None,
+        "budget": Decimal("500000.00"),
+        "warn_pct": 85,
+        "order_no": 0,
+    },
+    {
+        "company_code": "C2",
+        "cost_org_code": "K2",
+        "cost_org_name": "研发成本中心",
+        "parent_code": "K1",
+        "budget": Decimal("300000.00"),
+        "warn_pct": 90,
+        "order_no": 0,
+    },
+]
+
+
 def _seed_companies(session: Session) -> dict[str, Company]:
     companies = {
         company.company_code: company for company in session.exec(select(Company)).all()
@@ -259,10 +342,50 @@ def _seed_positions(
         positions[key] = position
 
 
+def _seed_cost_centers(session: Session, companies: dict[str, Company]) -> None:
+    cost_centers = {
+        (cost_center.company_id, cost_center.cost_org_code): cost_center
+        for cost_center in session.exec(select(CostCenter)).all()
+    }
+    for data in COST_CENTERS:
+        company = companies[data["company_code"]]
+        key = (company.id, data["cost_org_code"])
+        if key in cost_centers:
+            continue
+
+        parent_id = None
+        parent_code = data["parent_code"]
+        if parent_code is not None:
+            parent = cost_centers.get((company.id, parent_code))
+            if parent is None:
+                logger.warning(
+                    "Skipping seed cost center %s: parent %s is missing",
+                    data["cost_org_code"],
+                    parent_code,
+                )
+                continue
+            parent_id = parent.id
+
+        cost_center = CostCenter(
+            company_id=company.id,
+            cost_org_code=data["cost_org_code"],
+            cost_org_name=data["cost_org_name"],
+            parent_id=parent_id,
+            budget=data["budget"],
+            warn_pct=data["warn_pct"],
+            order_no=data["order_no"],
+            is_active=data.get("is_active", True),
+        )
+        session.add(cost_center)
+        session.flush()
+        cost_centers[key] = cost_center
+
+
 def seed(session: Session) -> None:
     companies = _seed_companies(session)
     departments = _seed_departments(session, companies)
     _seed_positions(session, companies, departments)
+    _seed_cost_centers(session, companies)
     session.commit()
 
 

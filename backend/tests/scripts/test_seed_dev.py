@@ -1,12 +1,14 @@
 """Development seed script: guard and idempotency."""
 
+from decimal import Decimal
+
 import pytest
 from sqlmodel import Session, select
 
 from app import seed_dev
 from app.core.db import engine
 from app.enums import EmployeeStatus
-from app.models import Company, Department, Employee, Position
+from app.models import Company, CostCenter, Department, Employee, Position
 
 SEEDED_CODES = ["C1", "C2", "C3"]
 SEEDED_NAMES = ["荣新建设", "荣新科技", "荣新物流"]
@@ -17,6 +19,11 @@ SEEDED_DEPARTMENTS = {
 }
 SEEDED_POSITIONS = {
     "C1": ["P1", "P2", "P3", "P4", "P5", "P6"],
+    "C2": ["K1", "K2"],
+    "C3": [],
+}
+SEEDED_COST_CENTERS = {
+    "C1": ["K1", "K2", "K3", "K4", "K5", "K6"],
     "C2": ["K1", "K2"],
     "C3": [],
 }
@@ -212,3 +219,112 @@ def test_seed_does_not_overwrite_existing_department_edits() -> None:
         ).one()
         assert department.dept_name == "用户修改后的部门"
         assert department.order_no == 42
+
+
+def _cost_centers_by_company() -> dict[str, list[CostCenter]]:
+    with Session(engine) as session:
+        company_codes = {
+            company.id: company.company_code
+            for company in session.exec(select(Company)).all()
+        }
+        cost_centers: dict[str, list[CostCenter]] = {
+            code: [] for code in company_codes.values()
+        }
+        for cost_center in session.exec(
+            select(CostCenter).order_by(CostCenter.cost_org_code)
+        ).all():
+            cost_centers[company_codes[cost_center.company_id]].append(cost_center)
+        return cost_centers
+
+
+def test_seed_inserts_the_cost_center_tree_once() -> None:
+    seed_dev.main()
+    seed_dev.main()
+
+    cost_centers = _cost_centers_by_company()
+
+    for company_code, expected_codes in SEEDED_COST_CENTERS.items():
+        assert [c.cost_org_code for c in cost_centers[company_code]] == expected_codes
+
+    full_company = {c.cost_org_code: c for c in cost_centers["C1"]}
+    assert full_company["K1"].parent_id is None
+    assert full_company["K2"].parent_id == full_company["K1"].id
+    assert full_company["K3"].parent_id == full_company["K2"].id
+    assert full_company["K4"].parent_id == full_company["K2"].id
+    assert full_company["K5"].parent_id == full_company["K1"].id
+    assert full_company["K6"].parent_id == full_company["K1"].id
+    assert full_company["K6"].is_active is False
+    assert all(c.is_active for c in cost_centers["C2"])
+
+
+def test_seed_includes_one_inactive_cost_center_without_active_employees() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        inactive_cost_centers = session.exec(
+            select(CostCenter).where(CostCenter.is_active.is_(False))
+        ).all()
+        inactive_ids = [cost_center.id for cost_center in inactive_cost_centers]
+        active_employees = session.exec(
+            select(Employee).where(
+                Employee.cost_org_id.in_(inactive_ids),
+                Employee.status.in_([EmployeeStatus.ACTIVE, EmployeeStatus.PROBATION]),
+            )
+        ).all()
+
+    assert [c.cost_org_code for c in inactive_cost_centers] == ["K6"]
+    assert active_employees == []
+
+
+def test_seed_cost_center_parents_and_budgets_use_the_same_company() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        cost_centers = {
+            cost_center.id: cost_center
+            for cost_center in session.exec(select(CostCenter)).all()
+        }
+
+        for cost_center in cost_centers.values():
+            assert cost_center.budget >= 0
+            assert 1 <= cost_center.warn_pct <= 100
+            if cost_center.parent_id is None:
+                continue
+            parent = cost_centers[cost_center.parent_id]
+            assert parent.company_id == cost_center.company_id
+
+
+def test_seed_does_not_overwrite_existing_cost_center_edits() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        company = session.exec(
+            select(Company).where(Company.company_code == "C1")
+        ).one()
+        cost_center = session.exec(
+            select(CostCenter).where(
+                CostCenter.company_id == company.id,
+                CostCenter.cost_org_code == "K2",
+            )
+        ).one()
+        cost_center.cost_org_name = "用户修改后的成本中心"
+        cost_center.budget = Decimal("42.00")
+        cost_center.warn_pct = 66
+        session.add(cost_center)
+        session.commit()
+
+    seed_dev.main()
+
+    with Session(engine) as session:
+        company = session.exec(
+            select(Company).where(Company.company_code == "C1")
+        ).one()
+        cost_center = session.exec(
+            select(CostCenter).where(
+                CostCenter.company_id == company.id,
+                CostCenter.cost_org_code == "K2",
+            )
+        ).one()
+        assert cost_center.cost_org_name == "用户修改后的成本中心"
+        assert cost_center.budget == Decimal("42.00")
+        assert cost_center.warn_pct == 66

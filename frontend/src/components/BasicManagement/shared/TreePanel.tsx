@@ -17,6 +17,8 @@ interface TreePanelProps {
   selectedId: string | null
   onSelect: (id: string) => void
   testId?: string
+  childLabel?: string
+  inactiveLabel?: string
 }
 
 interface TreeNodeItemProps {
@@ -24,6 +26,8 @@ interface TreeNodeItemProps {
   depth: number
   selectedId: string | null
   onSelect: (id: string) => void
+  childLabel: string
+  inactiveLabel: string
 }
 
 function TreeNodeItem({
@@ -31,6 +35,8 @@ function TreeNodeItem({
   depth,
   selectedId,
   onSelect,
+  childLabel,
+  inactiveLabel,
 }: TreeNodeItemProps) {
   const [expanded, setExpanded] = useState(true)
   const children = node.children ?? []
@@ -47,7 +53,7 @@ function TreeNodeItem({
           <button
             type="button"
             className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted"
-            aria-label={expanded ? "收起下级部门" : "展开下级部门"}
+            aria-label={expanded ? `收起${childLabel}` : `展开${childLabel}`}
             onClick={() => setExpanded((value) => !value)}
           >
             {expanded ? (
@@ -77,7 +83,7 @@ function TreeNodeItem({
           )}
           {node.isActive === false && (
             <Badge variant="secondary" className="ml-auto shrink-0 text-xs">
-              停用
+              {inactiveLabel}
             </Badge>
           )}
         </button>
@@ -91,6 +97,8 @@ function TreeNodeItem({
               depth={depth + 1}
               selectedId={selectedId}
               onSelect={onSelect}
+              childLabel={childLabel}
+              inactiveLabel={inactiveLabel}
             />
           ))}
         </ul>
@@ -105,6 +113,8 @@ export function TreePanel({
   selectedId,
   onSelect,
   testId = "tree-panel",
+  childLabel = "下级部门",
+  inactiveLabel = "停用",
 }: TreePanelProps) {
   return (
     <ul className="space-y-0.5" data-testid={testId}>
@@ -115,6 +125,8 @@ export function TreePanel({
           depth={0}
           selectedId={selectedId}
           onSelect={onSelect}
+          childLabel={childLabel}
+          inactiveLabel={inactiveLabel}
         />
       ))}
     </ul>

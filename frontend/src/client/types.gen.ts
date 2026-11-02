@@ -147,6 +147,260 @@ export type CompanyUpdate = {
 };
 
 /**
+ * CostCenterCreate
+ */
+export type CostCenterCreate = {
+    /**
+     * Cost Org Code
+     */
+    cost_org_code: string;
+    /**
+     * Cost Org Name
+     */
+    cost_org_name: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    /**
+     * Budget
+     */
+    budget?: number | string;
+    /**
+     * Warn Pct
+     */
+    warn_pct?: number;
+    /**
+     * Order No
+     */
+    order_no?: number;
+    /**
+     * Is Active
+     */
+    is_active?: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * CostCenterPublic
+ */
+export type CostCenterPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Cost Org Code
+     */
+    cost_org_code: string;
+    /**
+     * Cost Org Name
+     */
+    cost_org_name: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    /**
+     * Budget
+     */
+    budget: string;
+    /**
+     * Warn Pct
+     */
+    warn_pct: number;
+    /**
+     * Order No
+     */
+    order_no: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Parent Name
+     */
+    parent_name?: string | null;
+    /**
+     * Manager Name
+     */
+    manager_name?: string | null;
+    manager_status?: EmployeeStatus | null;
+};
+
+/**
+ * CostCenterTreeNode
+ */
+export type CostCenterTreeNode = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Cost Org Code
+     */
+    cost_org_code: string;
+    /**
+     * Cost Org Name
+     */
+    cost_org_name: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    /**
+     * Budget
+     */
+    budget: string;
+    /**
+     * Warn Pct
+     */
+    warn_pct: number;
+    /**
+     * Order No
+     */
+    order_no: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Parent Name
+     */
+    parent_name?: string | null;
+    /**
+     * Manager Name
+     */
+    manager_name?: string | null;
+    manager_status?: EmployeeStatus | null;
+    /**
+     * Children
+     */
+    children?: Array<CostCenterTreeNode>;
+};
+
+/**
+ * CostCenterTreePublic
+ */
+export type CostCenterTreePublic = {
+    /**
+     * Data
+     */
+    data: Array<CostCenterTreeNode>;
+};
+
+/**
+ * CostCenterUpdate
+ */
+export type CostCenterUpdate = {
+    /**
+     * Cost Org Name
+     */
+    cost_org_name?: string | null;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    /**
+     * Budget
+     */
+    budget?: number | string | null;
+    /**
+     * Warn Pct
+     */
+    warn_pct?: number | null;
+    /**
+     * Order No
+     */
+    order_no?: number | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * CostCentersPublic
+ */
+export type CostCentersPublic = {
+    /**
+     * Data
+     */
+    data: Array<CostCenterPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * DepartmentCreate
  */
 export type DepartmentCreate = {
@@ -1806,6 +2060,253 @@ export type positionsUpdatePositionResponses = {
 };
 
 export type positionsUpdatePositionResponse = positionsUpdatePositionResponses[keyof positionsUpdatePositionResponses];
+
+export type costCentersReadCostCentersData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Parent Id
+         */
+        parent_id?: string | null;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Is Active
+         */
+        is_active?: boolean | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/cost-centers/';
+};
+
+export type costCentersReadCostCentersErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type costCentersReadCostCentersError = costCentersReadCostCentersErrors[keyof costCentersReadCostCentersErrors];
+
+export type costCentersReadCostCentersResponses = {
+    /**
+     * Successful Response
+     */
+    200: CostCentersPublic;
+};
+
+export type costCentersReadCostCentersResponse = costCentersReadCostCentersResponses[keyof costCentersReadCostCentersResponses];
+
+export type costCentersCreateCostCenterData = {
+    body: CostCenterCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/cost-centers/';
+};
+
+export type costCentersCreateCostCenterErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type costCentersCreateCostCenterError = costCentersCreateCostCenterErrors[keyof costCentersCreateCostCenterErrors];
+
+export type costCentersCreateCostCenterResponses = {
+    /**
+     * Successful Response
+     */
+    201: CostCenterPublic;
+};
+
+export type costCentersCreateCostCenterResponse = costCentersCreateCostCenterResponses[keyof costCentersCreateCostCenterResponses];
+
+export type costCentersReadCostCenterTreeData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Is Active
+         */
+        is_active?: boolean | null;
+    };
+    url: '/api/v1/cost-centers/tree';
+};
+
+export type costCentersReadCostCenterTreeErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type costCentersReadCostCenterTreeError = costCentersReadCostCenterTreeErrors[keyof costCentersReadCostCenterTreeErrors];
+
+export type costCentersReadCostCenterTreeResponses = {
+    /**
+     * Successful Response
+     */
+    200: CostCenterTreePublic;
+};
+
+export type costCentersReadCostCenterTreeResponse = costCentersReadCostCenterTreeResponses[keyof costCentersReadCostCenterTreeResponses];
+
+export type costCentersDeleteCostCenterData = {
+    body?: never;
+    path: {
+        /**
+         * Cost Center Id
+         */
+        cost_center_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cost-centers/{cost_center_id}';
+};
+
+export type costCentersDeleteCostCenterErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type costCentersDeleteCostCenterError = costCentersDeleteCostCenterErrors[keyof costCentersDeleteCostCenterErrors];
+
+export type costCentersDeleteCostCenterResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type costCentersDeleteCostCenterResponse = costCentersDeleteCostCenterResponses[keyof costCentersDeleteCostCenterResponses];
+
+export type costCentersReadCostCenterData = {
+    body?: never;
+    path: {
+        /**
+         * Cost Center Id
+         */
+        cost_center_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cost-centers/{cost_center_id}';
+};
+
+export type costCentersReadCostCenterErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type costCentersReadCostCenterError = costCentersReadCostCenterErrors[keyof costCentersReadCostCenterErrors];
+
+export type costCentersReadCostCenterResponses = {
+    /**
+     * Successful Response
+     */
+    200: CostCenterPublic;
+};
+
+export type costCentersReadCostCenterResponse = costCentersReadCostCenterResponses[keyof costCentersReadCostCenterResponses];
+
+export type costCentersUpdateCostCenterData = {
+    body: CostCenterUpdate;
+    path: {
+        /**
+         * Cost Center Id
+         */
+        cost_center_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cost-centers/{cost_center_id}';
+};
+
+export type costCentersUpdateCostCenterErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type costCentersUpdateCostCenterError = costCentersUpdateCostCenterErrors[keyof costCentersUpdateCostCenterErrors];
+
+export type costCentersUpdateCostCenterResponses = {
+    /**
+     * Successful Response
+     */
+    200: CostCenterPublic;
+};
+
+export type costCentersUpdateCostCenterResponse = costCentersUpdateCostCenterResponses[keyof costCentersUpdateCostCenterResponses];
 
 export type utilsTestEmailData = {
     body?: never;

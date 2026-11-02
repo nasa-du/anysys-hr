@@ -1508,6 +1508,401 @@
         }
       }
     },
+    "/api/v1/cost-centers/": {
+      "get": {
+        "tags": ["cost-centers"],
+        "summary": "Read Cost Centers",
+        "description": "List the company's cost centers ordered by order number and code.",
+        "operationId": "cost-centers-read_cost_centers",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "parent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Parent Id"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "maxLength": 100 },
+                { "type": "null" }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Is Active"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CostCentersPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["cost-centers"],
+        "summary": "Create Cost Center",
+        "description": "Create a cost center; the code and company cannot change afterwards.",
+        "operationId": "cost-centers-create_cost_center",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CostCenterCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CostCenterPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cost-centers/tree": {
+      "get": {
+        "tags": ["cost-centers"],
+        "summary": "Read Cost Center Tree",
+        "description": "Return the company's cost center tree with nested ``children`` arrays.",
+        "operationId": "cost-centers-read_cost_center_tree",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Is Active"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CostCenterTreePublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cost-centers/{cost_center_id}": {
+      "get": {
+        "tags": ["cost-centers"],
+        "summary": "Read Cost Center",
+        "description": "Get one cost center by id.",
+        "operationId": "cost-centers-read_cost_center",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "cost_center_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cost Center Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CostCenterPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["cost-centers"],
+        "summary": "Update Cost Center",
+        "description": "Update a cost center; structural changes follow the active rules.",
+        "operationId": "cost-centers-update_cost_center",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "cost_center_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cost Center Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CostCenterUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CostCenterPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["cost-centers"],
+        "summary": "Delete Cost Center",
+        "description": "Hard delete a cost center without children or employee references.",
+        "operationId": "cost-centers-delete_cost_center",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "cost_center_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cost Center Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/utils/test-email/": {
       "post": {
         "tags": ["utils"],
@@ -1758,6 +2153,316 @@
         "additionalProperties": false,
         "type": "object",
         "title": "CompanyUpdate"
+      },
+      "CostCenterCreate": {
+        "properties": {
+          "cost_org_code": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "pattern": "^[A-Z0-9_-]{1,32}$",
+            "title": "Cost Org Code"
+          },
+          "cost_org_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Cost Org Name"
+          },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "parent_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Parent Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "budget": {
+            "anyOf": [
+              { "type": "number", "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+              }
+            ],
+            "title": "Budget",
+            "default": "0"
+          },
+          "warn_pct": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Warn Pct",
+            "default": 85
+          },
+          "order_no": { "type": "integer", "title": "Order No", "default": 0 },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["cost_org_code", "cost_org_name", "company_id"],
+        "title": "CostCenterCreate"
+      },
+      "CostCenterPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "cost_org_code": { "type": "string", "title": "Cost Org Code" },
+          "cost_org_name": { "type": "string", "title": "Cost Org Name" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "parent_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Parent Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "budget": { "type": "string", "title": "Budget" },
+          "warn_pct": { "type": "integer", "title": "Warn Pct" },
+          "order_no": { "type": "integer", "title": "Order No" },
+          "is_active": { "type": "boolean", "title": "Is Active" },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "company_name": { "type": "string", "title": "Company Name" },
+          "parent_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Parent Name"
+          },
+          "manager_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Manager Name"
+          },
+          "manager_status": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/EmployeeStatus" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "cost_org_code",
+          "cost_org_name",
+          "company_id",
+          "budget",
+          "warn_pct",
+          "order_no",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "company_name"
+        ],
+        "title": "CostCenterPublic"
+      },
+      "CostCenterTreeNode": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "cost_org_code": { "type": "string", "title": "Cost Org Code" },
+          "cost_org_name": { "type": "string", "title": "Cost Org Name" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "parent_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Parent Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "budget": { "type": "string", "title": "Budget" },
+          "warn_pct": { "type": "integer", "title": "Warn Pct" },
+          "order_no": { "type": "integer", "title": "Order No" },
+          "is_active": { "type": "boolean", "title": "Is Active" },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "company_name": { "type": "string", "title": "Company Name" },
+          "parent_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Parent Name"
+          },
+          "manager_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Manager Name"
+          },
+          "manager_status": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/EmployeeStatus" },
+              { "type": "null" }
+            ]
+          },
+          "children": {
+            "items": { "$ref": "#/components/schemas/CostCenterTreeNode" },
+            "type": "array",
+            "title": "Children"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "cost_org_code",
+          "cost_org_name",
+          "company_id",
+          "budget",
+          "warn_pct",
+          "order_no",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "company_name"
+        ],
+        "title": "CostCenterTreeNode"
+      },
+      "CostCenterTreePublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/CostCenterTreeNode" },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "CostCenterTreePublic"
+      },
+      "CostCenterUpdate": {
+        "properties": {
+          "cost_org_name": {
+            "anyOf": [
+              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "type": "null" }
+            ],
+            "title": "Cost Org Name"
+          },
+          "parent_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Parent Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "budget": {
+            "anyOf": [
+              { "type": "number", "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+              },
+              { "type": "null" }
+            ],
+            "title": "Budget"
+          },
+          "warn_pct": {
+            "anyOf": [
+              { "type": "integer", "maximum": 100.0, "minimum": 1.0 },
+              { "type": "null" }
+            ],
+            "title": "Warn Pct"
+          },
+          "order_no": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Order No"
+          },
+          "is_active": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Is Active"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CostCenterUpdate"
+      },
+      "CostCentersPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/CostCenterPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "CostCentersPublic"
       },
       "DepartmentCreate": {
         "properties": {

@@ -17,6 +17,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutCompaniesRouteImport } from './routes/_layout/companies'
+import { Route as LayoutCostCentersRouteImport } from './routes/_layout/cost-centers'
 import { Route as LayoutDepartmentsRouteImport } from './routes/_layout/departments'
 import { Route as LayoutPositionsRouteImport } from './routes/_layout/positions'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
@@ -60,6 +61,11 @@ const LayoutCompaniesRoute = LayoutCompaniesRouteImport.update({
   path: '/companies',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutCostCentersRoute = LayoutCostCentersRouteImport.update({
+  id: '/cost-centers',
+  path: '/cost-centers',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutDepartmentsRoute = LayoutDepartmentsRouteImport.update({
   id: '/departments',
   path: '/departments',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/companies': typeof LayoutCompaniesRoute
+  '/cost-centers': typeof LayoutCostCentersRoute
   '/departments': typeof LayoutDepartmentsRoute
   '/positions': typeof LayoutPositionsRoute
   '/settings': typeof LayoutSettingsRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/companies': typeof LayoutCompaniesRoute
+  '/cost-centers': typeof LayoutCostCentersRoute
   '/departments': typeof LayoutDepartmentsRoute
   '/positions': typeof LayoutPositionsRoute
   '/settings': typeof LayoutSettingsRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/companies': typeof LayoutCompaniesRoute
+  '/_layout/cost-centers': typeof LayoutCostCentersRoute
   '/_layout/departments': typeof LayoutDepartmentsRoute
   '/_layout/positions': typeof LayoutPositionsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/companies'
+    | '/cost-centers'
     | '/departments'
     | '/positions'
     | '/settings'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/companies'
+    | '/cost-centers'
     | '/departments'
     | '/positions'
     | '/settings'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/companies'
+    | '/_layout/cost-centers'
     | '/_layout/departments'
     | '/_layout/positions'
     | '/_layout/settings'
@@ -220,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCompaniesRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/cost-centers': {
+      id: '/_layout/cost-centers'
+      path: '/cost-centers'
+      fullPath: '/cost-centers'
+      preLoaderRoute: typeof LayoutCostCentersRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/departments': {
       id: '/_layout/departments'
       path: '/departments'
@@ -247,6 +266,7 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutCompaniesRoute: typeof LayoutCompaniesRoute
+  LayoutCostCentersRoute: typeof LayoutCostCentersRoute
   LayoutDepartmentsRoute: typeof LayoutDepartmentsRoute
   LayoutPositionsRoute: typeof LayoutPositionsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
@@ -256,6 +276,7 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutCompaniesRoute: LayoutCompaniesRoute,
+  LayoutCostCentersRoute: LayoutCostCentersRoute,
   LayoutDepartmentsRoute: LayoutDepartmentsRoute,
   LayoutPositionsRoute: LayoutPositionsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,

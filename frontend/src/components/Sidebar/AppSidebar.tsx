@@ -1,4 +1,11 @@
-import { Briefcase, Building2, Home, Network, Users } from "lucide-react"
+import {
+  Briefcase,
+  Building2,
+  Home,
+  Network,
+  Users,
+  Wallet,
+} from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -23,6 +30,7 @@ export function AppSidebar() {
         { icon: Building2, title: "公司", path: "/companies" },
         { icon: Network, title: "部门", path: "/departments" },
         { icon: Briefcase, title: "岗位", path: "/positions" },
+        { icon: Wallet, title: "成本中心", path: "/cost-centers" },
       ],
     },
   ]

@@ -14,7 +14,10 @@ export default defineConfig({
         strategy: "byTags",
         methods: "static",
         containerName: "{{name}}Service",
-        methodName: (name: string): string => name.replace(/^[^-]*-/, ""),
+        // Strip every tag prefix before the operation segment, including
+        // multi-word tags such as ``cost-centers-``.
+        methodName: (name: string): string =>
+          name.replace(/^([a-z0-9]+-)+(?=[a-z0-9]+_)/, ""),
       },
     },
   ],

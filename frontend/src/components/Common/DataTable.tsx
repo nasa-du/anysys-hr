@@ -41,16 +41,28 @@ export type DataTableFeatures = typeof dataTableFeatures
 interface DataTableProps<TData extends RowData> {
   columns: ColumnDef<DataTableFeatures, TData>[]
   data: TData[]
+  onRowClick?: (row: TData) => void
+  /** Disable the built-in pagination when the server paginates instead. */
+  showPagination?: boolean
 }
 
 export function DataTable<TData extends RowData>({
   columns,
   data,
+  onRowClick,
+  showPagination = true,
 }: DataTableProps<TData>) {
   const table = useTable({
     features: dataTableFeatures,
     data,
     columns,
+    initialState: {
+      // Without the built-in pager, render every row the caller provides.
+      pagination: {
+        pageIndex: 0,
+        pageSize: showPagination ? 10 : Number.POSITIVE_INFINITY,
+      },
+    },
   })
 
   return (
@@ -77,7 +89,13 @@ export function DataTable<TData extends RowData>({
         <TableBody>
           {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow
+                key={row.id}
+                className={onRowClick ? "cursor-pointer" : undefined}
+                onClick={
+                  onRowClick ? () => onRowClick(row.original) : undefined
+                }
+              >
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -98,7 +116,7 @@ export function DataTable<TData extends RowData>({
         </TableBody>
       </Table>
 
-      {table.getPageCount() > 1 && (
+      {showPagination && table.getPageCount() > 1 && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border-t bg-muted/20">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="text-sm text-muted-foreground">

@@ -19,6 +19,7 @@ import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutCompaniesRouteImport } from './routes/_layout/companies'
 import { Route as LayoutCostCentersRouteImport } from './routes/_layout/cost-centers'
 import { Route as LayoutDepartmentsRouteImport } from './routes/_layout/departments'
+import { Route as LayoutEmployeesRouteImport } from './routes/_layout/employees'
 import { Route as LayoutPositionsRouteImport } from './routes/_layout/positions'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 
@@ -71,6 +72,11 @@ const LayoutDepartmentsRoute = LayoutDepartmentsRouteImport.update({
   path: '/departments',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutEmployeesRoute = LayoutEmployeesRouteImport.update({
+  id: '/employees',
+  path: '/employees',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutPositionsRoute = LayoutPositionsRouteImport.update({
   id: '/positions',
   path: '/positions',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/companies': typeof LayoutCompaniesRoute
   '/cost-centers': typeof LayoutCostCentersRoute
   '/departments': typeof LayoutDepartmentsRoute
+  '/employees': typeof LayoutEmployeesRoute
   '/positions': typeof LayoutPositionsRoute
   '/settings': typeof LayoutSettingsRoute
 }
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/companies': typeof LayoutCompaniesRoute
   '/cost-centers': typeof LayoutCostCentersRoute
   '/departments': typeof LayoutDepartmentsRoute
+  '/employees': typeof LayoutEmployeesRoute
   '/positions': typeof LayoutPositionsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/_layout/companies': typeof LayoutCompaniesRoute
   '/_layout/cost-centers': typeof LayoutCostCentersRoute
   '/_layout/departments': typeof LayoutDepartmentsRoute
+  '/_layout/employees': typeof LayoutEmployeesRoute
   '/_layout/positions': typeof LayoutPositionsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/companies'
     | '/cost-centers'
     | '/departments'
+    | '/employees'
     | '/positions'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/companies'
     | '/cost-centers'
     | '/departments'
+    | '/employees'
     | '/positions'
     | '/settings'
     | '/'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/_layout/companies'
     | '/_layout/cost-centers'
     | '/_layout/departments'
+    | '/_layout/employees'
     | '/_layout/positions'
     | '/_layout/settings'
     | '/_layout/'
@@ -246,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutDepartmentsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/employees': {
+      id: '/_layout/employees'
+      path: '/employees'
+      fullPath: '/employees'
+      preLoaderRoute: typeof LayoutEmployeesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/positions': {
       id: '/_layout/positions'
       path: '/positions'
@@ -268,6 +287,7 @@ interface LayoutRouteChildren {
   LayoutCompaniesRoute: typeof LayoutCompaniesRoute
   LayoutCostCentersRoute: typeof LayoutCostCentersRoute
   LayoutDepartmentsRoute: typeof LayoutDepartmentsRoute
+  LayoutEmployeesRoute: typeof LayoutEmployeesRoute
   LayoutPositionsRoute: typeof LayoutPositionsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -278,6 +298,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutCompaniesRoute: LayoutCompaniesRoute,
   LayoutCostCentersRoute: LayoutCostCentersRoute,
   LayoutDepartmentsRoute: LayoutDepartmentsRoute,
+  LayoutEmployeesRoute: LayoutEmployeesRoute,
   LayoutPositionsRoute: LayoutPositionsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,

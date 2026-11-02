@@ -1,5 +1,6 @@
 """Development seed script: guard and idempotency."""
 
+from datetime import date
 from decimal import Decimal
 
 import pytest
@@ -7,7 +8,7 @@ from sqlmodel import Session, select
 
 from app import seed_dev
 from app.core.db import engine
-from app.enums import EmployeeStatus
+from app.enums import ContractType, EmployeeStatus
 from app.models import Company, CostCenter, Department, Employee, Position
 
 SEEDED_CODES = ["C1", "C2", "C3"]
@@ -25,6 +26,29 @@ SEEDED_POSITIONS = {
 SEEDED_COST_CENTERS = {
     "C1": ["K1", "K2", "K3", "K4", "K5", "K6"],
     "C2": ["K1", "K2"],
+    "C3": [],
+}
+# Kept independent of seed_dev.EMPLOYEES so accidental data changes fail the test.
+SEEDED_EMPLOYEES = {
+    "C1": [
+        "E1001",
+        "E1002",
+        "E1003",
+        "E1004",
+        "E1005",
+        "E1006",
+        "E1007",
+        "E1008",
+        "E1009",
+        "E1010",
+        "E1011",
+        "E1012",
+        "E1013",
+        "E1014",
+        "E1015",
+        "E1016",
+    ],
+    "C2": ["E2001", "E2002", "E2003", "E2004"],
     "C3": [],
 }
 
@@ -328,3 +352,114 @@ def test_seed_does_not_overwrite_existing_cost_center_edits() -> None:
         assert cost_center.cost_org_name == "用户修改后的成本中心"
         assert cost_center.budget == Decimal("42.00")
         assert cost_center.warn_pct == 66
+
+
+def _employees_by_company() -> dict[str, list[Employee]]:
+    with Session(engine) as session:
+        company_codes = {
+            company.id: company.company_code
+            for company in session.exec(select(Company)).all()
+        }
+        employees: dict[str, list[Employee]] = {
+            code: [] for code in company_codes.values()
+        }
+        departments = {
+            department.id: department
+            for department in session.exec(select(Department)).all()
+        }
+        for employee in session.exec(
+            select(Employee).order_by(Employee.employee_no)
+        ).all():
+            company_id = departments[employee.dept_id].company_id
+            employees[company_codes[company_id]].append(employee)
+        return employees
+
+
+def test_seed_inserts_employees_once() -> None:
+    seed_dev.main()
+    seed_dev.main()
+
+    employees = _employees_by_company()
+
+    for company_code, expected_numbers in SEEDED_EMPLOYEES.items():
+        assert [e.employee_no for e in employees[company_code]] == expected_numbers
+
+    assert 15 <= len(employees["C1"]) <= 20
+    assert 3 <= len(employees["C2"]) <= 5
+    assert employees["C3"] == []
+
+
+def test_seed_employee_statuses_contracts_and_unassigned_are_varied() -> None:
+    seed_dev.main()
+
+    employees = _employees_by_company()
+    full_company = employees["C1"]
+
+    assert {e.status for e in full_company} == set(EmployeeStatus)
+    assert {e.contract_type for e in full_company} == set(ContractType)
+    assert any(e.cost_org_id is None for e in full_company)
+    assert sum(e.manager_id is not None for e in full_company) >= 10
+    assert any(e.status is EmployeeStatus.RESIGNED for e in employees["C2"])
+    assert any(e.cost_org_id is None for e in employees["C2"])
+
+
+def test_seed_employee_managers_are_same_company_and_dates_are_valid() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        departments = {
+            department.id: department
+            for department in session.exec(select(Department)).all()
+        }
+        employees = {
+            employee.employee_no: employee
+            for employee in session.exec(select(Employee)).all()
+        }
+        seed_data = {data["employee_no"]: data for data in seed_dev.EMPLOYEES}
+
+        for employee in employees.values():
+            department = departments[employee.dept_id]
+            assert employee.hire_date <= date.today()
+            if employee.status is EmployeeStatus.RESIGNED:
+                assert employee.resign_date is not None
+                assert employee.resign_date <= date.today()
+                assert employee.resign_date >= employee.hire_date
+            else:
+                assert employee.resign_date is None
+
+            if employee.manager_id is None:
+                continue
+            manager = session.get(Employee, employee.manager_id)
+            assert manager is not None
+            manager_department = departments[manager.dept_id]
+            assert manager_department.company_id == department.company_id
+            assert manager.status in (
+                EmployeeStatus.ACTIVE,
+                EmployeeStatus.PROBATION,
+            )
+            assert manager.employee_no != employee.employee_no
+            assert seed_data[employee.employee_no]["manager_no"] == (
+                manager.employee_no
+            )
+
+
+def test_seed_does_not_overwrite_existing_employee_edits() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        employee = session.exec(
+            select(Employee).where(Employee.employee_no == "E1001")
+        ).one()
+        employee.name = "用户修改后的员工"
+        employee.note = "用户备注"
+        session.add(employee)
+        session.commit()
+
+    seed_dev.main()
+
+    with Session(engine) as session:
+        employee = session.exec(
+            select(Employee).where(Employee.employee_no == "E1001")
+        ).one()
+        assert employee.name == "用户修改后的员工"
+        assert employee.note == "用户备注"

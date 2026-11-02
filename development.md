@@ -46,7 +46,7 @@ The interactive API documentation is only registered when `FASTAPI_ENV=developme
 
 ### Development Seed Data
 
-From the `backend` directory, seed the demo companies (`C1` 荣新建设, `C2` 荣新科技, `C3` 荣新物流) and their departments, positions, and cost centers:
+From the `backend` directory, seed the demo companies (`C1` 荣新建设, `C2` 荣新科技, `C3` 荣新物流) and their departments, positions, cost centers, and employees:
 
 ```bash
 uv run python -m app.seed_dev
@@ -57,6 +57,8 @@ uv run python -m app.seed_dev
 `C1` also gets six positions (`P1 项目经理` through `P6 行政专员`), including positions with default departments and `P6` without one; `C2` gets two positions (`K1 研发工程师`, `K2 市场专员`).
 
 `C1` gets a multi-level cost center tree (`K1 总部成本中心` → `K2 生产成本中心` → `K3 一车间成本中心` / `K4 二车间成本中心`, plus `K5 运营成本中心`), including the inactive `K6 旧项目成本中心` for the inactive-state demo; `C2` gets two cost centers (`K1 总部成本中心`, `K2 研发成本中心`).
+
+`C1` also gets 16 employees (`E1001` 张建国 through `E1016` 周敏) with managers, a mix of active, probation, and resigned records, varied contract types, and two employees whose cost center is 「未分配」; `C2` gets four employees (`E2001` 李雷 through `E2004` 张军). Seeded employees have no login accounts.
 
 The script is idempotent — it inserts by business code and never overwrites existing rows — and refuses to run unless `FASTAPI_ENV=development`. It is not part of `prestart.sh`; run it manually when you want demo data.
 

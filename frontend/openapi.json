@@ -1903,6 +1903,324 @@
         }
       }
     },
+    "/api/v1/employees/": {
+      "get": {
+        "tags": ["employees"],
+        "summary": "Read Employees",
+        "description": "List employees ordered by employee number then name.",
+        "operationId": "employees-read_employees",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "dept_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Dept Id"
+            }
+          },
+          {
+            "name": "position_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Position Id"
+            }
+          },
+          {
+            "name": "cost_org_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Cost Org Id"
+            }
+          },
+          {
+            "name": "unassigned_cost_org",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Unassigned Cost Org"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/EmployeeStatus" }
+                },
+                { "type": "null" }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "maxLength": 100 },
+                { "type": "null" }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmployeesPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["employees"],
+        "summary": "Create Employee",
+        "description": "Create an employee; the number is globally unique and immutable.",
+        "operationId": "employees-create_employee",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EmployeeCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmployeePublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/employees/{employee_id}": {
+      "get": {
+        "tags": ["employees"],
+        "summary": "Read Employee",
+        "description": "Get one employee by id.",
+        "operationId": "employees-read_employee",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "employee_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Employee Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmployeePublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["employees"],
+        "summary": "Update Employee",
+        "description": "Update an employee, enforcing the lifecycle and assignment rules.",
+        "operationId": "employees-update_employee",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "employee_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Employee Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EmployeeUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmployeePublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/utils/test-email/": {
       "post": {
         "tags": ["utils"],
@@ -2153,6 +2471,11 @@
         "additionalProperties": false,
         "type": "object",
         "title": "CompanyUpdate"
+      },
+      "ContractType": {
+        "type": "string",
+        "enum": ["full_time", "part_time", "intern", "labor"],
+        "title": "ContractType"
       },
       "CostCenterCreate": {
         "properties": {
@@ -2730,10 +3053,338 @@
         "required": ["data", "count"],
         "title": "DepartmentsPublic"
       },
+      "EmployeeCreate": {
+        "properties": {
+          "employee_no": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "pattern": "^[A-Z0-9_-]{1,32}$",
+            "title": "Employee No"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "gender": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Gender" },
+              { "type": "null" }
+            ]
+          },
+          "dept_id": { "type": "string", "format": "uuid", "title": "Dept Id" },
+          "position_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Position Id"
+          },
+          "cost_org_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Cost Org Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EmployeeStatus",
+            "default": "active"
+          },
+          "hire_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Hire Date"
+          },
+          "contract_type": { "$ref": "#/components/schemas/ContractType" },
+          "daily_hours": {
+            "anyOf": [
+              { "type": "number", "maximum": 24.0, "exclusiveMinimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,2}|(?=[\\d.]{1,5}0*$)\\d{0,2}\\.\\d{0,2}0*$)"
+              },
+              { "type": "null" }
+            ],
+            "title": "Daily Hours"
+          },
+          "monthly_rest": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Monthly Rest"
+          },
+          "confidentiality_level": {
+            "anyOf": [
+              { "type": "integer", "maximum": 5.0, "minimum": 1.0 },
+              { "type": "null" }
+            ],
+            "title": "Confidentiality Level"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "employee_no",
+          "name",
+          "dept_id",
+          "position_id",
+          "hire_date",
+          "contract_type"
+        ],
+        "title": "EmployeeCreate"
+      },
+      "EmployeePublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "employee_no": { "type": "string", "title": "Employee No" },
+          "name": { "type": "string", "title": "Name" },
+          "gender": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Gender" },
+              { "type": "null" }
+            ]
+          },
+          "dept_id": { "type": "string", "format": "uuid", "title": "Dept Id" },
+          "position_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Position Id"
+          },
+          "cost_org_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Cost Org Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "status": { "$ref": "#/components/schemas/EmployeeStatus" },
+          "hire_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Hire Date"
+          },
+          "resign_date": {
+            "anyOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ],
+            "title": "Resign Date"
+          },
+          "contract_type": { "$ref": "#/components/schemas/ContractType" },
+          "daily_hours": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Daily Hours"
+          },
+          "monthly_rest": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Monthly Rest"
+          },
+          "confidentiality_level": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Confidentiality Level"
+          },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "company_name": { "type": "string", "title": "Company Name" },
+          "dept_name": { "type": "string", "title": "Dept Name" },
+          "position_name": { "type": "string", "title": "Position Name" },
+          "cost_org_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Cost Org Name"
+          },
+          "manager_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Manager Name"
+          },
+          "manager_status": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/EmployeeStatus" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "employee_no",
+          "name",
+          "dept_id",
+          "position_id",
+          "status",
+          "hire_date",
+          "contract_type",
+          "created_at",
+          "updated_at",
+          "company_id",
+          "company_name",
+          "dept_name",
+          "position_name"
+        ],
+        "title": "EmployeePublic"
+      },
       "EmployeeStatus": {
         "type": "string",
         "enum": ["active", "probation", "resigned"],
         "title": "EmployeeStatus"
+      },
+      "EmployeeUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "type": "null" }
+            ],
+            "title": "Name"
+          },
+          "gender": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Gender" },
+              { "type": "null" }
+            ]
+          },
+          "dept_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Dept Id"
+          },
+          "position_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Position Id"
+          },
+          "cost_org_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Cost Org Id"
+          },
+          "manager_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Manager Id"
+          },
+          "status": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/EmployeeStatus" },
+              { "type": "null" }
+            ]
+          },
+          "hire_date": {
+            "anyOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ],
+            "title": "Hire Date"
+          },
+          "resign_date": {
+            "anyOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ],
+            "title": "Resign Date"
+          },
+          "contract_type": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/ContractType" },
+              { "type": "null" }
+            ]
+          },
+          "daily_hours": {
+            "anyOf": [
+              { "type": "number", "maximum": 24.0, "exclusiveMinimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,2}|(?=[\\d.]{1,5}0*$)\\d{0,2}\\.\\d{0,2}0*$)"
+              },
+              { "type": "null" }
+            ],
+            "title": "Daily Hours"
+          },
+          "monthly_rest": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Monthly Rest"
+          },
+          "confidentiality_level": {
+            "anyOf": [
+              { "type": "integer", "maximum": 5.0, "minimum": 1.0 },
+              { "type": "null" }
+            ],
+            "title": "Confidentiality Level"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EmployeeUpdate"
+      },
+      "EmployeesPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/EmployeePublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "EmployeesPublic"
       },
       "ErrorDetail": {
         "properties": {
@@ -2768,6 +3419,11 @@
         "type": "object",
         "required": ["detail"],
         "title": "ErrorResponse"
+      },
+      "Gender": {
+        "type": "string",
+        "enum": ["male", "female", "unknown"],
+        "title": "Gender"
       },
       "HTTPValidationError": {
         "properties": {

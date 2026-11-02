@@ -3,6 +3,7 @@ import {
   Building2,
   Home,
   Network,
+  UserRound,
   Users,
   Wallet,
 } from "lucide-react"
@@ -29,6 +30,7 @@ export function AppSidebar() {
       items: [
         { icon: Building2, title: "公司", path: "/companies" },
         { icon: Network, title: "部门", path: "/departments" },
+        { icon: UserRound, title: "员工", path: "/employees" },
         { icon: Briefcase, title: "岗位", path: "/positions" },
         { icon: Wallet, title: "成本中心", path: "/cost-centers" },
       ],

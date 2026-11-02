@@ -6,6 +6,7 @@ rows that are missing by business code, so user edits are never overwritten.
 """
 
 import logging
+from datetime import date
 from decimal import Decimal
 from typing import Any
 
@@ -13,7 +14,8 @@ from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.core.db import engine
-from app.models import Company, CostCenter, Department, Position
+from app.enums import ContractType, EmployeeStatus, Gender
+from app.models import Company, CostCenter, Department, Employee, Position
 
 logger = logging.getLogger(__name__)
 
@@ -247,6 +249,338 @@ COST_CENTERS: list[dict[str, Any]] = [
 ]
 
 
+# Managers are listed before their reports so one pass can resolve
+# ``manager_no``. Numbers are globally unique and drive the default sort order.
+# Dates are fixed and never in the future. Employees have no login accounts.
+EMPLOYEES: list[dict[str, Any]] = [
+    {
+        "employee_no": "E1001",
+        "name": "张建国",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D1",
+        "position_code": "P1",
+        "cost_org_code": "K1",
+        "manager_no": None,
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2015, 3, 1),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 5,
+    },
+    {
+        "employee_no": "E1002",
+        "name": "王丽",
+        "gender": Gender.FEMALE,
+        "company_code": "C1",
+        "dept_code": "D5",
+        "position_code": "P5",
+        "cost_org_code": "K5",
+        "manager_no": "E1001",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2017, 6, 12),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 4,
+    },
+    {
+        "employee_no": "E1003",
+        "name": "李强",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D2",
+        "position_code": "P2",
+        "cost_org_code": "K2",
+        "manager_no": "E1001",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2016, 9, 1),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 4,
+        "confidentiality_level": 4,
+    },
+    {
+        "employee_no": "E1004",
+        "name": "黄国锋",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D3",
+        "position_code": "P3",
+        "cost_org_code": "K3",
+        "manager_no": "E1003",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2018, 4, 15),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 4,
+        "confidentiality_level": 3,
+    },
+    {
+        "employee_no": "E1005",
+        "name": "赵敏",
+        "gender": Gender.FEMALE,
+        "company_code": "C1",
+        "dept_code": "D6",
+        "position_code": "P4",
+        "cost_org_code": "K5",
+        "manager_no": "E1001",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2019, 2, 20),
+        "contract_type": ContractType.PART_TIME,
+        "daily_hours": Decimal("4.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 4,
+    },
+    {
+        "employee_no": "E1006",
+        "name": "陈静",
+        "gender": Gender.FEMALE,
+        "company_code": "C1",
+        "dept_code": "D5",
+        "position_code": "P5",
+        "cost_org_code": "K1",
+        "manager_no": "E1001",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2020, 7, 1),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 3,
+    },
+    {
+        "employee_no": "E1007",
+        "name": "刘洋",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D3",
+        "position_code": "P3",
+        "cost_org_code": "K3",
+        "manager_no": "E1004",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2021, 3, 10),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 4,
+        "confidentiality_level": 2,
+    },
+    {
+        "employee_no": "E1008",
+        "name": "周杰",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D3",
+        "position_code": "P3",
+        "cost_org_code": "K3",
+        "manager_no": "E1004",
+        "status": EmployeeStatus.PROBATION,
+        "hire_date": date(2026, 9, 1),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 4,
+        "confidentiality_level": 1,
+    },
+    {
+        "employee_no": "E1009",
+        "name": "吴刚",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D3",
+        "position_code": "P3",
+        "cost_org_code": None,
+        "manager_no": "E1004",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2022, 5, 18),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 4,
+        "confidentiality_level": 2,
+        "note": "成本归属未分配，用于演示「未分配」视图",
+    },
+    {
+        "employee_no": "E1010",
+        "name": "郑爽",
+        "gender": Gender.FEMALE,
+        "company_code": "C1",
+        "dept_code": "D5",
+        "position_code": "P5",
+        "cost_org_code": "K5",
+        "manager_no": "E1002",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2023, 8, 1),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 2,
+    },
+    {
+        "employee_no": "E1011",
+        "name": "冯涛",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D2",
+        "position_code": "P3",
+        "cost_org_code": "K2",
+        "manager_no": "E1003",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2020, 12, 1),
+        "contract_type": ContractType.LABOR,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 4,
+        "confidentiality_level": 1,
+    },
+    {
+        "employee_no": "E1012",
+        "name": "孙丽",
+        "gender": Gender.FEMALE,
+        "company_code": "C1",
+        "dept_code": "D6",
+        "position_code": "P4",
+        "cost_org_code": "K1",
+        "manager_no": "E1001",
+        "status": EmployeeStatus.PROBATION,
+        "hire_date": date(2026, 10, 1),
+        "contract_type": ContractType.INTERN,
+        "daily_hours": Decimal("6.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 1,
+    },
+    {
+        "employee_no": "E1013",
+        "name": "李娜",
+        "gender": Gender.FEMALE,
+        "company_code": "C1",
+        "dept_code": "D6",
+        "position_code": "P4",
+        "cost_org_code": None,
+        "manager_no": "E1001",
+        "status": EmployeeStatus.RESIGNED,
+        "hire_date": date(2017, 5, 2),
+        "resign_date": date(2025, 12, 31),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 4,
+        "note": "已离职，成本归属未分配",
+    },
+    {
+        "employee_no": "E1014",
+        "name": "王强",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D2",
+        "position_code": "P2",
+        "cost_org_code": "K2",
+        "manager_no": "E1003",
+        "status": EmployeeStatus.RESIGNED,
+        "hire_date": date(2016, 11, 1),
+        "resign_date": date(2024, 6, 30),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 4,
+        "confidentiality_level": 3,
+    },
+    {
+        "employee_no": "E1015",
+        "name": "张伟",
+        "gender": Gender.MALE,
+        "company_code": "C1",
+        "dept_code": "D4",
+        "position_code": "P3",
+        "cost_org_code": "K4",
+        "manager_no": "E1003",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2019, 7, 8),
+        "contract_type": ContractType.PART_TIME,
+        "daily_hours": Decimal("5.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 2,
+    },
+    {
+        "employee_no": "E1016",
+        "name": "周敏",
+        "gender": Gender.FEMALE,
+        "company_code": "C1",
+        "dept_code": "D1",
+        "position_code": "P6",
+        "cost_org_code": "K1",
+        "manager_no": "E1001",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2024, 2, 19),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 2,
+    },
+    {
+        "employee_no": "E2001",
+        "name": "李雷",
+        "gender": Gender.MALE,
+        "company_code": "C2",
+        "dept_code": "K1",
+        "position_code": "K1",
+        "cost_org_code": "K1",
+        "manager_no": None,
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2018, 3, 1),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 5,
+    },
+    {
+        "employee_no": "E2002",
+        "name": "韩梅梅",
+        "gender": Gender.FEMALE,
+        "company_code": "C2",
+        "dept_code": "K2",
+        "position_code": "K1",
+        "cost_org_code": "K2",
+        "manager_no": "E2001",
+        "status": EmployeeStatus.ACTIVE,
+        "hire_date": date(2019, 6, 1),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 4,
+    },
+    {
+        "employee_no": "E2003",
+        "name": "王芳",
+        "gender": Gender.FEMALE,
+        "company_code": "C2",
+        "dept_code": "K3",
+        "position_code": "K2",
+        "cost_org_code": None,
+        "manager_no": "E2001",
+        "status": EmployeeStatus.PROBATION,
+        "hire_date": date(2026, 9, 15),
+        "contract_type": ContractType.INTERN,
+        "daily_hours": Decimal("4.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 1,
+    },
+    {
+        "employee_no": "E2004",
+        "name": "张军",
+        "gender": Gender.MALE,
+        "company_code": "C2",
+        "dept_code": "K2",
+        "position_code": "K1",
+        "cost_org_code": "K2",
+        "manager_no": "E2001",
+        "status": EmployeeStatus.RESIGNED,
+        "hire_date": date(2018, 9, 1),
+        "resign_date": date(2024, 3, 31),
+        "contract_type": ContractType.FULL_TIME,
+        "daily_hours": Decimal("8.00"),
+        "monthly_rest": 8,
+        "confidentiality_level": 3,
+    },
+]
+
+
 def _seed_companies(session: Session) -> dict[str, Company]:
     companies = {
         company.company_code: company for company in session.exec(select(Company)).all()
@@ -381,11 +715,92 @@ def _seed_cost_centers(session: Session, companies: dict[str, Company]) -> None:
         cost_centers[key] = cost_center
 
 
+def _seed_employees(session: Session, companies: dict[str, Company]) -> None:
+    employees = {
+        employee.employee_no: employee
+        for employee in session.exec(select(Employee)).all()
+    }
+    departments = {
+        (department.company_id, department.dept_code): department
+        for department in session.exec(select(Department)).all()
+    }
+    positions = {
+        (position.company_id, position.position_code): position
+        for position in session.exec(select(Position)).all()
+    }
+    cost_centers = {
+        (cost_center.company_id, cost_center.cost_org_code): cost_center
+        for cost_center in session.exec(select(CostCenter)).all()
+    }
+
+    for data in EMPLOYEES:
+        if data["employee_no"] in employees:
+            continue
+
+        company = companies[data["company_code"]]
+        department = departments.get((company.id, data["dept_code"]))
+        position = positions.get((company.id, data["position_code"]))
+        if department is None or position is None:
+            logger.warning(
+                "Skipping seed employee %s: department or position is missing",
+                data["employee_no"],
+            )
+            continue
+
+        cost_org_id = None
+        cost_org_code = data["cost_org_code"]
+        if cost_org_code is not None:
+            cost_center = cost_centers.get((company.id, cost_org_code))
+            if cost_center is None:
+                logger.warning(
+                    "Skipping seed employee %s: cost center %s is missing",
+                    data["employee_no"],
+                    cost_org_code,
+                )
+                continue
+            cost_org_id = cost_center.id
+
+        manager_id = None
+        manager_no = data["manager_no"]
+        if manager_no is not None:
+            manager = employees.get(manager_no)
+            if manager is None:
+                logger.warning(
+                    "Skipping seed employee %s: manager %s is missing",
+                    data["employee_no"],
+                    manager_no,
+                )
+                continue
+            manager_id = manager.id
+
+        employee = Employee(
+            employee_no=data["employee_no"],
+            name=data["name"],
+            gender=data["gender"],
+            dept_id=department.id,
+            position_id=position.id,
+            cost_org_id=cost_org_id,
+            manager_id=manager_id,
+            status=data["status"],
+            hire_date=data["hire_date"],
+            resign_date=data.get("resign_date"),
+            contract_type=data["contract_type"],
+            daily_hours=data.get("daily_hours"),
+            monthly_rest=data.get("monthly_rest"),
+            confidentiality_level=data.get("confidentiality_level"),
+            note=data.get("note"),
+        )
+        session.add(employee)
+        session.flush()
+        employees[employee.employee_no] = employee
+
+
 def seed(session: Session) -> None:
     companies = _seed_companies(session)
     departments = _seed_departments(session, companies)
     _seed_positions(session, companies, departments)
     _seed_cost_centers(session, companies)
+    _seed_employees(session, companies)
     session.commit()
 
 

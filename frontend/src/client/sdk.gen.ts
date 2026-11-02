@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -596,6 +596,72 @@ export class CostCentersService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/cost-centers/{cost_center_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
+export class EmployeesService {
+    /**
+     * Read Employees
+     *
+     * List employees ordered by employee number then name.
+     */
+    public static readEmployees<ThrowOnError extends boolean = true>(options?: Options<employeesReadEmployeesData, ThrowOnError>) {
+        return (options?.client ?? client).get<employeesReadEmployeesResponses, employeesReadEmployeesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/employees/',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Employee
+     *
+     * Create an employee; the number is globally unique and immutable.
+     */
+    public static createEmployee<ThrowOnError extends boolean = true>(options: Options<employeesCreateEmployeeData, ThrowOnError>) {
+        return (options.client ?? client).post<employeesCreateEmployeeResponses, employeesCreateEmployeeErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/employees/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Read Employee
+     *
+     * Get one employee by id.
+     */
+    public static readEmployee<ThrowOnError extends boolean = true>(options: Options<employeesReadEmployeeData, ThrowOnError>) {
+        return (options.client ?? client).get<employeesReadEmployeeResponses, employeesReadEmployeeErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/employees/{employee_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Employee
+     *
+     * Update an employee, enforcing the lifecycle and assignment rules.
+     */
+    public static updateEmployee<ThrowOnError extends boolean = true>(options: Options<employeesUpdateEmployeeData, ThrowOnError>) {
+        return (options.client ?? client).patch<employeesUpdateEmployeeResponses, employeesUpdateEmployeeErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/employees/{employee_id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',

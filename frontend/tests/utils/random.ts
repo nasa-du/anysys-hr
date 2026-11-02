@@ -30,6 +30,12 @@ export const randomCostCenterCode = () =>
 export const randomCostCenterName = () =>
   `测试成本中心 ${Math.random().toString(36).substring(2, 8).toUpperCase()}`
 
+export const randomEmployeeNo = () =>
+  `E${Math.random().toString(36).substring(2, 10).toUpperCase()}`
+
+export const randomEmployeeName = () =>
+  `测试员工 ${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+
 export const slugify = (text: string) =>
   text
     .toLowerCase()

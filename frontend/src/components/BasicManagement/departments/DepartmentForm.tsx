@@ -13,6 +13,7 @@ import {
 } from "@/client"
 import { DeleteBlockedDialog } from "@/components/BasicManagement/shared/DeleteBlockedDialog"
 import { FormDrawer } from "@/components/BasicManagement/shared/FormDrawer"
+import { ManagerField } from "@/components/BasicManagement/shared/ManagerField"
 import { StatusSwitch } from "@/components/BasicManagement/shared/StatusSwitch"
 import {
   collectDescendantIds,
@@ -58,6 +59,7 @@ const formSchema = z.object({
     .min(1, "请输入部门名称")
     .max(100, "部门名称不能超过 100 个字符"),
   parent_id: z.string(),
+  manager_id: z.string(),
   order_no: z.number({ message: "请输入有效的整数" }).int("请输入整数"),
   is_active: z.boolean(),
   note: z.string().max(500, "备注不能超过 500 个字符"),
@@ -95,6 +97,7 @@ export function DepartmentForm({
       dept_code: "",
       dept_name: "",
       parent_id: ROOT_OPTION_VALUE,
+      manager_id: "",
       order_no: 0,
       is_active: true,
       note: "",
@@ -109,6 +112,7 @@ export function DepartmentForm({
             dept_code: department.dept_code,
             dept_name: department.dept_name,
             parent_id: department.parent_id ?? ROOT_OPTION_VALUE,
+            manager_id: department.manager_id ?? "",
             order_no: department.order_no,
             is_active: department.is_active,
             note: department.note ?? "",
@@ -117,6 +121,7 @@ export function DepartmentForm({
             dept_code: "",
             dept_name: "",
             parent_id: defaultParentId ?? ROOT_OPTION_VALUE,
+            manager_id: "",
             order_no: 0,
             is_active: true,
             note: "",
@@ -146,6 +151,7 @@ export function DepartmentForm({
       const note = data.note.trim() === "" ? null : data.note
       const parentId =
         data.parent_id === ROOT_OPTION_VALUE ? null : data.parent_id
+      const managerId = data.manager_id === "" ? null : data.manager_id
       if (department) {
         const body: DepartmentUpdate = {
           dept_name: data.dept_name,
@@ -158,6 +164,11 @@ export function DepartmentForm({
         if (parentId !== (department.parent_id ?? null)) {
           body.parent_id = parentId
         }
+        // An unchanged resigned manager must stay visible and is not
+        // re-validated as a new assignment.
+        if (managerId !== (department.manager_id ?? null)) {
+          body.manager_id = managerId
+        }
         return DepartmentsService.updateDepartment({
           path: { department_id: department.id },
           body,
@@ -169,6 +180,7 @@ export function DepartmentForm({
           dept_name: data.dept_name,
           company_id: companyId,
           parent_id: parentId,
+          manager_id: managerId,
           order_no: data.order_no,
           is_active: data.is_active,
           note,
@@ -301,6 +313,27 @@ export function DepartmentForm({
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="manager_id"
+              render={({ field }) => (
+                <ManagerField
+                  companyId={companyId}
+                  value={field.value === "" ? null : field.value}
+                  onValueChange={(value) => field.onChange(value ?? "")}
+                  currentManager={
+                    department?.manager_id
+                      ? {
+                          id: department.manager_id,
+                          name: department.manager_name ?? "离职员工",
+                          status: department.manager_status,
+                        }
+                      : null
+                  }
+                />
               )}
             />
 

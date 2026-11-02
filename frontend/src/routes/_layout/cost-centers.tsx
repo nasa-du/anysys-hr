@@ -9,6 +9,7 @@ import { CostCenterDetail } from "@/components/BasicManagement/cost-centers/Cost
 import { CostCenterForm } from "@/components/BasicManagement/cost-centers/CostCenterForm"
 import { CostCenterTree } from "@/components/BasicManagement/cost-centers/CostCenterTree"
 import { DeleteCostCenterDialog } from "@/components/BasicManagement/cost-centers/DeleteCostCenterDialog"
+import { UnassignedEmployeesLink } from "@/components/BasicManagement/cost-centers/UnassignedEmployeesLink"
 import {
   EmptyState,
   ErrorState,
@@ -193,6 +194,9 @@ function CostCenterWorkspace({ companyId }: { companyId: string }) {
                 onSelect={selectCostCenter}
               />
             )}
+          </div>
+          <div className="border-t p-3">
+            <UnassignedEmployeesLink />
           </div>
         </aside>
 

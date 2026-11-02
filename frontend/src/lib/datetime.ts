@@ -41,6 +41,12 @@ export function formatDateShanghai(value?: string | null): string {
   return `${parts.year}-${parts.month}-${parts.day}`
 }
 
+/** Today's date in Asia/Shanghai as YYYY-MM-DD, independent of the browser zone. */
+export function todayShanghai(): string {
+  const parts = partsOf(dateFormatter, new Date())
+  return `${parts.year}-${parts.month}-${parts.day}`
+}
+
 /**
  * Format an ISO 8601 timestamp as a date and time in Asia/Shanghai:
  * YYYY-MM-DD HH:mm. Never renders relative time.

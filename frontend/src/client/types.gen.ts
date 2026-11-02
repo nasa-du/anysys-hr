@@ -147,6 +147,11 @@ export type CompanyUpdate = {
 };
 
 /**
+ * ContractType
+ */
+export type ContractType = 'full_time' | 'part_time' | 'intern' | 'labor';
+
+/**
  * CostCenterCreate
  */
 export type CostCenterCreate = {
@@ -623,9 +628,223 @@ export type DepartmentsPublic = {
 };
 
 /**
+ * EmployeeCreate
+ */
+export type EmployeeCreate = {
+    /**
+     * Employee No
+     */
+    employee_no: string;
+    /**
+     * Name
+     */
+    name: string;
+    gender?: Gender | null;
+    /**
+     * Dept Id
+     */
+    dept_id: string;
+    /**
+     * Position Id
+     */
+    position_id: string;
+    /**
+     * Cost Org Id
+     */
+    cost_org_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    status?: EmployeeStatus;
+    /**
+     * Hire Date
+     */
+    hire_date: string;
+    contract_type: ContractType;
+    /**
+     * Daily Hours
+     */
+    daily_hours?: number | string | null;
+    /**
+     * Monthly Rest
+     */
+    monthly_rest?: number | null;
+    /**
+     * Confidentiality Level
+     */
+    confidentiality_level?: number | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * EmployeePublic
+ */
+export type EmployeePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Employee No
+     */
+    employee_no: string;
+    /**
+     * Name
+     */
+    name: string;
+    gender?: Gender | null;
+    /**
+     * Dept Id
+     */
+    dept_id: string;
+    /**
+     * Position Id
+     */
+    position_id: string;
+    /**
+     * Cost Org Id
+     */
+    cost_org_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    status: EmployeeStatus;
+    /**
+     * Hire Date
+     */
+    hire_date: string;
+    /**
+     * Resign Date
+     */
+    resign_date?: string | null;
+    contract_type: ContractType;
+    /**
+     * Daily Hours
+     */
+    daily_hours?: string | null;
+    /**
+     * Monthly Rest
+     */
+    monthly_rest?: number | null;
+    /**
+     * Confidentiality Level
+     */
+    confidentiality_level?: number | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Dept Name
+     */
+    dept_name: string;
+    /**
+     * Position Name
+     */
+    position_name: string;
+    /**
+     * Cost Org Name
+     */
+    cost_org_name?: string | null;
+    /**
+     * Manager Name
+     */
+    manager_name?: string | null;
+    manager_status?: EmployeeStatus | null;
+};
+
+/**
  * EmployeeStatus
  */
 export type EmployeeStatus = 'active' | 'probation' | 'resigned';
+
+/**
+ * EmployeeUpdate
+ */
+export type EmployeeUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    gender?: Gender | null;
+    /**
+     * Dept Id
+     */
+    dept_id?: string | null;
+    /**
+     * Position Id
+     */
+    position_id?: string | null;
+    /**
+     * Cost Org Id
+     */
+    cost_org_id?: string | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: string | null;
+    status?: EmployeeStatus | null;
+    /**
+     * Hire Date
+     */
+    hire_date?: string | null;
+    /**
+     * Resign Date
+     */
+    resign_date?: string | null;
+    contract_type?: ContractType | null;
+    /**
+     * Daily Hours
+     */
+    daily_hours?: number | string | null;
+    /**
+     * Monthly Rest
+     */
+    monthly_rest?: number | null;
+    /**
+     * Confidentiality Level
+     */
+    confidentiality_level?: number | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * EmployeesPublic
+ */
+export type EmployeesPublic = {
+    /**
+     * Data
+     */
+    data: Array<EmployeePublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
 
 /**
  * ErrorDetail
@@ -661,6 +880,11 @@ export type ErrorDetail = {
 export type ErrorResponse = {
     detail: ErrorDetail;
 };
+
+/**
+ * Gender
+ */
+export type Gender = 'male' | 'female' | 'unknown';
 
 /**
  * HTTPValidationError
@@ -2307,6 +2531,185 @@ export type costCentersUpdateCostCenterResponses = {
 };
 
 export type costCentersUpdateCostCenterResponse = costCentersUpdateCostCenterResponses[keyof costCentersUpdateCostCenterResponses];
+
+export type employeesReadEmployeesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Company Id
+         */
+        company_id?: string | null;
+        /**
+         * Dept Id
+         */
+        dept_id?: string | null;
+        /**
+         * Position Id
+         */
+        position_id?: string | null;
+        /**
+         * Cost Org Id
+         */
+        cost_org_id?: string | null;
+        /**
+         * Unassigned Cost Org
+         */
+        unassigned_cost_org?: boolean;
+        /**
+         * Status
+         */
+        status?: Array<EmployeeStatus> | null;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/employees/';
+};
+
+export type employeesReadEmployeesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type employeesReadEmployeesError = employeesReadEmployeesErrors[keyof employeesReadEmployeesErrors];
+
+export type employeesReadEmployeesResponses = {
+    /**
+     * Successful Response
+     */
+    200: EmployeesPublic;
+};
+
+export type employeesReadEmployeesResponse = employeesReadEmployeesResponses[keyof employeesReadEmployeesResponses];
+
+export type employeesCreateEmployeeData = {
+    body: EmployeeCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/employees/';
+};
+
+export type employeesCreateEmployeeErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type employeesCreateEmployeeError = employeesCreateEmployeeErrors[keyof employeesCreateEmployeeErrors];
+
+export type employeesCreateEmployeeResponses = {
+    /**
+     * Successful Response
+     */
+    201: EmployeePublic;
+};
+
+export type employeesCreateEmployeeResponse = employeesCreateEmployeeResponses[keyof employeesCreateEmployeeResponses];
+
+export type employeesReadEmployeeData = {
+    body?: never;
+    path: {
+        /**
+         * Employee Id
+         */
+        employee_id: string;
+    };
+    query?: never;
+    url: '/api/v1/employees/{employee_id}';
+};
+
+export type employeesReadEmployeeErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type employeesReadEmployeeError = employeesReadEmployeeErrors[keyof employeesReadEmployeeErrors];
+
+export type employeesReadEmployeeResponses = {
+    /**
+     * Successful Response
+     */
+    200: EmployeePublic;
+};
+
+export type employeesReadEmployeeResponse = employeesReadEmployeeResponses[keyof employeesReadEmployeeResponses];
+
+export type employeesUpdateEmployeeData = {
+    body: EmployeeUpdate;
+    path: {
+        /**
+         * Employee Id
+         */
+        employee_id: string;
+    };
+    query?: never;
+    url: '/api/v1/employees/{employee_id}';
+};
+
+export type employeesUpdateEmployeeErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type employeesUpdateEmployeeError = employeesUpdateEmployeeErrors[keyof employeesUpdateEmployeeErrors];
+
+export type employeesUpdateEmployeeResponses = {
+    /**
+     * Successful Response
+     */
+    200: EmployeePublic;
+};
+
+export type employeesUpdateEmployeeResponse = employeesUpdateEmployeeResponses[keyof employeesUpdateEmployeeResponses];
 
 export type utilsTestEmailData = {
     body?: never;

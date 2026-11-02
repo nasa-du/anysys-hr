@@ -4,6 +4,7 @@ from app.api.routes import (
     companies,
     cost_centers,
     departments,
+    employees,
     login,
     positions,
     private,
@@ -19,6 +20,7 @@ api_router.include_router(companies.router)
 api_router.include_router(departments.router)
 api_router.include_router(positions.router)
 api_router.include_router(cost_centers.router)
+api_router.include_router(employees.router)
 api_router.include_router(utils.router)
 
 

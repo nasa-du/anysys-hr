@@ -13,6 +13,7 @@ import {
 } from "@/client"
 import { DeleteBlockedDialog } from "@/components/BasicManagement/shared/DeleteBlockedDialog"
 import { FormDrawer } from "@/components/BasicManagement/shared/FormDrawer"
+import { ManagerField } from "@/components/BasicManagement/shared/ManagerField"
 import { StatusSwitch } from "@/components/BasicManagement/shared/StatusSwitch"
 import {
   collectDescendantIds,
@@ -59,6 +60,7 @@ const formSchema = z.object({
     .min(1, "请输入成本中心名称")
     .max(100, "成本中心名称不能超过 100 个字符"),
   parent_id: z.string(),
+  manager_id: z.string(),
   budget: z
     .string()
     .min(1, "请输入预算")
@@ -95,6 +97,7 @@ const emptyValues: FormData = {
   cost_org_code: "",
   cost_org_name: "",
   parent_id: ROOT_OPTION_VALUE,
+  manager_id: "",
   budget: "0.00",
   warn_pct: 85,
   order_no: 0,
@@ -130,6 +133,7 @@ export function CostCenterForm({
             cost_org_code: costCenter.cost_org_code,
             cost_org_name: costCenter.cost_org_name,
             parent_id: costCenter.parent_id ?? ROOT_OPTION_VALUE,
+            manager_id: costCenter.manager_id ?? "",
             budget: costCenter.budget,
             warn_pct: costCenter.warn_pct,
             order_no: costCenter.order_no,
@@ -165,6 +169,7 @@ export function CostCenterForm({
       const note = data.note.trim() === "" ? null : data.note
       const parentId =
         data.parent_id === ROOT_OPTION_VALUE ? null : data.parent_id
+      const managerId = data.manager_id === "" ? null : data.manager_id
       if (costCenter) {
         const body: CostCenterUpdate = {
           cost_org_name: data.cost_org_name,
@@ -179,6 +184,11 @@ export function CostCenterForm({
         if (parentId !== (costCenter.parent_id ?? null)) {
           body.parent_id = parentId
         }
+        // An unchanged resigned manager must stay visible and is not
+        // re-validated as a new assignment.
+        if (managerId !== (costCenter.manager_id ?? null)) {
+          body.manager_id = managerId
+        }
         return CostCentersService.updateCostCenter({
           path: { cost_center_id: costCenter.id },
           body,
@@ -190,6 +200,7 @@ export function CostCenterForm({
           cost_org_name: data.cost_org_name,
           company_id: companyId,
           parent_id: parentId,
+          manager_id: managerId,
           budget: data.budget.trim(),
           warn_pct: data.warn_pct,
           order_no: data.order_no,
@@ -335,6 +346,27 @@ export function CostCenterForm({
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="manager_id"
+              render={({ field }) => (
+                <ManagerField
+                  companyId={companyId}
+                  value={field.value === "" ? null : field.value}
+                  onValueChange={(value) => field.onChange(value ?? "")}
+                  currentManager={
+                    costCenter?.manager_id
+                      ? {
+                          id: costCenter.manager_id,
+                          name: costCenter.manager_name ?? "离职员工",
+                          status: costCenter.manager_status,
+                        }
+                      : null
+                  }
+                />
               )}
             />
 

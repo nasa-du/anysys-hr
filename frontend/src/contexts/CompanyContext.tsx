@@ -28,8 +28,11 @@ type CompanyContextValue = {
 const CompanyContext = createContext<CompanyContextValue | null>(null)
 
 async function fetchCompanies(): Promise<CompanyPublic[]> {
+  // The API caps a page at 500. Loading the maximum keeps every active
+  // company selectable; a smaller page would silently hide companies once
+  // the list grows past the limit.
   const response = await CompaniesService.readCompanies({
-    query: { skip: 0, limit: 100 },
+    query: { skip: 0, limit: 500 },
   })
   return response.data.data
 }

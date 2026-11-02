@@ -946,7 +946,7 @@ frontend/tests/
 
 ### 8.4 Frontend Conventions
 
-- **Company context**: `CompanyContext.tsx` exports `CompanyProvider` and `useCompany()`. The provider loads companies (`GET /companies/?limit=100`), reads `basic-management.company_id` from `localStorage`, defaults to the first active company, and falls back if the stored company is missing/inactive. `CompanySwitcher` is mounted in the `_layout` header. Selected company changes drive all Basic Management queries.
+- **Company context**: `CompanyContext.tsx` exports `CompanyProvider` and `useCompany()`. The provider loads companies (`GET /companies/?limit=500`, the API maximum), reads `basic-management.company_id` from `localStorage`, defaults to the first active company, and falls back if the stored company is missing/inactive. `CompanySwitcher` is mounted in the `_layout` header. Selected company changes drive all Basic Management queries.
 - **Data fetching**: TanStack Query. Query keys:
   - `["basic","companies",filters]`
   - `["basic","departments","list",companyId,filters]`

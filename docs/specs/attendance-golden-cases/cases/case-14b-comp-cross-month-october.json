@@ -1,0 +1,221 @@
+{
+  "id": "case-14b-comp-cross-month-october",
+  "title": "跨月补休：10 月只扣休息日",
+  "covers": [
+    "comp_leave",
+    "cross_month"
+  ],
+  "month": "2026-10",
+  "notes": "同一张 LEAVE-003 在 10 月批次中只处理休息侧：10-22 补休 1 天、出勤 0；上班开始 09-25 不在本月，9 月已处理抵扣。",
+  "input": {
+    "employee_ids": [
+      "E103"
+    ],
+    "roster_default": "rest",
+    "roster_overrides": [
+      {
+        "employee_id": "E103",
+        "work_date": "2026-10-22",
+        "state": "work",
+        "shifts": [
+          "ADM"
+        ]
+      }
+    ],
+    "adjacent_roster_overrides": [],
+    "holidays": [
+      {
+        "date": "2026-10-01",
+        "name": "国庆节",
+        "day_type": "holiday"
+      },
+      {
+        "date": "2026-10-02",
+        "name": "国庆节",
+        "day_type": "holiday"
+      },
+      {
+        "date": "2026-10-03",
+        "name": "国庆节",
+        "day_type": "holiday"
+      },
+      {
+        "date": "2026-10-04",
+        "name": "国庆节",
+        "day_type": "holiday"
+      },
+      {
+        "date": "2026-10-05",
+        "name": "国庆节",
+        "day_type": "holiday"
+      },
+      {
+        "date": "2026-10-06",
+        "name": "国庆节",
+        "day_type": "holiday"
+      },
+      {
+        "date": "2026-10-07",
+        "name": "国庆节",
+        "day_type": "holiday"
+      }
+    ],
+    "rules": {
+      "punch_window_min": 120,
+      "late_cap_min": 240,
+      "early_cap_min": 240,
+      "ot_max_min": 600,
+      "late_grace_min": 5,
+      "early_grace_min": 5,
+      "ot_threshold_min": 30,
+      "absent_if_no_punch": true,
+      "break_punch_required": true,
+      "break_punch_tolerance_min": 60,
+      "absent_deduct_per_day": 100.0,
+      "late_deduct_per_occurrence": 20.0,
+      "early_deduct_per_occurrence": 20.0,
+      "missing_punch_deduct_per_occurrence": 10.0
+    },
+    "punches": [],
+    "oa_trips": [],
+    "oa_overtime_days": [],
+    "oa_leaves": [
+      {
+        "id": "LEAVE-003",
+        "approval_no": "AP-LV-003",
+        "employee_id": "E103",
+        "leave_kind": "comp",
+        "days": 1,
+        "rest_start_at": "2026-10-22T08:00:00+08:00",
+        "rest_end_at": "2026-10-22T16:00:00+08:00",
+        "work_start_at": "2026-09-25T08:00:00+08:00",
+        "work_end_at": "2026-09-25T16:00:00+08:00",
+        "source": "fixture"
+      }
+    ]
+  },
+  "expected": {
+    "day_results": [
+      {
+        "employee_id": "E103",
+        "work_date": "2026-10-22",
+        "day_type": "workday",
+        "roster_state": "work",
+        "day_status": "comp_leave",
+        "day_flags": [
+          "leave"
+        ],
+        "attendance_fraction": 0.0,
+        "scheduled_minutes": 480,
+        "worked_minutes": 0,
+        "late_minutes": 0,
+        "early_minutes": 0,
+        "missing_punch_count": 0,
+        "leave_kind": "comp",
+        "leave_days": 1.0,
+        "paid_leave_days": 0.0,
+        "unpaid_leave_days": 0.0,
+        "comp_leave_days": 1.0,
+        "trip_kind": null,
+        "trip_fraction": 0.0,
+        "ot_weekday_minutes": 0,
+        "ot_weekend_minutes": 0,
+        "ot_holiday_minutes": 0,
+        "comp_offset_minutes": 0,
+        "comp_offset_unused_minutes": 0,
+        "absent_deduct_amount": 0.0,
+        "late_deduct_amount": 0.0,
+        "early_deduct_amount": 0.0,
+        "missing_punch_deduct_amount": 0.0,
+        "deduction_total": 0.0,
+        "late_count": 0,
+        "early_count": 0,
+        "shift_results": [
+          {
+            "seq": 0,
+            "shift_code": "ADM",
+            "shift_name": "行政班",
+            "start_time": "08:30",
+            "end_time": "17:30",
+            "cross_day": false,
+            "break_start": null,
+            "break_end": null,
+            "rest_minutes": 60,
+            "shift_status": "comp_leave",
+            "shift_flags": [
+              "leave"
+            ],
+            "punch_in_at": null,
+            "punch_out_at": null,
+            "break_out_at": null,
+            "break_in_at": null,
+            "scheduled_minutes": 480,
+            "worked_minutes": 0,
+            "late_minutes": 0,
+            "early_minutes": 0,
+            "missing_punch_count": 0,
+            "ot_minutes": 0,
+            "comp_offset_minutes": 0,
+            "leave_days": 1.0
+          }
+        ]
+      }
+    ],
+    "month_summaries": [
+      {
+        "employee_id": "E103",
+        "weekday_full": 1.0,
+        "weekend_full": 0.0,
+        "weekday_attended": 0.0,
+        "weekend_attended": 0.0,
+        "paid_leave_days": 0.0,
+        "unpaid_leave_days": 0.0,
+        "comp_leave_days": 1.0,
+        "trip_days": 0.0,
+        "ot_weekday_minutes": 0,
+        "ot_weekend_minutes": 0,
+        "ot_holiday_minutes": 0,
+        "ot_weekday_hours": 0.0,
+        "ot_weekend_hours": 0.0,
+        "ot_holiday_hours": 0.0,
+        "comp_leave_used_hours": 0.0,
+        "comp_offset_unused_minutes": 0,
+        "late_count": 0,
+        "late_minutes": 0,
+        "early_count": 0,
+        "early_minutes": 0,
+        "missing_punch_count": 0,
+        "absent_days": 0,
+        "worked_minutes": 0,
+        "attendance_deduct": 0.0,
+        "is_adjusted": false,
+        "calc_version": "attendance-calc-v1"
+      }
+    ],
+    "calc_run_summary": {
+      "employees_total": 1,
+      "employees_calculated": 1,
+      "employees_skipped": 0,
+      "skipped_reasons": {},
+      "days_total": 31,
+      "days_by_status": {
+        "comp_leave": 1,
+        "rest": 30
+      },
+      "flag_counts": {
+        "leave": 1
+      },
+      "late_count": 0,
+      "late_minutes": 0,
+      "early_count": 0,
+      "early_minutes": 0,
+      "missing_punch_count": 0,
+      "absent_days": 0,
+      "ot_weekday_minutes": 0,
+      "ot_weekend_minutes": 0,
+      "ot_holiday_minutes": 0,
+      "comp_offset_unused_minutes": 0,
+      "attendance_deduct": 0.0
+    }
+  }
+}

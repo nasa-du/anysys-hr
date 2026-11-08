@@ -1,0 +1,106 @@
+[
+  {
+    "employee_id": "E101",
+    "employee_no": "E101",
+    "name": "冯芷茵",
+    "department": "生产部",
+    "hire_date": "2020-04-11",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E102",
+    "employee_no": "E102",
+    "name": "刘衍英",
+    "department": "财务部",
+    "hire_date": "2018-09-03",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E103",
+    "employee_no": "E103",
+    "name": "周玉琼",
+    "department": "生产部",
+    "hire_date": "2019-03-18",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E104",
+    "employee_no": "E104",
+    "name": "胡国邵",
+    "department": "生产部",
+    "hire_date": "2017-06-01",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E105",
+    "employee_no": "E105",
+    "name": "李金辉",
+    "department": "生产部",
+    "hire_date": "2021-11-08",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E106",
+    "employee_no": "E106",
+    "name": "黄佳誉",
+    "department": "技术部",
+    "hire_date": "2020-02-17",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E107",
+    "employee_no": "E107",
+    "name": "梁林高",
+    "department": "行政部",
+    "hire_date": "2016-05-23",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E108",
+    "employee_no": "E108",
+    "name": "黄国锋",
+    "department": "生产部",
+    "hire_date": "2019-08-30",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E109",
+    "employee_no": "E109",
+    "name": "申佳林",
+    "department": "行政部",
+    "hire_date": "2015-10-12",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E110",
+    "employee_no": "E110",
+    "name": "张伟",
+    "department": "生产部",
+    "hire_date": "2019-01-01",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E111",
+    "employee_no": "E111",
+    "name": "张伟",
+    "department": "财务部",
+    "hire_date": "2020-01-01",
+    "resign_date": null
+  },
+  {
+    "employee_id": "E112",
+    "employee_no": "E112",
+    "name": "王强",
+    "department": "生产部",
+    "hire_date": "2018-01-01",
+    "resign_date": "2026-08-31"
+  },
+  {
+    "employee_id": "E113",
+    "employee_no": "E113",
+    "name": "李娜",
+    "department": "生产部",
+    "hire_date": "2026-09-15",
+    "resign_date": null
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "shift_code": "ADM",
+    "shift_name": "行政班",
+    "start_time": "08:30",
+    "end_time": "17:30",
+    "cross_day": false,
+    "break_start": null,
+    "break_end": null,
+    "rest_minutes": 60
+  },
+  {
+    "shift_code": "TEC",
+    "shift_name": "技术员班",
+    "start_time": "08:00",
+    "end_time": "18:00",
+    "cross_day": false,
+    "break_start": null,
+    "break_end": null,
+    "rest_minutes": 60
+  },
+  {
+    "shift_code": "YL",
+    "shift_name": "园林班",
+    "start_time": "07:30",
+    "end_time": "17:30",
+    "cross_day": false,
+    "break_start": "11:30",
+    "break_end": "13:30",
+    "rest_minutes": 120
+  },
+  {
+    "shift_code": "EARLY",
+    "shift_name": "早班",
+    "start_time": "06:00",
+    "end_time": "14:00",
+    "cross_day": false,
+    "break_start": null,
+    "break_end": null,
+    "rest_minutes": 60
+  },
+  {
+    "shift_code": "MID",
+    "shift_name": "中班",
+    "start_time": "14:00",
+    "end_time": "22:00",
+    "cross_day": false,
+    "break_start": null,
+    "break_end": null,
+    "rest_minutes": 60
+  },
+  {
+    "shift_code": "NIGHT",
+    "shift_name": "夜班",
+    "start_time": "22:00",
+    "end_time": "06:00",
+    "cross_day": true,
+    "break_start": "02:00",
+    "break_end": "03:00",
+    "rest_minutes": 60
+  },
+  {
+    "shift_code": "DAWN",
+    "shift_name": "凌晨班",
+    "start_time": "02:00",
+    "end_time": "10:00",
+    "cross_day": false,
+    "break_start": null,
+    "break_end": null,
+    "rest_minutes": 60
+  }
+]

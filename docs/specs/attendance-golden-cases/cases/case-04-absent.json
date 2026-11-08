@@ -1,0 +1,295 @@
+{
+  "id": "case-04-absent",
+  "title": "旷工与日期不一致打卡",
+  "covers": [
+    "absent",
+    "out_of_window_punch",
+    "deduction"
+  ],
+  "month": "2026-09",
+  "notes": "E102 09-21 因缺打卡时间在导入侧被跳过；E104 09-24 的卡实际打在 09-26 08:00（date_mismatch），窗口外，计旷工。",
+  "input": {
+    "employee_ids": [
+      "E102",
+      "E104"
+    ],
+    "roster_default": "rest",
+    "roster_overrides": [
+      {
+        "employee_id": "E102",
+        "work_date": "2026-09-21",
+        "state": "work",
+        "shifts": [
+          "ADM"
+        ]
+      },
+      {
+        "employee_id": "E104",
+        "work_date": "2026-09-24",
+        "state": "work",
+        "shifts": [
+          "ADM"
+        ]
+      }
+    ],
+    "adjacent_roster_overrides": [],
+    "holidays": [
+      {
+        "date": "2026-09-25",
+        "name": "中秋节",
+        "day_type": "holiday"
+      }
+    ],
+    "rules": {
+      "punch_window_min": 120,
+      "late_cap_min": 240,
+      "early_cap_min": 240,
+      "ot_max_min": 600,
+      "late_grace_min": 5,
+      "early_grace_min": 5,
+      "ot_threshold_min": 30,
+      "absent_if_no_punch": true,
+      "break_punch_required": true,
+      "break_punch_tolerance_min": 60,
+      "absent_deduct_per_day": 100.0,
+      "late_deduct_per_occurrence": 20.0,
+      "early_deduct_per_occurrence": 20.0,
+      "missing_punch_deduct_per_occurrence": 10.0
+    },
+    "punches": [
+      {
+        "employee_id": "E104",
+        "attendance_date": "2026-09-24",
+        "punch_time": "2026-09-26T08:00:00+08:00",
+        "punch_result": "正常",
+        "source_row": 28,
+        "source": "fixture"
+      }
+    ],
+    "oa_trips": [],
+    "oa_overtime_days": [],
+    "oa_leaves": []
+  },
+  "expected": {
+    "day_results": [
+      {
+        "employee_id": "E102",
+        "work_date": "2026-09-21",
+        "day_type": "workday",
+        "roster_state": "work",
+        "day_status": "absent",
+        "day_flags": [
+          "absent",
+          "no_valid_punch"
+        ],
+        "attendance_fraction": 0.0,
+        "scheduled_minutes": 480,
+        "worked_minutes": 0,
+        "late_minutes": 0,
+        "early_minutes": 0,
+        "missing_punch_count": 0,
+        "leave_kind": null,
+        "leave_days": 0.0,
+        "paid_leave_days": 0.0,
+        "unpaid_leave_days": 0.0,
+        "comp_leave_days": 0.0,
+        "trip_kind": null,
+        "trip_fraction": 0.0,
+        "ot_weekday_minutes": 0,
+        "ot_weekend_minutes": 0,
+        "ot_holiday_minutes": 0,
+        "comp_offset_minutes": 0,
+        "comp_offset_unused_minutes": 0,
+        "absent_deduct_amount": -100.0,
+        "late_deduct_amount": 0.0,
+        "early_deduct_amount": 0.0,
+        "missing_punch_deduct_amount": 0.0,
+        "deduction_total": -100.0,
+        "late_count": 0,
+        "early_count": 0,
+        "shift_results": [
+          {
+            "seq": 0,
+            "shift_code": "ADM",
+            "shift_name": "行政班",
+            "start_time": "08:30",
+            "end_time": "17:30",
+            "cross_day": false,
+            "break_start": null,
+            "break_end": null,
+            "rest_minutes": 60,
+            "shift_status": "absent",
+            "shift_flags": [
+              "absent"
+            ],
+            "punch_in_at": null,
+            "punch_out_at": null,
+            "break_out_at": null,
+            "break_in_at": null,
+            "scheduled_minutes": 480,
+            "worked_minutes": 0,
+            "late_minutes": 0,
+            "early_minutes": 0,
+            "missing_punch_count": 0,
+            "ot_minutes": 0,
+            "comp_offset_minutes": 0,
+            "leave_days": 0.0
+          }
+        ]
+      },
+      {
+        "employee_id": "E104",
+        "work_date": "2026-09-24",
+        "day_type": "workday",
+        "roster_state": "work",
+        "day_status": "absent",
+        "day_flags": [
+          "absent",
+          "no_valid_punch",
+          "out_of_window_punch"
+        ],
+        "attendance_fraction": 0.0,
+        "scheduled_minutes": 480,
+        "worked_minutes": 0,
+        "late_minutes": 0,
+        "early_minutes": 0,
+        "missing_punch_count": 0,
+        "leave_kind": null,
+        "leave_days": 0.0,
+        "paid_leave_days": 0.0,
+        "unpaid_leave_days": 0.0,
+        "comp_leave_days": 0.0,
+        "trip_kind": null,
+        "trip_fraction": 0.0,
+        "ot_weekday_minutes": 0,
+        "ot_weekend_minutes": 0,
+        "ot_holiday_minutes": 0,
+        "comp_offset_minutes": 0,
+        "comp_offset_unused_minutes": 0,
+        "absent_deduct_amount": -100.0,
+        "late_deduct_amount": 0.0,
+        "early_deduct_amount": 0.0,
+        "missing_punch_deduct_amount": 0.0,
+        "deduction_total": -100.0,
+        "late_count": 0,
+        "early_count": 0,
+        "shift_results": [
+          {
+            "seq": 0,
+            "shift_code": "ADM",
+            "shift_name": "行政班",
+            "start_time": "08:30",
+            "end_time": "17:30",
+            "cross_day": false,
+            "break_start": null,
+            "break_end": null,
+            "rest_minutes": 60,
+            "shift_status": "absent",
+            "shift_flags": [
+              "absent"
+            ],
+            "punch_in_at": null,
+            "punch_out_at": null,
+            "break_out_at": null,
+            "break_in_at": null,
+            "scheduled_minutes": 480,
+            "worked_minutes": 0,
+            "late_minutes": 0,
+            "early_minutes": 0,
+            "missing_punch_count": 0,
+            "ot_minutes": 0,
+            "comp_offset_minutes": 0,
+            "leave_days": 0.0
+          }
+        ]
+      }
+    ],
+    "month_summaries": [
+      {
+        "employee_id": "E102",
+        "weekday_full": 1.0,
+        "weekend_full": 0.0,
+        "weekday_attended": 0.0,
+        "weekend_attended": 0.0,
+        "paid_leave_days": 0.0,
+        "unpaid_leave_days": 0.0,
+        "comp_leave_days": 0.0,
+        "trip_days": 0.0,
+        "ot_weekday_minutes": 0,
+        "ot_weekend_minutes": 0,
+        "ot_holiday_minutes": 0,
+        "ot_weekday_hours": 0.0,
+        "ot_weekend_hours": 0.0,
+        "ot_holiday_hours": 0.0,
+        "comp_leave_used_hours": 0.0,
+        "comp_offset_unused_minutes": 0,
+        "late_count": 0,
+        "late_minutes": 0,
+        "early_count": 0,
+        "early_minutes": 0,
+        "missing_punch_count": 0,
+        "absent_days": 1,
+        "worked_minutes": 0,
+        "attendance_deduct": -100.0,
+        "is_adjusted": false,
+        "calc_version": "attendance-calc-v1"
+      },
+      {
+        "employee_id": "E104",
+        "weekday_full": 1.0,
+        "weekend_full": 0.0,
+        "weekday_attended": 0.0,
+        "weekend_attended": 0.0,
+        "paid_leave_days": 0.0,
+        "unpaid_leave_days": 0.0,
+        "comp_leave_days": 0.0,
+        "trip_days": 0.0,
+        "ot_weekday_minutes": 0,
+        "ot_weekend_minutes": 0,
+        "ot_holiday_minutes": 0,
+        "ot_weekday_hours": 0.0,
+        "ot_weekend_hours": 0.0,
+        "ot_holiday_hours": 0.0,
+        "comp_leave_used_hours": 0.0,
+        "comp_offset_unused_minutes": 0,
+        "late_count": 0,
+        "late_minutes": 0,
+        "early_count": 0,
+        "early_minutes": 0,
+        "missing_punch_count": 0,
+        "absent_days": 1,
+        "worked_minutes": 0,
+        "attendance_deduct": -100.0,
+        "is_adjusted": false,
+        "calc_version": "attendance-calc-v1"
+      }
+    ],
+    "calc_run_summary": {
+      "employees_total": 2,
+      "employees_calculated": 2,
+      "employees_skipped": 0,
+      "skipped_reasons": {},
+      "days_total": 60,
+      "days_by_status": {
+        "absent": 2,
+        "rest": 58
+      },
+      "flag_counts": {
+        "absent": 2,
+        "no_valid_punch": 2,
+        "out_of_window_punch": 1
+      },
+      "late_count": 0,
+      "late_minutes": 0,
+      "early_count": 0,
+      "early_minutes": 0,
+      "missing_punch_count": 0,
+      "absent_days": 2,
+      "ot_weekday_minutes": 0,
+      "ot_weekend_minutes": 0,
+      "ot_holiday_minutes": 0,
+      "comp_offset_unused_minutes": 0,
+      "attendance_deduct": -200.0
+    }
+  }
+}

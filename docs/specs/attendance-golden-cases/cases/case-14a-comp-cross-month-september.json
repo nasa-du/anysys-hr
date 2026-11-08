@@ -1,0 +1,166 @@
+{
+  "id": "case-14a-comp-cross-month-september",
+  "title": "跨月补休：9 月只抵上班日",
+  "covers": [
+    "comp_offset",
+    "cross_month",
+    "holiday_ot"
+  ],
+  "month": "2026-09",
+  "notes": "LEAVE-003 休息 10-22、上班开始 09-25；9 月只处理上班侧：09-25（法定节假日）的 480 分钟节假日加班被全额抵扣，10-22 的补休留给 10 月。",
+  "input": {
+    "employee_ids": [
+      "E103"
+    ],
+    "roster_default": "rest",
+    "roster_overrides": [],
+    "adjacent_roster_overrides": [],
+    "holidays": [
+      {
+        "date": "2026-09-25",
+        "name": "中秋节",
+        "day_type": "holiday"
+      }
+    ],
+    "rules": {
+      "punch_window_min": 120,
+      "late_cap_min": 240,
+      "early_cap_min": 240,
+      "ot_max_min": 600,
+      "late_grace_min": 5,
+      "early_grace_min": 5,
+      "ot_threshold_min": 30,
+      "absent_if_no_punch": true,
+      "break_punch_required": true,
+      "break_punch_tolerance_min": 60,
+      "absent_deduct_per_day": 100.0,
+      "late_deduct_per_occurrence": 20.0,
+      "early_deduct_per_occurrence": 20.0,
+      "missing_punch_deduct_per_occurrence": 10.0
+    },
+    "punches": [],
+    "oa_trips": [],
+    "oa_overtime_days": [
+      {
+        "id": "SYN-OT-E103-0925",
+        "approval_no": "SYNTH-SYN-OT-E103-0925",
+        "employee_id": "E103",
+        "work_date": "2026-09-25",
+        "minutes": 480,
+        "source": "synthetic"
+      }
+    ],
+    "oa_leaves": [
+      {
+        "id": "LEAVE-003",
+        "approval_no": "AP-LV-003",
+        "employee_id": "E103",
+        "leave_kind": "comp",
+        "days": 1,
+        "rest_start_at": "2026-10-22T08:00:00+08:00",
+        "rest_end_at": "2026-10-22T16:00:00+08:00",
+        "work_start_at": "2026-09-25T08:00:00+08:00",
+        "work_end_at": "2026-09-25T16:00:00+08:00",
+        "source": "fixture"
+      }
+    ]
+  },
+  "expected": {
+    "day_results": [
+      {
+        "employee_id": "E103",
+        "work_date": "2026-09-25",
+        "day_type": "holiday",
+        "roster_state": "rest",
+        "day_status": "overtime",
+        "day_flags": [
+          "oa_ot_only",
+          "overtime"
+        ],
+        "attendance_fraction": 0.0,
+        "scheduled_minutes": 0,
+        "worked_minutes": 0,
+        "late_minutes": 0,
+        "early_minutes": 0,
+        "missing_punch_count": 0,
+        "leave_kind": null,
+        "leave_days": 0.0,
+        "paid_leave_days": 0.0,
+        "unpaid_leave_days": 0.0,
+        "comp_leave_days": 0.0,
+        "trip_kind": null,
+        "trip_fraction": 0.0,
+        "ot_weekday_minutes": 0,
+        "ot_weekend_minutes": 0,
+        "ot_holiday_minutes": 0,
+        "comp_offset_minutes": 480,
+        "comp_offset_unused_minutes": 0,
+        "absent_deduct_amount": 0.0,
+        "late_deduct_amount": 0.0,
+        "early_deduct_amount": 0.0,
+        "missing_punch_deduct_amount": 0.0,
+        "deduction_total": 0.0,
+        "late_count": 0,
+        "early_count": 0,
+        "shift_results": []
+      }
+    ],
+    "month_summaries": [
+      {
+        "employee_id": "E103",
+        "weekday_full": 0.0,
+        "weekend_full": 0.0,
+        "weekday_attended": 0.0,
+        "weekend_attended": 0.0,
+        "paid_leave_days": 0.0,
+        "unpaid_leave_days": 0.0,
+        "comp_leave_days": 0.0,
+        "trip_days": 0.0,
+        "ot_weekday_minutes": 0,
+        "ot_weekend_minutes": 0,
+        "ot_holiday_minutes": 0,
+        "ot_weekday_hours": 0.0,
+        "ot_weekend_hours": 0.0,
+        "ot_holiday_hours": 0.0,
+        "comp_leave_used_hours": 8.0,
+        "comp_offset_unused_minutes": 0,
+        "late_count": 0,
+        "late_minutes": 0,
+        "early_count": 0,
+        "early_minutes": 0,
+        "missing_punch_count": 0,
+        "absent_days": 0,
+        "worked_minutes": 0,
+        "attendance_deduct": 0.0,
+        "is_adjusted": false,
+        "calc_version": "attendance-calc-v1"
+      }
+    ],
+    "calc_run_summary": {
+      "employees_total": 1,
+      "employees_calculated": 1,
+      "employees_skipped": 0,
+      "skipped_reasons": {},
+      "days_total": 30,
+      "days_by_status": {
+        "overtime": 1,
+        "rest": 29
+      },
+      "flag_counts": {
+        "oa_ot_only": 1,
+        "overtime": 1
+      },
+      "late_count": 0,
+      "late_minutes": 0,
+      "early_count": 0,
+      "early_minutes": 0,
+      "missing_punch_count": 0,
+      "absent_days": 0,
+      "ot_weekday_minutes": 0,
+      "ot_weekend_minutes": 0,
+      "ot_holiday_minutes": 0,
+      "comp_offset_unused_minutes": 0,
+      "attendance_deduct": 0.0
+    }
+  }
+}

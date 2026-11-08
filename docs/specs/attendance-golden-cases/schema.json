@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nasa-du/anysys-hr/docs/specs/attendance-golden-cases/schema.json",
+  "title": "Attendance Calculation Golden Case",
+  "description": "一个考勤计算黄金用例：输入为计算契约层的规范化记录，输出为日结果、月汇总与 calc_run.summary 的期望值。",
+  "type": "object",
+  "required": ["id", "title", "covers", "month", "notes", "input", "expected"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^case-[0-9]{2}[a-z]?-[a-z0-9-]+$" },
+    "title": { "type": "string", "minLength": 1 },
+    "covers": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "month": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}$" },
+    "notes": { "type": "string" },
+    "input": { "$ref": "#/$defs/input" },
+    "expected": { "$ref": "#/$defs/expected" }
+  },
+  "$defs": {
+    "date": { "type": "string", "format": "date" },
+    "datetime": { "type": "string", "format": "date-time" },
+    "hhmm": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
+    "nullableDatetime": { "type": ["string", "null"], "format": "date-time" },
+    "input": {
+      "type": "object",
+      "required": ["employee_ids", "roster_default", "roster_overrides", "adjacent_roster_overrides", "holidays", "rules", "punches", "oa_trips", "oa_overtime_days", "oa_leaves"],
+      "additionalProperties": false,
+      "properties": {
+        "employee_ids": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+        "roster_default": { "const": "rest", "description": "未在 roster_overrides 中列出的日期一律为休息。" },
+        "roster_overrides": { "type": "array", "items": { "$ref": "#/$defs/rosterOverride" } },
+        "adjacent_roster_overrides": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/rosterOverride" },
+          "description": "仅用于跨月请假/补休的分母计算；不参与本月日结果。"
+        },
+        "holidays": { "type": "array", "items": { "$ref": "#/$defs/holiday" } },
+        "rules": { "$ref": "#/$defs/rules" },
+        "punches": { "type": "array", "items": { "$ref": "#/$defs/punch" } },
+        "oa_trips": { "type": "array", "items": { "$ref": "#/$defs/trip" } },
+        "oa_overtime_days": { "type": "array", "items": { "$ref": "#/$defs/overtimeDay" } },
+        "oa_leaves": { "type": "array", "items": { "$ref": "#/$defs/leave" } }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "required": ["punch_window_min", "late_cap_min", "early_cap_min", "ot_max_min", "late_grace_min", "early_grace_min", "ot_threshold_min", "absent_if_no_punch", "break_punch_required", "break_punch_tolerance_min", "absent_deduct_per_day", "late_deduct_per_occurrence", "early_deduct_per_occurrence", "missing_punch_deduct_per_occurrence"],
+      "additionalProperties": false,
+      "properties": {
+        "punch_window_min": { "type": "integer", "minimum": 0 },
+        "late_cap_min": { "type": "integer", "minimum": 0 },
+        "early_cap_min": { "type": "integer", "minimum": 0 },
+        "ot_max_min": { "type": "integer", "minimum": 0 },
+        "late_grace_min": { "type": "integer", "minimum": 0 },
+        "early_grace_min": { "type": "integer", "minimum": 0 },
+        "ot_threshold_min": { "type": "integer", "minimum": 0 },
+        "absent_if_no_punch": { "type": "boolean" },
+        "break_punch_required": { "type": "boolean" },
+        "break_punch_tolerance_min": { "type": "integer", "minimum": 0 },
+        "absent_deduct_per_day": { "type": "number", "minimum": 0 },
+        "late_deduct_per_occurrence": { "type": "number", "minimum": 0 },
+        "early_deduct_per_occurrence": { "type": "number", "minimum": 0 },
+        "missing_punch_deduct_per_occurrence": { "type": "number", "minimum": 0 }
+      }
+    },
+    "rosterOverride": {
+      "type": "object",
+      "required": ["employee_id", "work_date", "state", "shifts"],
+      "additionalProperties": false,
+      "properties": {
+        "employee_id": { "type": "string" },
+        "work_date": { "$ref": "#/$defs/date" },
+        "state": { "enum": ["work", "rest"] },
+        "shifts": {
+          "type": "array",
+          "items": { "enum": ["ADM", "TEC", "YL", "EARLY", "MID", "NIGHT", "DAWN"] },
+          "uniqueItems": true
+        }
+      }
+    },
+    "holiday": {
+      "type": "object",
+      "required": ["date", "name", "day_type"],
+      "additionalProperties": false,
+      "properties": {
+        "date": { "$ref": "#/$defs/date" },
+        "name": { "type": "string" },
+        "day_type": { "enum": ["holiday", "adjusted_workday"] }
+      }
+    },
+    "punch": {
+      "type": "object",
+      "required": ["employee_id", "attendance_date", "punch_time", "punch_result", "source", "source_row"],
+      "additionalProperties": false,
+      "properties": {
+        "employee_id": { "type": "string" },
+        "attendance_date": { "$ref": "#/$defs/date" },
+        "punch_time": { "$ref": "#/$defs/datetime" },
+        "punch_result": { "type": "string" },
+        "source": { "enum": ["fixture", "synthetic"] },
+        "source_row": { "type": ["integer", "null"], "minimum": 1 }
+      }
+    },
+    "trip": {
+      "type": "object",
+      "required": ["id", "approval_no", "employee_id", "kind", "start_at", "end_at", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "approval_no": { "type": "string" },
+        "employee_id": { "type": "string" },
+        "kind": { "enum": ["out", "business"] },
+        "start_at": { "$ref": "#/$defs/datetime" },
+        "end_at": { "$ref": "#/$defs/datetime" },
+        "source": { "enum": ["fixture", "synthetic"] }
+      }
+    },
+    "overtimeDay": {
+      "type": "object",
+      "required": ["id", "approval_no", "employee_id", "work_date", "minutes", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "approval_no": { "type": "string" },
+        "employee_id": { "type": "string" },
+        "work_date": { "$ref": "#/$defs/date" },
+        "minutes": { "type": "integer", "minimum": 1, "maximum": 480 },
+        "source": { "enum": ["fixture", "synthetic"] }
+      }
+    },
+    "leave": {
+      "type": "object",
+      "required": ["id", "approval_no", "employee_id", "leave_kind", "days", "rest_start_at", "rest_end_at", "work_start_at", "work_end_at", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "approval_no": { "type": "string" },
+        "employee_id": { "type": "string" },
+        "leave_kind": { "enum": ["paid", "unpaid", "comp"] },
+        "days": { "type": "number", "exclusiveMinimum": 0 },
+        "rest_start_at": { "$ref": "#/$defs/datetime" },
+        "rest_end_at": { "$ref": "#/$defs/datetime" },
+        "work_start_at": { "$ref": "#/$defs/nullableDatetime" },
+        "work_end_at": { "$ref": "#/$defs/nullableDatetime" },
+        "source": { "enum": ["fixture", "synthetic"] }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "required": ["day_results", "month_summaries", "calc_run_summary"],
+      "additionalProperties": false,
+      "properties": {
+        "day_results": { "type": "array", "items": { "$ref": "#/$defs/dayResult" } },
+        "month_summaries": { "type": "array", "items": { "$ref": "#/$defs/monthSummary" } },
+        "calc_run_summary": { "$ref": "#/$defs/runSummary" }
+      }
+    },
+    "dayStatus": {
+      "enum": ["normal", "late", "early", "missing_punch", "absent", "overtime", "trip_out", "trip_business", "personal_leave", "paid_leave", "comp_leave", "rest", "unscheduled_attendance"]
+    },
+    "shiftStatus": {
+      "enum": ["normal", "late", "early", "missing_punch", "absent", "overtime", "trip_out", "trip_business", "personal_leave", "paid_leave", "comp_leave"]
+    },
+    "flag": {
+      "enum": ["late", "early", "missing_punch", "break_punch_missing", "absent", "overtime", "oa_ot_only", "trip", "leave", "unscheduled_attendance", "punch_during_leave", "leave_trip_conflict", "leave_ot_conflict", "multiple_leave_requests", "leave_on_non_workday", "leave_days_excess", "leave_range_uncovered", "comp_offset_no_ot", "comp_offset_unused", "out_of_window_punch", "no_valid_punch", "manual_adjustment"]
+    },
+    "dayResult": {
+      "type": "object",
+      "required": ["employee_id", "work_date", "day_type", "roster_state", "day_status", "day_flags", "attendance_fraction", "scheduled_minutes", "worked_minutes", "late_minutes", "early_minutes", "missing_punch_count", "leave_kind", "leave_days", "paid_leave_days", "unpaid_leave_days", "comp_leave_days", "trip_kind", "trip_fraction", "ot_weekday_minutes", "ot_weekend_minutes", "ot_holiday_minutes", "comp_offset_minutes", "comp_offset_unused_minutes", "absent_deduct_amount", "late_deduct_amount", "early_deduct_amount", "missing_punch_deduct_amount", "deduction_total", "late_count", "early_count", "shift_results"],
+      "additionalProperties": false,
+      "properties": {
+        "employee_id": { "type": "string" },
+        "work_date": { "$ref": "#/$defs/date" },
+        "day_type": { "enum": ["workday", "weekend", "holiday"] },
+        "roster_state": { "enum": ["work", "rest", "unscheduled"] },
+        "day_status": { "$ref": "#/$defs/dayStatus" },
+        "day_flags": { "type": "array", "items": { "$ref": "#/$defs/flag" }, "uniqueItems": true },
+        "attendance_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scheduled_minutes": { "type": "integer", "minimum": 0 },
+        "worked_minutes": { "type": "integer", "minimum": 0 },
+        "late_minutes": { "type": "integer", "minimum": 0 },
+        "early_minutes": { "type": "integer", "minimum": 0 },
+        "missing_punch_count": { "type": "integer", "minimum": 0 },
+        "leave_kind": { "enum": ["paid", "unpaid", "comp", null] },
+        "leave_days": { "type": "number", "minimum": 0, "maximum": 1 },
+        "paid_leave_days": { "type": "number", "minimum": 0, "maximum": 1 },
+        "unpaid_leave_days": { "type": "number", "minimum": 0, "maximum": 1 },
+        "comp_leave_days": { "type": "number", "minimum": 0, "maximum": 1 },
+        "trip_kind": { "enum": ["out", "business", null] },
+        "trip_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+        "ot_weekday_minutes": { "type": "integer", "minimum": 0 },
+        "ot_weekend_minutes": { "type": "integer", "minimum": 0 },
+        "ot_holiday_minutes": { "type": "integer", "minimum": 0 },
+        "comp_offset_minutes": { "type": "integer", "minimum": 0 },
+        "comp_offset_unused_minutes": { "type": "integer", "minimum": 0 },
+        "absent_deduct_amount": { "type": "number", "maximum": 0 },
+        "late_deduct_amount": { "type": "number", "maximum": 0 },
+        "early_deduct_amount": { "type": "number", "maximum": 0 },
+        "missing_punch_deduct_amount": { "type": "number", "maximum": 0 },
+        "deduction_total": { "type": "number", "maximum": 0 },
+        "late_count": { "type": "integer", "minimum": 0 },
+        "early_count": { "type": "integer", "minimum": 0 },
+        "shift_results": { "type": "array", "items": { "$ref": "#/$defs/shiftResult" } }
+      }
+    },
+    "shiftResult": {
+      "type": "object",
+      "required": ["seq", "shift_code", "shift_name", "start_time", "end_time", "cross_day", "break_start", "break_end", "rest_minutes", "shift_status", "shift_flags", "punch_in_at", "punch_out_at", "break_out_at", "break_in_at", "scheduled_minutes", "worked_minutes", "late_minutes", "early_minutes", "missing_punch_count", "ot_minutes", "comp_offset_minutes", "leave_days"],
+      "additionalProperties": false,
+      "properties": {
+        "seq": { "type": "integer", "minimum": 0 },
+        "shift_code": { "enum": ["ADM", "TEC", "YL", "EARLY", "MID", "NIGHT", "DAWN"] },
+        "shift_name": { "type": "string" },
+        "start_time": { "$ref": "#/$defs/hhmm" },
+        "end_time": { "$ref": "#/$defs/hhmm" },
+        "cross_day": { "type": "boolean" },
+        "break_start": { "anyOf": [{ "$ref": "#/$defs/hhmm" }, { "type": "null" }] },
+        "break_end": { "anyOf": [{ "$ref": "#/$defs/hhmm" }, { "type": "null" }] },
+        "rest_minutes": { "type": "integer", "minimum": 0 },
+        "shift_status": { "$ref": "#/$defs/shiftStatus" },
+        "shift_flags": { "type": "array", "items": { "$ref": "#/$defs/flag" }, "uniqueItems": true },
+        "punch_in_at": { "$ref": "#/$defs/nullableDatetime" },
+        "punch_out_at": { "$ref": "#/$defs/nullableDatetime" },
+        "break_out_at": { "$ref": "#/$defs/nullableDatetime" },
+        "break_in_at": { "$ref": "#/$defs/nullableDatetime" },
+        "scheduled_minutes": { "type": "integer", "minimum": 0 },
+        "worked_minutes": { "type": "integer", "minimum": 0 },
+        "late_minutes": { "type": "integer", "minimum": 0 },
+        "early_minutes": { "type": "integer", "minimum": 0 },
+        "missing_punch_count": { "type": "integer", "minimum": 0 },
+        "ot_minutes": { "type": "integer", "minimum": 0 },
+        "comp_offset_minutes": { "type": "integer", "minimum": 0 },
+        "leave_days": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "monthSummary": {
+      "type": "object",
+      "required": ["employee_id", "weekday_full", "weekend_full", "weekday_attended", "weekend_attended", "paid_leave_days", "unpaid_leave_days", "comp_leave_days", "trip_days", "ot_weekday_minutes", "ot_weekend_minutes", "ot_holiday_minutes", "ot_weekday_hours", "ot_weekend_hours", "ot_holiday_hours", "comp_leave_used_hours", "comp_offset_unused_minutes", "late_count", "late_minutes", "early_count", "early_minutes", "missing_punch_count", "absent_days", "worked_minutes", "attendance_deduct", "is_adjusted", "calc_version"],
+      "additionalProperties": false,
+      "properties": {
+        "employee_id": { "type": "string" },
+        "weekday_full": { "type": "number", "minimum": 0 },
+        "weekend_full": { "type": "number", "minimum": 0 },
+        "weekday_attended": { "type": "number", "minimum": 0 },
+        "weekend_attended": { "type": "number", "minimum": 0 },
+        "paid_leave_days": { "type": "number", "minimum": 0 },
+        "unpaid_leave_days": { "type": "number", "minimum": 0 },
+        "comp_leave_days": { "type": "number", "minimum": 0 },
+        "trip_days": { "type": "number", "minimum": 0 },
+        "ot_weekday_minutes": { "type": "integer", "minimum": 0 },
+        "ot_weekend_minutes": { "type": "integer", "minimum": 0 },
+        "ot_holiday_minutes": { "type": "integer", "minimum": 0 },
+        "ot_weekday_hours": { "type": "number", "minimum": 0 },
+        "ot_weekend_hours": { "type": "number", "minimum": 0 },
+        "ot_holiday_hours": { "type": "number", "minimum": 0 },
+        "comp_leave_used_hours": { "type": "number", "minimum": 0 },
+        "comp_offset_unused_minutes": { "type": "integer", "minimum": 0 },
+        "late_count": { "type": "integer", "minimum": 0 },
+        "late_minutes": { "type": "integer", "minimum": 0 },
+        "early_count": { "type": "integer", "minimum": 0 },
+        "early_minutes": { "type": "integer", "minimum": 0 },
+        "missing_punch_count": { "type": "integer", "minimum": 0 },
+        "absent_days": { "type": "integer", "minimum": 0 },
+        "worked_minutes": { "type": "integer", "minimum": 0 },
+        "attendance_deduct": { "type": "number", "maximum": 0 },
+        "is_adjusted": { "type": "boolean" },
+        "calc_version": { "type": "string" }
+      }
+    },
+    "runSummary": {
+      "type": "object",
+      "required": ["employees_total", "employees_calculated", "employees_skipped", "skipped_reasons", "days_total", "days_by_status", "flag_counts", "late_count", "late_minutes", "early_count", "early_minutes", "missing_punch_count", "absent_days", "ot_weekday_minutes", "ot_weekend_minutes", "ot_holiday_minutes", "comp_offset_unused_minutes", "attendance_deduct"],
+      "additionalProperties": false,
+      "properties": {
+        "employees_total": { "type": "integer", "minimum": 0 },
+        "employees_calculated": { "type": "integer", "minimum": 0 },
+        "employees_skipped": { "type": "integer", "minimum": 0 },
+        "skipped_reasons": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "days_total": { "type": "integer", "minimum": 0 },
+        "days_by_status": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "flag_counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "late_count": { "type": "integer", "minimum": 0 },
+        "late_minutes": { "type": "integer", "minimum": 0 },
+        "early_count": { "type": "integer", "minimum": 0 },
+        "early_minutes": { "type": "integer", "minimum": 0 },
+        "missing_punch_count": { "type": "integer", "minimum": 0 },
+        "absent_days": { "type": "integer", "minimum": 0 },
+        "ot_weekday_minutes": { "type": "integer", "minimum": 0 },
+        "ot_weekend_minutes": { "type": "integer", "minimum": 0 },
+        "ot_holiday_minutes": { "type": "integer", "minimum": 0 },
+        "comp_offset_unused_minutes": { "type": "integer", "minimum": 0 },
+        "attendance_deduct": { "type": "number", "maximum": 0 }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "punch_window_min": 120,
+  "late_cap_min": 240,
+  "early_cap_min": 240,
+  "ot_max_min": 600,
+  "late_grace_min": 5,
+  "early_grace_min": 5,
+  "ot_threshold_min": 30,
+  "absent_if_no_punch": true,
+  "break_punch_required": true,
+  "break_punch_tolerance_min": 60,
+  "absent_deduct_per_day": 100.0,
+  "late_deduct_per_occurrence": 20.0,
+  "early_deduct_per_occurrence": 20.0,
+  "missing_punch_deduct_per_occurrence": 10.0
+}

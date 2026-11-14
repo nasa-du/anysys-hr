@@ -87,9 +87,7 @@ def create_schedule_plan(session: SessionDep, plan_in: SchedulePlanCreate) -> An
     return plan_service.create_schedule_plan(session, plan_in)
 
 
-@router.get(
-    "/{plan_id}", response_model=SchedulePlanPublic, responses=ERROR_RESPONSES
-)
+@router.get("/{plan_id}", response_model=SchedulePlanPublic, responses=ERROR_RESPONSES)
 def read_schedule_plan(session: SessionDep, plan_id: uuid.UUID) -> Any:
     """Get one plan with its scopes and per-day shifts."""
     return plan_service.get_schedule_plan(session, plan_id)

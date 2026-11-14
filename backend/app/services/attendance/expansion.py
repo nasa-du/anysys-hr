@@ -141,9 +141,7 @@ def resolve_winner(
     ambiguity into 409 ``schedule_conflict`` by checking this return shape.
     """
     matches = [
-        candidate
-        for candidate in candidates
-        if candidate_matches(candidate, employee)
+        candidate for candidate in candidates if candidate_matches(candidate, employee)
     ]
     if not matches:
         return None
@@ -217,9 +215,7 @@ def load_candidates(
         .where(col(PlanDay.plan_id).in_(plan_ids))
         .order_by(col(PlanDay.day_of_month).asc(), col(PlanDay.seq).asc())
     ).all():
-        days_by_plan[day_row.plan_id][day_row.day_of_month].append(
-            (day_row.seq, shift)
-        )
+        days_by_plan[day_row.plan_id][day_row.day_of_month].append((day_row.seq, shift))
 
     candidates: list[PlanCandidate] = []
     for plan in plans:
@@ -298,7 +294,9 @@ def _desired_snapshot_key(seq: int, shift: Shift) -> tuple[object, ...]:
 
 def _load_entries(
     session: Session, company_id: uuid.UUID, month: date
-) -> tuple[dict[tuple[uuid.UUID, date], RosterEntry], dict[uuid.UUID, list[RosterEntryShift]]]:
+) -> tuple[
+    dict[tuple[uuid.UUID, date], RosterEntry], dict[uuid.UUID, list[RosterEntryShift]]
+]:
     start, end = month_bounds(month)
     entries = session.exec(
         select(RosterEntry).where(
@@ -388,10 +386,11 @@ def plan_expansion(
             plan.deleted.append(entry)
             continue
         desired_keys = [
-            _desired_snapshot_key(seq, shift)
-            for seq, shift in enumerate(target.shifts)
+            _desired_snapshot_key(seq, shift) for seq, shift in enumerate(target.shifts)
         ]
-        existing_keys = [_snapshot_key(shift) for shift in shifts_by_entry.get(entry.id, [])]
+        existing_keys = [
+            _snapshot_key(shift) for shift in shifts_by_entry.get(entry.id, [])
+        ]
         if (
             entry.state == target.state
             and entry.plan_id == target.plan_id

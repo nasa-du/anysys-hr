@@ -61,6 +61,10 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
+# Attendance routes depend on this alias. A future RBAC slice can replace the
+# dependency here without touching route signatures.
+attendance_access = get_current_user
+
 
 def get_current_active_superuser(current_user: CurrentUser) -> User:
     if not current_user.is_superuser:

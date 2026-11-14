@@ -2,7 +2,8 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, func, select
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import Session, col, func, select
 
 from app import crud
 from app.api.deps import (
@@ -11,6 +12,7 @@ from app.api.deps import (
     get_current_active_superuser,
 )
 from app.core.config import settings
+from app.core.errors import DomainError
 from app.core.security import get_password_hash, verify_password
 from app.models import (
     Message,
@@ -26,6 +28,19 @@ from app.models import (
 from app.utils import generate_new_account_email, send_email
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+USER_REFERENCED_MESSAGE = "该用户已被考勤记录引用，无法删除"
+
+
+def _delete_user(session: Session, user: User) -> Message:
+    """Delete a user, translating attendance RESTRICT references to 409."""
+    try:
+        session.delete(user)
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise DomainError("referenced", USER_REFERENCED_MESSAGE)
+    return Message(message="用户删除成功")
 
 
 @router.get(
@@ -131,9 +146,7 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     """
     if current_user.is_superuser:
         raise HTTPException(status_code=403, detail="超级管理员不能删除自己")
-    session.delete(current_user)
-    session.commit()
-    return Message(message="用户删除成功")
+    return _delete_user(session, current_user)
 
 
 @router.post("/signup", response_model=UserPublic)
@@ -214,6 +227,4 @@ def delete_user(
         raise HTTPException(status_code=404, detail="用户不存在")
     if user == current_user:
         raise HTTPException(status_code=403, detail="超级管理员不能删除自己")
-    session.delete(user)
-    session.commit()
-    return Message(message="用户删除成功")
+    return _delete_user(session, user)

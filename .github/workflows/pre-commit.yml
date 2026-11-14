@@ -48,6 +48,11 @@ jobs:
       - name: Build frontend
         run: bun run build
         working-directory: frontend
+      # The prek generate-frontend-sdk hook regenerates the client whenever
+      # backend/API inputs change; this gate requires the result to be
+      # committed.
+      - name: Check the generated client has no diff
+        run: git diff --exit-code -- frontend/openapi.json frontend/src/client
 
   # https://github.com/marketplace/actions/alls-green#why
   pre-commit-alls-green:  # This job does nothing and is only used for the branch protection

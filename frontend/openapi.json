@@ -2326,7 +2326,10 @@
               "department",
               "position",
               "cost_center",
-              "employee"
+              "employee",
+              "shift",
+              "schedule_plan",
+              "roster_entry"
             ],
             "title": "Type"
           },

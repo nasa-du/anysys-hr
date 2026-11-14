@@ -251,13 +251,17 @@ def delete_company(session: Session, company_id: uuid.UUID) -> Message:
         session.commit()
     except IntegrityError:
         # A reference appeared between the check and the delete; report the
-        # current blockers rather than a bare conflict.
+        # current Basic Management blockers rather than database text. A
+        # company referenced solely by attendance rows has no Basic Management
+        # blocker to enumerate, so return a clear generic conflict.
         session.rollback()
         count, blockers = _company_blockers(session, company.id, active_only=False)
-        raise DomainError(
-            "referenced",
-            f"无法删除：仍有 {count} 个部门、岗位、成本中心或员工引用",
-            blockers=blockers,
-            blocker_count=count,
-        )
+        if count:
+            raise DomainError(
+                "referenced",
+                f"无法删除：仍有 {count} 个部门、岗位、成本中心或员工引用",
+                blockers=blockers,
+                blocker_count=count,
+            )
+        raise DomainError("referenced", "无法删除：公司仍被考勤数据引用")
     return Message(message="公司删除成功")

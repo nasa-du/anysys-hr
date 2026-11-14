@@ -10,7 +10,24 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
-BlockerType = Literal["company", "department", "position", "cost_center", "employee"]
+BlockerType = Literal[
+    "company",
+    "department",
+    "position",
+    "cost_center",
+    "employee",
+    "shift",
+    "schedule_plan",
+    "roster_entry",
+]
+
+# ``not_found`` is the only 404 domain error; upload limits use the standard
+# 413/415 statuses; every other business-rule violation is a 409.
+DOMAIN_STATUS_CODES: dict[str, int] = {
+    "not_found": 404,
+    "file_too_large": 413,
+    "unsupported_file_type": 415,
+}
 
 
 class Blocker(BaseModel):
@@ -37,8 +54,9 @@ class ErrorResponse(BaseModel):
 class DomainError(Exception):
     """A business-rule violation with a Chinese, client-safe message.
 
-    ``not_found`` maps to HTTP 404; every other domain code maps to HTTP 409.
-    Blockers are only attached to ``referenced`` and ``deactivate_blocked``;
+    ``not_found`` maps to HTTP 404, ``file_too_large`` to 413,
+    ``unsupported_file_type`` to 415, and every other domain code to 409.
+    Blockers are only attached to reference and deactivation errors;
     ``blocker_count`` is None for other codes so the envelope omits them.
     """
 
@@ -60,7 +78,7 @@ class DomainError(Exception):
 
     @property
     def status_code(self) -> int:
-        return 404 if self.code == "not_found" else 409
+        return DOMAIN_STATUS_CODES.get(self.code, 409)
 
 
 def translate_validation_error(error: dict[str, Any]) -> str:

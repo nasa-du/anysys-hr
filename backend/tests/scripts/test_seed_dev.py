@@ -8,25 +8,39 @@ from sqlmodel import Session, select
 
 from app import seed_dev
 from app.core.db import engine
-from app.enums import ContractType, EmployeeStatus
-from app.models import Company, CostCenter, Department, Employee, Position
+from app.enums import ContractType, EmployeeStatus, HolidayDayType
+from app.models import (
+    AttendanceRule,
+    Company,
+    CostCenter,
+    Department,
+    Employee,
+    Holiday,
+    ImportBatch,
+    Position,
+    SchedulePlan,
+    Shift,
+)
 
-SEEDED_CODES = ["C1", "C2", "C3"]
-SEEDED_NAMES = ["荣新建设", "荣新科技", "荣新物流"]
+SEEDED_CODES = ["C1", "C2", "C3", "C4"]
+SEEDED_NAMES = ["荣新建设", "荣新科技", "荣新物流", "荣新考勤演示"]
 SEEDED_DEPARTMENTS = {
     "C1": ["D1", "D2", "D3", "D4", "D5", "D6", "D7"],
     "C2": ["K1", "K2", "K3"],
     "C3": [],
+    "C4": ["D1", "D2", "D3", "D4"],
 }
 SEEDED_POSITIONS = {
     "C1": ["P1", "P2", "P3", "P4", "P5", "P6"],
     "C2": ["K1", "K2"],
     "C3": [],
+    "C4": ["P1", "P2", "P3", "P4", "P5"],
 }
 SEEDED_COST_CENTERS = {
     "C1": ["K1", "K2", "K3", "K4", "K5", "K6"],
     "C2": ["K1", "K2"],
     "C3": [],
+    "C4": [],
 }
 # Kept independent of seed_dev.EMPLOYEES so accidental data changes fail the test.
 SEEDED_EMPLOYEES = {
@@ -50,6 +64,21 @@ SEEDED_EMPLOYEES = {
     ],
     "C2": ["E2001", "E2002", "E2003", "E2004"],
     "C3": [],
+    "C4": [
+        "E101",
+        "E102",
+        "E103",
+        "E104",
+        "E105",
+        "E106",
+        "E107",
+        "E108",
+        "E109",
+        "E110",
+        "E111",
+        "E112",
+        "E113",
+    ],
 }
 
 
@@ -102,7 +131,7 @@ def test_seed_refuses_outside_development(
     assert _companies() == []
 
 
-def test_seed_inserts_three_companies_once() -> None:
+def test_seed_inserts_four_companies_once() -> None:
     seed_dev.main()
     seed_dev.main()
 
@@ -205,8 +234,14 @@ def test_seed_does_not_overwrite_existing_position_edits() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
+        company = session.exec(
+            select(Company).where(Company.company_code == "C1")
+        ).one()
         position = session.exec(
-            select(Position).where(Position.position_code == "P1")
+            select(Position).where(
+                Position.company_id == company.id,
+                Position.position_code == "P1",
+            )
         ).one()
         position.position_name = "用户修改后的岗位"
         position.order_no = 42
@@ -216,8 +251,14 @@ def test_seed_does_not_overwrite_existing_position_edits() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
+        company = session.exec(
+            select(Company).where(Company.company_code == "C1")
+        ).one()
         position = session.exec(
-            select(Position).where(Position.position_code == "P1")
+            select(Position).where(
+                Position.company_id == company.id,
+                Position.position_code == "P1",
+            )
         ).one()
         assert position.position_name == "用户修改后的岗位"
         assert position.order_no == 42
@@ -227,8 +268,14 @@ def test_seed_does_not_overwrite_existing_department_edits() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
+        company = session.exec(
+            select(Company).where(Company.company_code == "C1")
+        ).one()
         department = session.exec(
-            select(Department).where(Department.dept_code == "D2")
+            select(Department).where(
+                Department.company_id == company.id,
+                Department.dept_code == "D2",
+            )
         ).one()
         department.dept_name = "用户修改后的部门"
         department.order_no = 42
@@ -238,8 +285,14 @@ def test_seed_does_not_overwrite_existing_department_edits() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
+        company = session.exec(
+            select(Company).where(Company.company_code == "C1")
+        ).one()
         department = session.exec(
-            select(Department).where(Department.dept_code == "D2")
+            select(Department).where(
+                Department.company_id == company.id,
+                Department.dept_code == "D2",
+            )
         ).one()
         assert department.dept_name == "用户修改后的部门"
         assert department.order_no == 42
@@ -387,6 +440,7 @@ def test_seed_inserts_employees_once() -> None:
     assert 15 <= len(employees["C1"]) <= 20
     assert 3 <= len(employees["C2"]) <= 5
     assert employees["C3"] == []
+    assert len(employees["C4"]) == 13
 
 
 def test_seed_employee_statuses_contracts_and_unassigned_are_varied() -> None:
@@ -463,3 +517,212 @@ def test_seed_does_not_overwrite_existing_employee_edits() -> None:
         ).one()
         assert employee.name == "用户修改后的员工"
         assert employee.note == "用户备注"
+
+
+def _company_by_code(code: str) -> Company:
+    with Session(engine) as session:
+        return session.exec(select(Company).where(Company.company_code == code)).one()
+
+
+def _attendance_company_rows() -> tuple[
+    list[Shift], list[AttendanceRule], list[Holiday]
+]:
+    with Session(engine) as session:
+        company = session.exec(
+            select(Company).where(Company.company_code == "C4")
+        ).one()
+        shifts = list(
+            session.exec(
+                select(Shift)
+                .where(Shift.company_id == company.id)
+                .order_by(Shift.shift_code)
+            ).all()
+        )
+        rules = list(
+            session.exec(
+                select(AttendanceRule).where(AttendanceRule.company_id == company.id)
+            ).all()
+        )
+        holidays = list(
+            session.exec(
+                select(Holiday)
+                .where(Holiday.company_id == company.id)
+                .order_by(Holiday.date)
+            ).all()
+        )
+        return shifts, rules, holidays
+
+
+def test_seed_inserts_attendance_reference_data_once() -> None:
+    seed_dev.main()
+    seed_dev.main()
+
+    shifts, rules, holidays = _attendance_company_rows()
+
+    assert [shift.shift_code for shift in shifts] == [
+        "ADM",
+        "DAWN",
+        "EARLY",
+        "MID",
+        "NIGHT",
+        "TEC",
+        "YL",
+    ]
+    assert all(shift.is_active for shift in shifts)
+    assert len(rules) == 1
+    rule = rules[0]
+    assert rule.punch_window_min == 120
+    assert rule.late_cap_min == 240
+    assert rule.early_cap_min == 240
+    assert rule.ot_max_min == 600
+    assert rule.late_grace_min == 5
+    assert rule.early_grace_min == 5
+    assert rule.ot_threshold_min == 30
+    assert rule.absent_if_no_punch is True
+    assert rule.break_punch_required is True
+    assert rule.break_punch_tolerance_min == 60
+    assert rule.absent_deduct_per_day == Decimal("100.00")
+    assert rule.late_deduct_per_occurrence == Decimal("20.00")
+    assert rule.early_deduct_per_occurrence == Decimal("20.00")
+    assert rule.missing_punch_deduct_per_occurrence == Decimal("10.00")
+
+    assert [holiday.date for holiday in holidays] == [
+        date(2026, 9, 25),
+        date(2026, 9, 27),
+        date(2026, 10, 1),
+        date(2026, 10, 2),
+        date(2026, 10, 3),
+        date(2026, 10, 4),
+        date(2026, 10, 5),
+        date(2026, 10, 6),
+        date(2026, 10, 7),
+    ]
+    assert holidays[0].name == "中秋节"
+    assert holidays[0].day_type == HolidayDayType.HOLIDAY
+    assert holidays[1].name == "调休上班"
+    assert holidays[1].day_type == HolidayDayType.ADJUSTED_WORKDAY
+    assert {holiday.name for holiday in holidays[2:]} == {"国庆节"}
+
+
+def test_attendance_reference_data_never_touches_other_companies() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        other_company_ids = [
+            company.id
+            for company in session.exec(
+                select(Company).where(Company.company_code.in_(["C1", "C2", "C3"]))
+            ).all()
+        ]
+        assert (
+            session.exec(
+                select(Shift).where(Shift.company_id.in_(other_company_ids))
+            ).all()
+            == []
+        )
+        assert (
+            session.exec(
+                select(AttendanceRule).where(
+                    AttendanceRule.company_id.in_(other_company_ids)
+                )
+            ).all()
+            == []
+        )
+        assert (
+            session.exec(
+                select(Holiday).where(Holiday.company_id.in_(other_company_ids))
+            ).all()
+            == []
+        )
+
+
+def test_seed_does_not_overwrite_existing_attendance_edits() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        company = session.exec(
+            select(Company).where(Company.company_code == "C4")
+        ).one()
+        shift = session.exec(
+            select(Shift).where(
+                Shift.company_id == company.id,
+                Shift.shift_code == "ADM",
+            )
+        ).one()
+        shift.shift_name = "用户修改后的班次"
+        rule = session.exec(
+            select(AttendanceRule).where(AttendanceRule.company_id == company.id)
+        ).one()
+        rule.punch_window_min = 45
+        holiday = session.exec(
+            select(Holiday).where(
+                Holiday.company_id == company.id,
+                Holiday.date == date(2026, 9, 25),
+            )
+        ).one()
+        holiday.name = "用户修改后的节假日"
+        session.add(shift)
+        session.add(rule)
+        session.add(holiday)
+        session.commit()
+
+    seed_dev.main()
+
+    shifts, rules, holidays = _attendance_company_rows()
+    stored_shift = next(item for item in shifts if item.shift_code == "ADM")
+    assert stored_shift.shift_name == "用户修改后的班次"
+    assert rules[0].punch_window_min == 45
+    stored_holiday = next(item for item in holidays if item.date == date(2026, 9, 25))
+    assert stored_holiday.name == "用户修改后的节假日"
+
+
+def test_seed_attendance_employees_match_the_fixture_contract() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        departments = {
+            department.dept_code: department
+            for department in session.exec(
+                select(Department).where(Department.company_id == c4.id)
+            ).all()
+        }
+        positions = {
+            position.position_code: position
+            for position in session.exec(
+                select(Position).where(Position.company_id == c4.id)
+            ).all()
+        }
+        employees = {
+            employee.employee_no: employee
+            for employee in session.exec(select(Employee)).all()
+        }
+
+        assert employees["E108"].position_id == positions["P2"].id
+        assert employees["E112"].status is EmployeeStatus.RESIGNED
+        assert employees["E112"].resign_date == date(2026, 8, 31)
+        assert employees["E113"].hire_date == date(2026, 9, 15)
+        assert employees["E110"].name == "张伟"
+        assert employees["E111"].name == "张伟"
+        assert employees["E110"].dept_id != employees["E111"].dept_id
+        assert employees["E110"].dept_id == departments["D1"].id
+        assert employees["E111"].dept_id == departments["D2"].id
+
+
+def test_seed_does_not_create_plans_rosters_or_batches() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        assert (
+            session.exec(
+                select(SchedulePlan).where(SchedulePlan.company_id == c4.id)
+            ).all()
+            == []
+        )
+        assert (
+            session.exec(
+                select(ImportBatch).where(ImportBatch.company_id == c4.id)
+            ).all()
+            == []
+        )

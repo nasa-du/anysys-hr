@@ -11,6 +11,7 @@ from sqlalchemy import text
 from sqlmodel import Session, delete
 
 from app.core.config import settings
+from tests.utils.attendance_tables import ATTENDANCE_TABLES
 from tests.utils.database import ensure_test_database
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -54,6 +55,9 @@ def db() -> Generator[Session]:
     with Session(engine) as session:
         init_db(session)
         yield session
+        # Attendance rows can block user deletion through RESTRICT audit
+        # references; clear them before the final user cleanup.
+        session.execute(text("TRUNCATE TABLE company CASCADE"))
         statement = delete(User)
         session.execute(statement)
         session.commit()
@@ -64,12 +68,23 @@ def _clean_database(db: Session) -> Generator[None]:
     """Start every test with empty organizations and only the first superuser.
 
     ``TRUNCATE company CASCADE`` also empties department, position,
-    cost_center, and employee. The first superuser is retained so login
-    fixtures keep working.
+    cost_center, employee, and every attendance table that reaches ``company``
+    through a foreign key. The first superuser is retained so login fixtures
+    keep working.
     """
     db.execute(text("TRUNCATE TABLE company CASCADE"))
     db.execute(delete(User).where(User.email != settings.FIRST_SUPERUSER))
     db.commit()
+    counts_sql = " UNION ALL ".join(
+        f'SELECT {index} AS table_index, count(*) AS row_count FROM "{table}"'
+        for index, table in enumerate(ATTENDANCE_TABLES)
+    )
+    non_empty = {
+        ATTENDANCE_TABLES[index]: row_count
+        for index, row_count in db.execute(text(counts_sql)).all()
+        if row_count
+    }
+    assert not non_empty, f"Attendance tables not empty after TRUNCATE: {non_empty}"
     yield
 
 

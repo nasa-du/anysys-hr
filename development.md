@@ -46,7 +46,7 @@ The interactive API documentation is only registered when `FASTAPI_ENV=developme
 
 ### Development Seed Data
 
-From the `backend` directory, seed the demo companies (`C1` 荣新建设, `C2` 荣新科技, `C3` 荣新物流) and their departments, positions, cost centers, and employees:
+From the `backend` directory, seed the demo companies (`C1` 荣新建设, `C2` 荣新科技, `C3` 荣新物流, `C4` 荣新考勤演示) and their departments, positions, cost centers, and employees:
 
 ```bash
 uv run python -m app.seed_dev
@@ -67,7 +67,9 @@ docker compose exec backend python -m app.seed_dev
 
 `C1` also gets 16 employees (`E1001` 张建国 through `E1016` 周敏) with managers, a mix of active, probation, and resigned records, varied contract types, and two employees whose cost center is 「未分配」; `C2` gets four employees (`E2001` 李雷 through `E2004` 张军). Seeded employees have no login accounts.
 
-The script is idempotent — it inserts by business code and never overwrites existing rows — and refuses to run unless `FASTAPI_ENV=development`. It is not part of `prestart.sh`; run it manually when you want demo data.
+`C4` is the attendance demo company. It has departments `D1`–`D4`, positions `P1`–`P5`, employees `E101`–`E113` (including duplicate names, one resignation before September, and one hire during September), the seven golden-case shifts, the company default attendance rule, and the 2026-09/2026-10 holidays. `C1`–`C3` never receive attendance rows. Plans, roster entries, and import batches are intentionally not seeded by the Phase 0 skeleton; later slices add them through the real service paths.
+
+The script is idempotent — it inserts by business key and never overwrites existing rows — and refuses to run unless `FASTAPI_ENV=development`. It is not part of `prestart.sh`; run it manually when you want demo data.
 
 The complete dataset, API/error model, migration chain, backup steps, and demo script are documented in [docs/basic-management.md](./docs/basic-management.md).
 
@@ -81,12 +83,35 @@ uv run alembic downgrade base   # development and test databases only
 uv run alembic upgrade head
 ```
 
-Back up a shared database with `pg_dump` before applying the Basic Management
-migrations: dropping the legacy `item` table is irreversible, and the downgrade
-recreates only an empty table. For a local development reset, use
+Back up a shared database with `pg_dump` before applying the migrations:
+dropping the legacy `item` table is irreversible, and the downgrade recreates
+only an empty table. For a local development reset, use
 `docker compose down -v` and seed the fresh database again. See
 [docs/basic-management.md](./docs/basic-management.md) for the full chain and a
 backup example.
+
+The attendance chain adds four migrations after `d66acc907e93`:
+`attendance_core`, `attendance_scheduling`, `attendance_imports`, and
+`attendance_results` (24 tables). Each migration supports an individual
+`upgrade → downgrade → upgrade` round trip, and the full chain supports
+`upgrade → downgrade base → upgrade`. Migrations insert no attendance rows.
+
+### Attendance Foundation Tests
+
+From the `backend` directory, with `TEST_DATABASE_URL` pointing at an existing
+database whose name ends with `_test`:
+
+```bash
+uv run bash scripts/create-test-db.sh
+uv run pytest tests/attendance -m "not performance"
+uv run pytest tests/test_migrations.py tests/test_attendance_schema.py tests/scripts/test_seed_dev.py
+uv run pytest tests/attendance/test_performance_smoke.py -m performance
+```
+
+The golden-case schema test validates all 26 cases in
+`docs/specs/attendance-golden-cases/`. The test isolation fixture truncates
+`company CASCADE` and asserts that all 24 attendance tables are empty before
+every test.
 
 ### Frontend Served by FastAPI
 

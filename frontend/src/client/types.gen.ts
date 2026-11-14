@@ -13,7 +13,7 @@ export type Blocker = {
     /**
      * Type
      */
-    type: 'company' | 'department' | 'position' | 'cost_center' | 'employee';
+    type: 'company' | 'department' | 'position' | 'cost_center' | 'employee' | 'shift' | 'schedule_plan' | 'roster_entry';
     /**
      * Id
      */

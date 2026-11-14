@@ -11,6 +11,7 @@ from typing import Any
 
 import alembic.command
 import alembic.config
+import alembic.script
 import psycopg
 import pytest
 import sqlalchemy as sa
@@ -18,6 +19,13 @@ from psycopg import sql
 from sqlalchemy.engine import URL, make_url
 
 from app.core.config import settings
+from tests.utils.attendance_tables import (
+    ATTENDANCE_TABLES,
+    CORE_TABLES,
+    IMPORT_TABLES,
+    RESULT_TABLES,
+    SCHEDULING_TABLES,
+)
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 ALEMBIC_CONFIG = BACKEND_DIR / "alembic.ini"
@@ -27,6 +35,12 @@ BASIC_MANAGEMENT_TABLES = {
     "position",
     "cost_center",
     "employee",
+}
+ATTENDANCE_MIGRATION_TABLES: dict[str, tuple[str, ...]] = {
+    "attendance_core": CORE_TABLES,
+    "attendance_scheduling": SCHEDULING_TABLES,
+    "attendance_imports": IMPORT_TABLES,
+    "attendance_results": RESULT_TABLES,
 }
 
 
@@ -92,12 +106,79 @@ def test_migrations_round_trip_to_base_and_back(
 ) -> None:
     _run_alembic(throwaway_database, alembic.command.upgrade, "head")
     _run_alembic(throwaway_database, alembic.command.downgrade, "base")
+
+    tables_after_base = _tables(throwaway_database)
+    assert not (BASIC_MANAGEMENT_TABLES & tables_after_base)
+    assert not (set(ATTENDANCE_TABLES) & tables_after_base)
+
     _run_alembic(throwaway_database, alembic.command.upgrade, "head")
 
     tables = _tables(throwaway_database)
 
     assert BASIC_MANAGEMENT_TABLES <= tables
+    assert set(ATTENDANCE_TABLES) <= tables
     assert "item" not in tables
+
+
+def _attendance_revisions() -> list[tuple[str, str, tuple[str, ...]]]:
+    """Return the four attendance migrations oldest-first, by file slug."""
+    config = alembic.config.Config(str(ALEMBIC_CONFIG))
+    config.set_main_option("script_location", str(BACKEND_DIR / "app" / "alembic"))
+    script = alembic.script.ScriptDirectory.from_config(config)
+
+    found: dict[str, list[tuple[str, str, tuple[str, ...]]]] = {
+        slug: [] for slug in ATTENDANCE_MIGRATION_TABLES
+    }
+    for revision in script.walk_revisions():
+        filename = Path(revision.path).name if revision.path else ""
+        for slug, tables in ATTENDANCE_MIGRATION_TABLES.items():
+            # Match the exact migration filename suffix so a future
+            # ``attendance_core_fix`` migration cannot shadow the original.
+            if filename.endswith(f"{slug}.py"):
+                down_revision = revision.down_revision
+                assert isinstance(down_revision, str), (
+                    f"{slug} must have exactly one down revision"
+                )
+                found[slug].append((revision.revision, down_revision, tables))
+
+    for slug, revisions in found.items():
+        assert len(revisions) == 1, f"Expected one {slug} migration, got {revisions}"
+    return [found[slug][0] for slug in ATTENDANCE_MIGRATION_TABLES]
+
+
+def test_each_attendance_migration_round_trips_individually(
+    throwaway_database: URL,
+) -> None:
+    for revision, down_revision, tables in _attendance_revisions():
+        _run_alembic(throwaway_database, alembic.command.upgrade, down_revision)
+        _run_alembic(throwaway_database, alembic.command.upgrade, revision)
+        assert set(tables) <= _tables(throwaway_database)
+
+        _run_alembic(throwaway_database, alembic.command.downgrade, down_revision)
+        remaining = _tables(throwaway_database)
+        assert not (set(tables) & remaining)
+
+        _run_alembic(throwaway_database, alembic.command.upgrade, revision)
+        assert set(tables) <= _tables(throwaway_database)
+
+
+def test_attendance_migrations_insert_no_rows(throwaway_database: URL) -> None:
+    _run_alembic(throwaway_database, alembic.command.upgrade, "head")
+
+    def attendance_counts(engine: sa.Engine) -> dict[str, int]:
+        with engine.connect() as connection:
+            return {
+                table: connection.execute(
+                    sa.text(f'SELECT count(*) FROM "{table}"')
+                ).scalar_one()
+                for table in ATTENDANCE_TABLES
+            }
+
+    counts = _inspect(
+        throwaway_database, lambda _inspector, engine: attendance_counts(engine)
+    )
+
+    assert counts == dict.fromkeys(ATTENDANCE_TABLES, 0)
 
 
 def test_dropping_items_downgrades_to_an_empty_item_table(

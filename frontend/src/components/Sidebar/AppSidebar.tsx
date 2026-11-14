@@ -1,8 +1,13 @@
 import {
   Briefcase,
   Building2,
+  CalendarClock,
+  ClipboardCheck,
+  Clock3,
   Home,
   Network,
+  SlidersHorizontal,
+  Upload,
   UserRound,
   Users,
   Wallet,
@@ -33,6 +38,28 @@ export function AppSidebar() {
         { icon: UserRound, title: "员工", path: "/employees" },
         { icon: Briefcase, title: "岗位", path: "/positions" },
         { icon: Wallet, title: "成本中心", path: "/cost-centers" },
+      ],
+    },
+    {
+      label: "考勤管理",
+      items: [
+        {
+          icon: CalendarClock,
+          title: "排班工作台",
+          path: "/attendance/schedule",
+        },
+        { icon: Upload, title: "导入中心", path: "/attendance/imports" },
+        {
+          icon: ClipboardCheck,
+          title: "考勤结果",
+          path: "/attendance/results",
+        },
+        {
+          icon: SlidersHorizontal,
+          title: "规则与节假日",
+          path: "/attendance/rules",
+        },
+        { icon: Clock3, title: "班次", path: "/attendance/shifts" },
       ],
     },
   ]

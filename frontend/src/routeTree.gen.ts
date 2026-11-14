@@ -16,12 +16,19 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutAttendanceRouteImport } from './routes/_layout/attendance'
 import { Route as LayoutCompaniesRouteImport } from './routes/_layout/companies'
 import { Route as LayoutCostCentersRouteImport } from './routes/_layout/cost-centers'
 import { Route as LayoutDepartmentsRouteImport } from './routes/_layout/departments'
 import { Route as LayoutEmployeesRouteImport } from './routes/_layout/employees'
 import { Route as LayoutPositionsRouteImport } from './routes/_layout/positions'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
+import { Route as LayoutAttendanceIndexRouteImport } from './routes/_layout/attendance/index'
+import { Route as LayoutAttendanceImportsRouteImport } from './routes/_layout/attendance/imports'
+import { Route as LayoutAttendanceResultsRouteImport } from './routes/_layout/attendance/results'
+import { Route as LayoutAttendanceRulesRouteImport } from './routes/_layout/attendance/rules'
+import { Route as LayoutAttendanceScheduleRouteImport } from './routes/_layout/attendance/schedule'
+import { Route as LayoutAttendanceShiftsRouteImport } from './routes/_layout/attendance/shifts'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -57,6 +64,11 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutAttendanceRoute = LayoutAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutCompaniesRoute = LayoutCompaniesRouteImport.update({
   id: '/companies',
   path: '/companies',
@@ -87,6 +99,37 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutAttendanceIndexRoute = LayoutAttendanceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LayoutAttendanceRoute,
+} as any)
+const LayoutAttendanceImportsRoute = LayoutAttendanceImportsRouteImport.update({
+  id: '/imports',
+  path: '/imports',
+  getParentRoute: () => LayoutAttendanceRoute,
+} as any)
+const LayoutAttendanceResultsRoute = LayoutAttendanceResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => LayoutAttendanceRoute,
+} as any)
+const LayoutAttendanceRulesRoute = LayoutAttendanceRulesRouteImport.update({
+  id: '/rules',
+  path: '/rules',
+  getParentRoute: () => LayoutAttendanceRoute,
+} as any)
+const LayoutAttendanceScheduleRoute =
+  LayoutAttendanceScheduleRouteImport.update({
+    id: '/schedule',
+    path: '/schedule',
+    getParentRoute: () => LayoutAttendanceRoute,
+  } as any)
+const LayoutAttendanceShiftsRoute = LayoutAttendanceShiftsRouteImport.update({
+  id: '/shifts',
+  path: '/shifts',
+  getParentRoute: () => LayoutAttendanceRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -95,12 +138,19 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/attendance': typeof LayoutAttendanceRouteWithChildren
   '/companies': typeof LayoutCompaniesRoute
   '/cost-centers': typeof LayoutCostCentersRoute
   '/departments': typeof LayoutDepartmentsRoute
   '/employees': typeof LayoutEmployeesRoute
   '/positions': typeof LayoutPositionsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/attendance/imports': typeof LayoutAttendanceImportsRoute
+  '/attendance/results': typeof LayoutAttendanceResultsRoute
+  '/attendance/rules': typeof LayoutAttendanceRulesRoute
+  '/attendance/schedule': typeof LayoutAttendanceScheduleRoute
+  '/attendance/shifts': typeof LayoutAttendanceShiftsRoute
+  '/attendance/': typeof LayoutAttendanceIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -115,6 +165,12 @@ export interface FileRoutesByTo {
   '/positions': typeof LayoutPositionsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
+  '/attendance/imports': typeof LayoutAttendanceImportsRoute
+  '/attendance/results': typeof LayoutAttendanceResultsRoute
+  '/attendance/rules': typeof LayoutAttendanceRulesRoute
+  '/attendance/schedule': typeof LayoutAttendanceScheduleRoute
+  '/attendance/shifts': typeof LayoutAttendanceShiftsRoute
+  '/attendance': typeof LayoutAttendanceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +180,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/attendance': typeof LayoutAttendanceRouteWithChildren
   '/_layout/companies': typeof LayoutCompaniesRoute
   '/_layout/cost-centers': typeof LayoutCostCentersRoute
   '/_layout/departments': typeof LayoutDepartmentsRoute
@@ -131,6 +188,12 @@ export interface FileRoutesById {
   '/_layout/positions': typeof LayoutPositionsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/attendance/imports': typeof LayoutAttendanceImportsRoute
+  '/_layout/attendance/results': typeof LayoutAttendanceResultsRoute
+  '/_layout/attendance/rules': typeof LayoutAttendanceRulesRoute
+  '/_layout/attendance/schedule': typeof LayoutAttendanceScheduleRoute
+  '/_layout/attendance/shifts': typeof LayoutAttendanceShiftsRoute
+  '/_layout/attendance/': typeof LayoutAttendanceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,12 +204,19 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/attendance'
     | '/companies'
     | '/cost-centers'
     | '/departments'
     | '/employees'
     | '/positions'
     | '/settings'
+    | '/attendance/imports'
+    | '/attendance/results'
+    | '/attendance/rules'
+    | '/attendance/schedule'
+    | '/attendance/shifts'
+    | '/attendance/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -161,6 +231,12 @@ export interface FileRouteTypes {
     | '/positions'
     | '/settings'
     | '/'
+    | '/attendance/imports'
+    | '/attendance/results'
+    | '/attendance/rules'
+    | '/attendance/schedule'
+    | '/attendance/shifts'
+    | '/attendance'
   id:
     | '__root__'
     | '/_layout'
@@ -169,6 +245,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
+    | '/_layout/attendance'
     | '/_layout/companies'
     | '/_layout/cost-centers'
     | '/_layout/departments'
@@ -176,6 +253,12 @@ export interface FileRouteTypes {
     | '/_layout/positions'
     | '/_layout/settings'
     | '/_layout/'
+    | '/_layout/attendance/imports'
+    | '/_layout/attendance/results'
+    | '/_layout/attendance/rules'
+    | '/_layout/attendance/schedule'
+    | '/_layout/attendance/shifts'
+    | '/_layout/attendance/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -237,6 +320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/attendance': {
+      id: '/_layout/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof LayoutAttendanceRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/companies': {
       id: '/_layout/companies'
       path: '/companies'
@@ -279,11 +369,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/attendance/': {
+      id: '/_layout/attendance/'
+      path: '/'
+      fullPath: '/attendance/'
+      preLoaderRoute: typeof LayoutAttendanceIndexRouteImport
+      parentRoute: typeof LayoutAttendanceRoute
+    }
+    '/_layout/attendance/imports': {
+      id: '/_layout/attendance/imports'
+      path: '/imports'
+      fullPath: '/attendance/imports'
+      preLoaderRoute: typeof LayoutAttendanceImportsRouteImport
+      parentRoute: typeof LayoutAttendanceRoute
+    }
+    '/_layout/attendance/results': {
+      id: '/_layout/attendance/results'
+      path: '/results'
+      fullPath: '/attendance/results'
+      preLoaderRoute: typeof LayoutAttendanceResultsRouteImport
+      parentRoute: typeof LayoutAttendanceRoute
+    }
+    '/_layout/attendance/rules': {
+      id: '/_layout/attendance/rules'
+      path: '/rules'
+      fullPath: '/attendance/rules'
+      preLoaderRoute: typeof LayoutAttendanceRulesRouteImport
+      parentRoute: typeof LayoutAttendanceRoute
+    }
+    '/_layout/attendance/schedule': {
+      id: '/_layout/attendance/schedule'
+      path: '/schedule'
+      fullPath: '/attendance/schedule'
+      preLoaderRoute: typeof LayoutAttendanceScheduleRouteImport
+      parentRoute: typeof LayoutAttendanceRoute
+    }
+    '/_layout/attendance/shifts': {
+      id: '/_layout/attendance/shifts'
+      path: '/shifts'
+      fullPath: '/attendance/shifts'
+      preLoaderRoute: typeof LayoutAttendanceShiftsRouteImport
+      parentRoute: typeof LayoutAttendanceRoute
+    }
   }
 }
 
+interface LayoutAttendanceRouteChildren {
+  LayoutAttendanceImportsRoute: typeof LayoutAttendanceImportsRoute
+  LayoutAttendanceResultsRoute: typeof LayoutAttendanceResultsRoute
+  LayoutAttendanceRulesRoute: typeof LayoutAttendanceRulesRoute
+  LayoutAttendanceScheduleRoute: typeof LayoutAttendanceScheduleRoute
+  LayoutAttendanceShiftsRoute: typeof LayoutAttendanceShiftsRoute
+  LayoutAttendanceIndexRoute: typeof LayoutAttendanceIndexRoute
+}
+
+const LayoutAttendanceRouteChildren: LayoutAttendanceRouteChildren = {
+  LayoutAttendanceImportsRoute: LayoutAttendanceImportsRoute,
+  LayoutAttendanceResultsRoute: LayoutAttendanceResultsRoute,
+  LayoutAttendanceRulesRoute: LayoutAttendanceRulesRoute,
+  LayoutAttendanceScheduleRoute: LayoutAttendanceScheduleRoute,
+  LayoutAttendanceShiftsRoute: LayoutAttendanceShiftsRoute,
+  LayoutAttendanceIndexRoute: LayoutAttendanceIndexRoute,
+}
+
+const LayoutAttendanceRouteWithChildren =
+  LayoutAttendanceRoute._addFileChildren(LayoutAttendanceRouteChildren)
+
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutAttendanceRoute: typeof LayoutAttendanceRouteWithChildren
   LayoutCompaniesRoute: typeof LayoutCompaniesRoute
   LayoutCostCentersRoute: typeof LayoutCostCentersRoute
   LayoutDepartmentsRoute: typeof LayoutDepartmentsRoute
@@ -295,6 +449,7 @@ interface LayoutRouteChildren {
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
+  LayoutAttendanceRoute: LayoutAttendanceRouteWithChildren,
   LayoutCompaniesRoute: LayoutCompaniesRoute,
   LayoutCostCentersRoute: LayoutCostCentersRoute,
   LayoutDepartmentsRoute: LayoutDepartmentsRoute,

@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { attendanceShiftsCreateShiftData, attendanceShiftsCreateShiftErrors, attendanceShiftsCreateShiftResponses, attendanceShiftsDeleteShiftData, attendanceShiftsDeleteShiftErrors, attendanceShiftsDeleteShiftResponses, attendanceShiftsReadShiftData, attendanceShiftsReadShiftErrors, attendanceShiftsReadShiftResponses, attendanceShiftsReadShiftsData, attendanceShiftsReadShiftsErrors, attendanceShiftsReadShiftsResponses, attendanceShiftsUpdateShiftData, attendanceShiftsUpdateShiftErrors, attendanceShiftsUpdateShiftResponses, companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -662,6 +662,86 @@ export class EmployeesService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/employees/{employee_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
+export class AttendanceShiftsService {
+    /**
+     * Read Shifts
+     *
+     * List the company's shifts ordered by shift code.
+     */
+    public static readShifts<ThrowOnError extends boolean = true>(options: Options<attendanceShiftsReadShiftsData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceShiftsReadShiftsResponses, attendanceShiftsReadShiftsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/shifts/',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Shift
+     *
+     * Create a shift template; the code and company cannot change afterwards.
+     */
+    public static createShift<ThrowOnError extends boolean = true>(options: Options<attendanceShiftsCreateShiftData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceShiftsCreateShiftResponses, attendanceShiftsCreateShiftErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/shifts/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Shift
+     *
+     * Hard delete a shift without plan or roster-snapshot references.
+     */
+    public static deleteShift<ThrowOnError extends boolean = true>(options: Options<attendanceShiftsDeleteShiftData, ThrowOnError>) {
+        return (options.client ?? client).delete<attendanceShiftsDeleteShiftResponses, attendanceShiftsDeleteShiftErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/shifts/{shift_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Shift
+     *
+     * Get one shift by id.
+     */
+    public static readShift<ThrowOnError extends boolean = true>(options: Options<attendanceShiftsReadShiftData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceShiftsReadShiftResponses, attendanceShiftsReadShiftErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/shifts/{shift_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Shift
+     *
+     * Update a shift; deactivation is blocked while enabled plans use it.
+     */
+    public static updateShift<ThrowOnError extends boolean = true>(options: Options<attendanceShiftsUpdateShiftData, ThrowOnError>) {
+        return (options.client ?? client).patch<attendanceShiftsUpdateShiftResponses, attendanceShiftsUpdateShiftErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/shifts/{shift_id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',

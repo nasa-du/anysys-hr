@@ -2221,6 +2221,323 @@
         }
       }
     },
+    "/api/v1/attendance/shifts/": {
+      "get": {
+        "tags": ["attendance-shifts"],
+        "summary": "Read Shifts",
+        "description": "List the company's shifts ordered by shift code.",
+        "operationId": "attendance-shifts-read_shifts",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "maxLength": 100 },
+                { "type": "null" }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Is Active"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftsPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["attendance-shifts"],
+        "summary": "Create Shift",
+        "description": "Create a shift template; the code and company cannot change afterwards.",
+        "operationId": "attendance-shifts-create_shift",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ShiftCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/shifts/{shift_id}": {
+      "get": {
+        "tags": ["attendance-shifts"],
+        "summary": "Read Shift",
+        "description": "Get one shift by id.",
+        "operationId": "attendance-shifts-read_shift",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "shift_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Shift Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["attendance-shifts"],
+        "summary": "Update Shift",
+        "description": "Update a shift; deactivation is blocked while enabled plans use it.",
+        "operationId": "attendance-shifts-update_shift",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "shift_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Shift Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ShiftUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["attendance-shifts"],
+        "summary": "Delete Shift",
+        "description": "Hard delete a shift without plan or roster-snapshot references.",
+        "operationId": "attendance-shifts-delete_shift",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "shift_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Shift Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/utils/test-email/": {
       "post": {
         "tags": ["utils"],
@@ -3621,6 +3938,256 @@
         "type": "object",
         "required": ["email", "password", "full_name"],
         "title": "PrivateUserCreate"
+      },
+      "ShiftCreate": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "shift_code": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "pattern": "^[A-Z0-9_-]{1,32}$",
+            "title": "Shift Code"
+          },
+          "shift_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Shift Name"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "time",
+            "title": "End Time"
+          },
+          "cross_day": {
+            "type": "boolean",
+            "title": "Cross Day",
+            "default": false
+          },
+          "break_start": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break Start"
+          },
+          "break_end": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break End"
+          },
+          "rest_minutes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Rest Minutes",
+            "default": 0
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16,
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Color"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "company_id",
+          "shift_code",
+          "shift_name",
+          "start_time",
+          "end_time"
+        ],
+        "title": "ShiftCreate"
+      },
+      "ShiftPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "shift_code": { "type": "string", "title": "Shift Code" },
+          "shift_name": { "type": "string", "title": "Shift Name" },
+          "start_time": {
+            "type": "string",
+            "format": "time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "time",
+            "title": "End Time"
+          },
+          "cross_day": { "type": "boolean", "title": "Cross Day" },
+          "break_start": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break Start"
+          },
+          "break_end": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break End"
+          },
+          "rest_minutes": { "type": "integer", "title": "Rest Minutes" },
+          "color": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Color"
+          },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "is_active": { "type": "boolean", "title": "Is Active" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "shift_code",
+          "shift_name",
+          "start_time",
+          "end_time",
+          "cross_day",
+          "rest_minutes",
+          "is_active",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ShiftPublic"
+      },
+      "ShiftUpdate": {
+        "properties": {
+          "shift_name": {
+            "anyOf": [
+              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "type": "null" }
+            ],
+            "title": "Shift Name"
+          },
+          "start_time": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "End Time"
+          },
+          "cross_day": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Cross Day"
+          },
+          "break_start": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break Start"
+          },
+          "break_end": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break End"
+          },
+          "rest_minutes": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Rest Minutes"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16,
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Color"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          },
+          "is_active": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Is Active"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ShiftUpdate"
+      },
+      "ShiftsPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/ShiftPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "ShiftsPublic"
       },
       "Token": {
         "properties": {

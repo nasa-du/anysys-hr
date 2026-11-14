@@ -1,4 +1,5 @@
 import {
+  AttendanceShiftsService,
   CompaniesService,
   type CompanyPublic,
   type ContractType,
@@ -12,6 +13,7 @@ import {
   LoginService,
   type PositionPublic,
   PositionsService,
+  type ShiftPublic,
 } from "../../src/client"
 import { client } from "../../src/client/client.gen"
 import { firstSuperuser, firstSuperuserPassword } from "../config"
@@ -24,6 +26,7 @@ export type ApiDepartment = DepartmentPublic
 export type ApiPosition = PositionPublic
 export type ApiCostCenter = CostCenterPublic
 export type ApiEmployee = EmployeePublic
+export type ApiShift = ShiftPublic
 
 let authentication: Promise<void> | null = null
 
@@ -85,6 +88,48 @@ export async function createCostCenter(input: {
 }): Promise<ApiCostCenter> {
   await ensureAuthenticated()
   const response = await CostCentersService.createCostCenter({ body: input })
+  return response.data
+}
+
+export async function createShift(input: {
+  company_id: string
+  shift_code: string
+  shift_name: string
+  start_time?: string
+  end_time?: string
+  cross_day?: boolean
+  break_start?: string | null
+  break_end?: string | null
+  rest_minutes?: number
+  color?: string | null
+  note?: string | null
+  is_active?: boolean
+}): Promise<ApiShift> {
+  await ensureAuthenticated()
+  const response = await AttendanceShiftsService.createShift({
+    body: {
+      company_id: input.company_id,
+      shift_code: input.shift_code,
+      shift_name: input.shift_name,
+      start_time: input.start_time ?? "08:30:00",
+      end_time: input.end_time ?? "17:30:00",
+      cross_day: input.cross_day ?? false,
+      break_start: input.break_start ?? null,
+      break_end: input.break_end ?? null,
+      rest_minutes: input.rest_minutes ?? 60,
+      color: input.color ?? null,
+      note: input.note ?? null,
+      is_active: input.is_active ?? true,
+    },
+  })
+  return response.data
+}
+
+export async function readShift(shiftId: string): Promise<ApiShift> {
+  await ensureAuthenticated()
+  const response = await AttendanceShiftsService.readShift({
+    path: { shift_id: shiftId },
+  })
   return response.data
 }
 

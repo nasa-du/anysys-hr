@@ -8,6 +8,7 @@ interface AttendancePageProps {
   title: string
   description: string
   children?: ReactNode
+  actions?: ReactNode
 }
 
 /** Scheme A page shell: title, month context, and an explicit empty state. */
@@ -15,6 +16,7 @@ export function AttendancePage({
   title,
   description,
   children,
+  actions,
 }: AttendancePageProps) {
   const { month } = useAttendanceMonth()
 
@@ -25,7 +27,10 @@ export function AttendancePage({
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
           <p className="text-muted-foreground">{description}</p>
         </div>
-        <AttendanceMonthPicker />
+        <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+          <AttendanceMonthPicker />
+          {actions}
+        </div>
       </div>
       {children ?? (
         <EmptyState

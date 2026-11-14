@@ -1071,6 +1071,186 @@ export type PrivateUserCreate = {
 };
 
 /**
+ * ShiftCreate
+ */
+export type ShiftCreate = {
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Shift Code
+     */
+    shift_code: string;
+    /**
+     * Shift Name
+     */
+    shift_name: string;
+    /**
+     * Start Time
+     */
+    start_time: string;
+    /**
+     * End Time
+     */
+    end_time: string;
+    /**
+     * Cross Day
+     */
+    cross_day?: boolean;
+    /**
+     * Break Start
+     */
+    break_start?: string | null;
+    /**
+     * Break End
+     */
+    break_end?: string | null;
+    /**
+     * Rest Minutes
+     */
+    rest_minutes?: number;
+    /**
+     * Color
+     */
+    color?: string | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean;
+};
+
+/**
+ * ShiftPublic
+ */
+export type ShiftPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Shift Code
+     */
+    shift_code: string;
+    /**
+     * Shift Name
+     */
+    shift_name: string;
+    /**
+     * Start Time
+     */
+    start_time: string;
+    /**
+     * End Time
+     */
+    end_time: string;
+    /**
+     * Cross Day
+     */
+    cross_day: boolean;
+    /**
+     * Break Start
+     */
+    break_start?: string | null;
+    /**
+     * Break End
+     */
+    break_end?: string | null;
+    /**
+     * Rest Minutes
+     */
+    rest_minutes: number;
+    /**
+     * Color
+     */
+    color?: string | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * ShiftUpdate
+ */
+export type ShiftUpdate = {
+    /**
+     * Shift Name
+     */
+    shift_name?: string | null;
+    /**
+     * Start Time
+     */
+    start_time?: string | null;
+    /**
+     * End Time
+     */
+    end_time?: string | null;
+    /**
+     * Cross Day
+     */
+    cross_day?: boolean | null;
+    /**
+     * Break Start
+     */
+    break_start?: string | null;
+    /**
+     * Break End
+     */
+    break_end?: string | null;
+    /**
+     * Rest Minutes
+     */
+    rest_minutes?: number | null;
+    /**
+     * Color
+     */
+    color?: string | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+};
+
+/**
+ * ShiftsPublic
+ */
+export type ShiftsPublic = {
+    /**
+     * Data
+     */
+    data: Array<ShiftPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * Token
  */
 export type Token = {
@@ -2710,6 +2890,207 @@ export type employeesUpdateEmployeeResponses = {
 };
 
 export type employeesUpdateEmployeeResponse = employeesUpdateEmployeeResponses[keyof employeesUpdateEmployeeResponses];
+
+export type attendanceShiftsReadShiftsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Is Active
+         */
+        is_active?: boolean | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/shifts/';
+};
+
+export type attendanceShiftsReadShiftsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceShiftsReadShiftsError = attendanceShiftsReadShiftsErrors[keyof attendanceShiftsReadShiftsErrors];
+
+export type attendanceShiftsReadShiftsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ShiftsPublic;
+};
+
+export type attendanceShiftsReadShiftsResponse = attendanceShiftsReadShiftsResponses[keyof attendanceShiftsReadShiftsResponses];
+
+export type attendanceShiftsCreateShiftData = {
+    body: ShiftCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/shifts/';
+};
+
+export type attendanceShiftsCreateShiftErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceShiftsCreateShiftError = attendanceShiftsCreateShiftErrors[keyof attendanceShiftsCreateShiftErrors];
+
+export type attendanceShiftsCreateShiftResponses = {
+    /**
+     * Successful Response
+     */
+    201: ShiftPublic;
+};
+
+export type attendanceShiftsCreateShiftResponse = attendanceShiftsCreateShiftResponses[keyof attendanceShiftsCreateShiftResponses];
+
+export type attendanceShiftsDeleteShiftData = {
+    body?: never;
+    path: {
+        /**
+         * Shift Id
+         */
+        shift_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/shifts/{shift_id}';
+};
+
+export type attendanceShiftsDeleteShiftErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceShiftsDeleteShiftError = attendanceShiftsDeleteShiftErrors[keyof attendanceShiftsDeleteShiftErrors];
+
+export type attendanceShiftsDeleteShiftResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type attendanceShiftsDeleteShiftResponse = attendanceShiftsDeleteShiftResponses[keyof attendanceShiftsDeleteShiftResponses];
+
+export type attendanceShiftsReadShiftData = {
+    body?: never;
+    path: {
+        /**
+         * Shift Id
+         */
+        shift_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/shifts/{shift_id}';
+};
+
+export type attendanceShiftsReadShiftErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceShiftsReadShiftError = attendanceShiftsReadShiftErrors[keyof attendanceShiftsReadShiftErrors];
+
+export type attendanceShiftsReadShiftResponses = {
+    /**
+     * Successful Response
+     */
+    200: ShiftPublic;
+};
+
+export type attendanceShiftsReadShiftResponse = attendanceShiftsReadShiftResponses[keyof attendanceShiftsReadShiftResponses];
+
+export type attendanceShiftsUpdateShiftData = {
+    body: ShiftUpdate;
+    path: {
+        /**
+         * Shift Id
+         */
+        shift_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/shifts/{shift_id}';
+};
+
+export type attendanceShiftsUpdateShiftErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceShiftsUpdateShiftError = attendanceShiftsUpdateShiftErrors[keyof attendanceShiftsUpdateShiftErrors];
+
+export type attendanceShiftsUpdateShiftResponses = {
+    /**
+     * Successful Response
+     */
+    200: ShiftPublic;
+};
+
+export type attendanceShiftsUpdateShiftResponse = attendanceShiftsUpdateShiftResponses[keyof attendanceShiftsUpdateShiftResponses];
 
 export type utilsTestEmailData = {
     body?: never;

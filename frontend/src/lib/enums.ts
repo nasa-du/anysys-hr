@@ -75,6 +75,25 @@ export const MANAGER_STATUS_LABELS: Record<EmployeeStatus, string> = {
 // enum vocabulary; components must import labels from here instead of
 // hardcoding Chinese strings.
 
+export type AttendanceShiftStatus = "active" | "inactive"
+
+/** Inactive shifts stay visible in history as 「已停用」. */
+export const SHIFT_STATUS_LABELS: Record<AttendanceShiftStatus, string> = {
+  active: "启用",
+  inactive: "已停用",
+}
+
+export type AttendanceShiftStatusFilter = "all" | AttendanceShiftStatus
+
+export const SHIFT_STATUS_FILTER_OPTIONS: Array<{
+  value: AttendanceShiftStatusFilter
+  label: string
+}> = [
+  { value: "all", label: "全部状态" },
+  { value: "active", label: SHIFT_STATUS_LABELS.active },
+  { value: "inactive", label: SHIFT_STATUS_LABELS.inactive },
+]
+
 export type AttendanceScheduleScopeType =
   | "all"
   | "dept"

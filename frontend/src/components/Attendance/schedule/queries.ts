@@ -1,5 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query"
 
+import { invalidateRosterQueries } from "./roster-queries"
+
 export function planListQueryKey(companyId: string, month: string) {
   return ["attendance", "schedule-plans", "list", companyId, { month }] as const
 }
@@ -33,7 +35,5 @@ export function invalidatePlanQueries(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({
     queryKey: ["attendance", "schedule-plans"],
   })
-  void queryClient.invalidateQueries({ queryKey: ["attendance", "roster"] })
-  void queryClient.invalidateQueries({ queryKey: ["attendance", "months"] })
-  void queryClient.invalidateQueries({ queryKey: ["attendance", "results"] })
+  invalidateRosterQueries(queryClient)
 }

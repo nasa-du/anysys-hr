@@ -20,6 +20,8 @@ from app.enums import (
     EmployeeStatus,
     Gender,
     HolidayDayType,
+    RosterSource,
+    RosterState,
     ScheduleScopeType,
 )
 from app.models import (
@@ -34,6 +36,8 @@ from app.models import (
     PlanRuleOverride,
     PlanScope,
     Position,
+    RosterEntry,
+    RosterEntryShift,
     SchedulePlan,
     Shift,
 )
@@ -1326,7 +1330,9 @@ def _plan_days(
 
 
 def _seed_attendance_plans(
-    session: Session, companies: dict[str, Company], departments: dict[tuple[Any, str], Department]
+    session: Session,
+    companies: dict[str, Company],
+    departments: dict[tuple[Any, str], Department],
 ) -> None:
     """Insert the four 2026-09 plans and expand them once.
 
@@ -1411,6 +1417,93 @@ def _seed_attendance_plans(
     session.flush()
 
 
+def _seed_attendance_manual_entries(
+    session: Session, companies: dict[str, Company]
+) -> None:
+    """Insert the two documented manual exceptions if they are missing.
+
+    The rows go in after plan expansion so ``plan_id`` records the overridden
+    plan. A second run never overwrites a user-edited exception.
+    """
+    company = companies["C4"]
+    month = date(2026, 9, 1)
+    employees = {
+        employee.employee_no: employee
+        for employee in session.exec(
+            select(Employee).where(col(Employee.employee_no).in_(["E103", "E104"]))
+        ).all()
+    }
+    shifts = {
+        shift.shift_code: shift
+        for shift in session.exec(
+            select(Shift).where(col(Shift.company_id) == company.id)
+        ).all()
+    }
+    candidates = expansion.load_candidates(session, company.id, month)
+    seeds: list[tuple[str, date, RosterState, list[str], str | None]] = [
+        ("E103", date(2026, 9, 10), RosterState.REST, [], "个人调休"),
+        ("E104", date(2026, 9, 11), RosterState.WORK, ["EARLY", "MID"], "临时双班"),
+    ]
+    for employee_no, work_date, state, shift_codes, note in seeds:
+        employee = employees.get(employee_no)
+        if employee is None:
+            continue
+        existing = session.exec(
+            select(RosterEntry).where(
+                col(RosterEntry.employee_id) == employee.id,
+                col(RosterEntry.work_date) == work_date,
+            )
+        ).first()
+        if existing is not None and existing.source == RosterSource.MANUAL:
+            # A user-edited exception always wins over the documented seed.
+            continue
+        winner = expansion.resolve_winner(candidates, employee)
+        if existing is None:
+            entry = RosterEntry(
+                company_id=company.id,
+                employee_id=employee.id,
+                work_date=work_date,
+                state=state,
+                source=RosterSource.MANUAL,
+                plan_id=winner.plan_id if winner is not None else None,
+                note=note,
+            )
+            session.add(entry)
+        else:
+            # Convert the plan row the expansion just created.
+            entry = existing
+            entry.state = state
+            entry.source = RosterSource.MANUAL
+            entry.plan_id = winner.plan_id if winner is not None else None
+            entry.note = note
+            session.add(entry)
+            for row in session.exec(
+                select(RosterEntryShift).where(
+                    col(RosterEntryShift.roster_entry_id) == entry.id
+                )
+            ).all():
+                session.delete(row)
+        session.flush()
+        for seq, shift_code in enumerate(shift_codes):
+            shift = shifts[shift_code]
+            session.add(
+                RosterEntryShift(
+                    roster_entry_id=entry.id,
+                    seq=seq,
+                    shift_id=shift.id,
+                    shift_code=shift.shift_code,
+                    shift_name=shift.shift_name,
+                    start_time=shift.start_time,
+                    end_time=shift.end_time,
+                    cross_day=shift.cross_day,
+                    break_start=shift.break_start,
+                    break_end=shift.break_end,
+                    rest_minutes=shift.rest_minutes,
+                )
+            )
+    session.flush()
+
+
 def seed(session: Session) -> None:
     companies = _seed_companies(session)
     departments = _seed_departments(session, companies)
@@ -1421,6 +1514,7 @@ def seed(session: Session) -> None:
     _seed_attendance_rules(session, companies)
     _seed_holidays(session, companies)
     _seed_attendance_plans(session, companies, departments)
+    _seed_attendance_manual_entries(session, companies)
     session.commit()
 
 

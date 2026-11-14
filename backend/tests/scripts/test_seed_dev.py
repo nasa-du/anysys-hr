@@ -12,6 +12,7 @@ from app.enums import (
     ContractType,
     EmployeeStatus,
     HolidayDayType,
+    RosterSource,
     ScheduleScopeType,
 )
 from app.models import (
@@ -27,6 +28,7 @@ from app.models import (
     PlanRuleOverride,
     Position,
     RosterEntry,
+    RosterEntryShift,
     SchedulePlan,
     Shift,
 )
@@ -770,8 +772,7 @@ def test_seed_inserts_four_plans_and_expands_september_once() -> None:
         )
         assert roster
         assert all(
-            date(2026, 9, 1) <= entry.work_date <= date(2026, 9, 30)
-            for entry in roster
+            date(2026, 9, 1) <= entry.work_date <= date(2026, 9, 30) for entry in roster
         )
         assert [
             entry for entry in roster if entry.employee_id == employees["E112"].id
@@ -818,6 +819,33 @@ def test_seed_inserts_four_plans_and_expands_september_once() -> None:
             by_employee_date[(employees["E101"].id, date(2026, 9, 1))].plan_id
             == plans["行政班"].id
         )
+
+        # The two documented manual exceptions are seeded after expansion and
+        # keep the overridden plan id.
+        manual_entries = {
+            (entry.employee_id, entry.work_date): entry
+            for entry in roster
+            if entry.source == RosterSource.MANUAL
+        }
+        assert set(manual_entries) == {
+            (employees["E103"].id, date(2026, 9, 10)),
+            (employees["E104"].id, date(2026, 9, 11)),
+        }
+        rest_entry = manual_entries[(employees["E103"].id, date(2026, 9, 10))]
+        assert rest_entry.state.value == "rest"
+        assert rest_entry.plan_id == plans["行政班"].id
+        assert rest_entry.note == "个人调休"
+        multi_entry = manual_entries[(employees["E104"].id, date(2026, 9, 11))]
+        assert multi_entry.state.value == "work"
+        assert multi_entry.plan_id == plans["行政班"].id
+        assert [
+            shift.shift_code
+            for shift in session.exec(
+                select(RosterEntryShift)
+                .where(RosterEntryShift.roster_entry_id == multi_entry.id)
+                .order_by(RosterEntryShift.seq)
+            ).all()
+        ] == ["EARLY", "MID"]
 
 
 def test_seed_does_not_create_import_batches() -> None:

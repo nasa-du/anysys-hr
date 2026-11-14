@@ -766,6 +766,11 @@ export type CostCentersPublic = {
 };
 
 /**
+ * DayType
+ */
+export type DayType = 'workday' | 'weekend' | 'holiday';
+
+/**
  * DepartmentCreate
  */
 export type DepartmentCreate = {
@@ -1041,6 +1046,32 @@ export type EmployeeCreate = {
 };
 
 /**
+ * EmployeeDisplay
+ */
+export type EmployeeDisplay = {
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Employee No
+     */
+    employee_no: string;
+    /**
+     * Employee Name
+     */
+    employee_name: string;
+    /**
+     * Department Id
+     */
+    department_id?: string | null;
+    /**
+     * Department Name
+     */
+    department_name?: string | null;
+};
+
+/**
  * EmployeePublic
  */
 export type EmployeePublic = {
@@ -1132,6 +1163,21 @@ export type EmployeePublic = {
      */
     manager_name?: string | null;
     manager_status?: EmployeeStatus | null;
+};
+
+/**
+ * EmployeeRosterCalendarPublic
+ */
+export type EmployeeRosterCalendarPublic = {
+    employee: EmployeeDisplay;
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Days
+     */
+    days: Array<RosterCalendarDay>;
 };
 
 /**
@@ -1537,6 +1583,92 @@ export type NewPassword = {
 };
 
 /**
+ * PersonnelSyncPreview
+ */
+export type PersonnelSyncPreview = {
+    /**
+     * Added
+     */
+    added: number;
+    /**
+     * Removed
+     */
+    removed: number;
+    /**
+     * Changed
+     */
+    changed: number;
+    /**
+     * Entries Added
+     */
+    entries_added: number;
+    /**
+     * Entries Updated
+     */
+    entries_updated: number;
+    /**
+     * Entries Deleted
+     */
+    entries_deleted: number;
+    /**
+     * Manual Preserved
+     */
+    manual_preserved: number;
+};
+
+/**
+ * PersonnelSyncRequest
+ */
+export type PersonnelSyncRequest = {
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Month
+     */
+    month: string;
+};
+
+/**
+ * PersonnelSyncResult
+ */
+export type PersonnelSyncResult = {
+    /**
+     * Added
+     */
+    added: number;
+    /**
+     * Removed
+     */
+    removed: number;
+    /**
+     * Changed
+     */
+    changed: number;
+    /**
+     * Entries Added
+     */
+    entries_added: number;
+    /**
+     * Entries Updated
+     */
+    entries_updated: number;
+    /**
+     * Entries Deleted
+     */
+    entries_deleted: number;
+    /**
+     * Manual Preserved
+     */
+    manual_preserved: number;
+    /**
+     * Month Stale
+     */
+    month_stale: boolean;
+};
+
+/**
  * PlanCopyPreview
  */
 export type PlanCopyPreview = {
@@ -1853,6 +1985,34 @@ export type PrivateUserCreate = {
 };
 
 /**
+ * RosterCalendarDay
+ */
+export type RosterCalendarDay = {
+    /**
+     * Work Date
+     */
+    work_date: string;
+    day_type: DayType;
+    /**
+     * State
+     */
+    state: 'work' | 'rest' | 'unscheduled';
+    source?: RosterSource | null;
+    /**
+     * Plan Id
+     */
+    plan_id?: string | null;
+    /**
+     * Shifts
+     */
+    shifts?: Array<RosterEntryShiftPublic>;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
  * RosterChangeSummary
  */
 export type RosterChangeSummary = {
@@ -1873,6 +2033,420 @@ export type RosterChangeSummary = {
      */
     manual_preserved?: number;
 };
+
+/**
+ * RosterDayEmployee
+ */
+export type RosterDayEmployee = {
+    employee: EmployeeDisplay;
+    /**
+     * State
+     */
+    state: 'work' | 'rest';
+    source: RosterSource;
+    /**
+     * Plan Id
+     */
+    plan_id?: string | null;
+    /**
+     * Shifts
+     */
+    shifts?: Array<RosterEntryShiftPublic>;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * RosterDayPublic
+ */
+export type RosterDayPublic = {
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Employees
+     */
+    employees: Array<RosterDayEmployee>;
+    /**
+     * Unscheduled Count
+     */
+    unscheduled_count: number;
+};
+
+/**
+ * RosterEmployeeSummariesPublic
+ */
+export type RosterEmployeeSummariesPublic = {
+    /**
+     * Data
+     */
+    data: Array<RosterEmployeeSummaryPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * RosterEmployeeSummaryPublic
+ */
+export type RosterEmployeeSummaryPublic = {
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Employee No
+     */
+    employee_no: string;
+    /**
+     * Employee Name
+     */
+    employee_name: string;
+    /**
+     * Department Id
+     */
+    department_id?: string | null;
+    /**
+     * Department Name
+     */
+    department_name?: string | null;
+    /**
+     * Work Days
+     */
+    work_days: number;
+    /**
+     * Rest Days
+     */
+    rest_days: number;
+    /**
+     * Unscheduled Days
+     */
+    unscheduled_days: number;
+    /**
+     * Manual Exception Count
+     */
+    manual_exception_count: number;
+};
+
+/**
+ * RosterEntriesPublic
+ */
+export type RosterEntriesPublic = {
+    /**
+     * Data
+     */
+    data: Array<RosterEntryPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * RosterEntryBatchRequest
+ */
+export type RosterEntryBatchRequest = {
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Entries
+     */
+    entries?: Array<RosterEntryUpsert>;
+    /**
+     * Delete Entry Ids
+     */
+    delete_entry_ids?: Array<string>;
+};
+
+/**
+ * RosterEntryBatchResult
+ */
+export type RosterEntryBatchResult = {
+    /**
+     * Created
+     */
+    created: number;
+    /**
+     * Updated
+     */
+    updated: number;
+    /**
+     * Deleted
+     */
+    deleted: number;
+    /**
+     * Month Stale
+     */
+    month_stale: boolean;
+};
+
+/**
+ * RosterEntryCreate
+ */
+export type RosterEntryCreate = {
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Work Date
+     */
+    work_date: string;
+    state: RosterState;
+    /**
+     * Shifts
+     */
+    shifts?: Array<RosterShiftInput>;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * RosterEntryPublic
+ */
+export type RosterEntryPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Employee No
+     */
+    employee_no?: string | null;
+    /**
+     * Employee Name
+     */
+    employee_name?: string | null;
+    /**
+     * Department Name
+     */
+    department_name?: string | null;
+    /**
+     * Work Date
+     */
+    work_date: string;
+    state: RosterState;
+    source: RosterSource;
+    /**
+     * Plan Id
+     */
+    plan_id?: string | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Shifts
+     */
+    shifts?: Array<RosterEntryShiftPublic>;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * RosterEntryShiftPublic
+ */
+export type RosterEntryShiftPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Seq
+     */
+    seq: number;
+    /**
+     * Shift Id
+     */
+    shift_id: string;
+    /**
+     * Shift Code
+     */
+    shift_code: string;
+    /**
+     * Shift Name
+     */
+    shift_name: string;
+    /**
+     * Start Time
+     */
+    start_time: string;
+    /**
+     * End Time
+     */
+    end_time: string;
+    /**
+     * Cross Day
+     */
+    cross_day: boolean;
+    /**
+     * Break Start
+     */
+    break_start?: string | null;
+    /**
+     * Break End
+     */
+    break_end?: string | null;
+    /**
+     * Rest Minutes
+     */
+    rest_minutes: number;
+};
+
+/**
+ * RosterEntryUpdate
+ */
+export type RosterEntryUpdate = {
+    state?: RosterState | null;
+    /**
+     * Shifts
+     */
+    shifts?: Array<RosterShiftInput> | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * RosterEntryUpsert
+ */
+export type RosterEntryUpsert = {
+    /**
+     * Entry Id
+     */
+    entry_id?: string | null;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Work Date
+     */
+    work_date: string;
+    state: RosterState;
+    /**
+     * Shifts
+     */
+    shifts?: Array<RosterShiftInput>;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * RosterMonthDayPublic
+ */
+export type RosterMonthDayPublic = {
+    /**
+     * Date
+     */
+    date: string;
+    day_type: DayType;
+    /**
+     * Work Count
+     */
+    work_count: number;
+    /**
+     * Rest Count
+     */
+    rest_count: number;
+    /**
+     * Unscheduled Count
+     */
+    unscheduled_count: number;
+    /**
+     * Manual Count
+     */
+    manual_count: number;
+    /**
+     * Shift Counts
+     */
+    shift_counts?: Array<ShiftCountPublic>;
+};
+
+/**
+ * RosterMonthPlanPublic
+ */
+export type RosterMonthPlanPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Plan Name
+     */
+    plan_name: string;
+    scope_type: ScheduleScopeType;
+    status: PlanStatus;
+};
+
+/**
+ * RosterMonthPublic
+ */
+export type RosterMonthPublic = {
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Days
+     */
+    days: Array<RosterMonthDayPublic>;
+    /**
+     * Plans
+     */
+    plans: Array<RosterMonthPlanPublic>;
+};
+
+/**
+ * RosterShiftInput
+ */
+export type RosterShiftInput = {
+    /**
+     * Seq
+     */
+    seq: number;
+    /**
+     * Shift Id
+     */
+    shift_id: string;
+};
+
+/**
+ * RosterSource
+ */
+export type RosterSource = 'plan' | 'manual';
+
+/**
+ * RosterState
+ *
+ * States persisted on roster entries. ``unscheduled`` is API-only.
+ */
+export type RosterState = 'work' | 'rest';
 
 /**
  * RulePatch
@@ -2364,6 +2938,32 @@ export type SchedulePlansPublic = {
  * ScheduleScopeType
  */
 export type ScheduleScopeType = 'all' | 'dept' | 'position' | 'employee';
+
+/**
+ * ShiftCountPublic
+ */
+export type ShiftCountPublic = {
+    /**
+     * Shift Id
+     */
+    shift_id: string;
+    /**
+     * Shift Code
+     */
+    shift_code: string;
+    /**
+     * Shift Name
+     */
+    shift_name: string;
+    /**
+     * Color
+     */
+    color?: string | null;
+    /**
+     * Count
+     */
+    count: number;
+};
 
 /**
  * ShiftCreate
@@ -5285,6 +5885,531 @@ export type attendanceSchedulePlansUpdatePlanRuleOverridesResponses = {
 };
 
 export type attendanceSchedulePlansUpdatePlanRuleOverridesResponse = attendanceSchedulePlansUpdatePlanRuleOverridesResponses[keyof attendanceSchedulePlansUpdatePlanRuleOverridesResponses];
+
+export type attendanceRosterReadEmployeeCalendarData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month: string;
+        /**
+         * Employee Id
+         */
+        employee_id: string;
+    };
+    url: '/api/v1/attendance/roster/calendar';
+};
+
+export type attendanceRosterReadEmployeeCalendarErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterReadEmployeeCalendarError = attendanceRosterReadEmployeeCalendarErrors[keyof attendanceRosterReadEmployeeCalendarErrors];
+
+export type attendanceRosterReadEmployeeCalendarResponses = {
+    /**
+     * Successful Response
+     */
+    200: EmployeeRosterCalendarPublic;
+};
+
+export type attendanceRosterReadEmployeeCalendarResponse = attendanceRosterReadEmployeeCalendarResponses[keyof attendanceRosterReadEmployeeCalendarResponses];
+
+export type attendanceRosterReadRosterDayData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Date
+         */
+        date: string;
+        /**
+         * Dept Id
+         */
+        dept_id?: string | null;
+        /**
+         * Plan Id
+         */
+        plan_id?: string | null;
+        /**
+         * Source
+         */
+        source?: RosterSource | null;
+    };
+    url: '/api/v1/attendance/roster/day';
+};
+
+export type attendanceRosterReadRosterDayErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterReadRosterDayError = attendanceRosterReadRosterDayErrors[keyof attendanceRosterReadRosterDayErrors];
+
+export type attendanceRosterReadRosterDayResponses = {
+    /**
+     * Successful Response
+     */
+    200: RosterDayPublic;
+};
+
+export type attendanceRosterReadRosterDayResponse = attendanceRosterReadRosterDayResponses[keyof attendanceRosterReadRosterDayResponses];
+
+export type attendanceRosterReadRosterMonthData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month: string;
+        /**
+         * Dept Id
+         */
+        dept_id?: string | null;
+    };
+    url: '/api/v1/attendance/roster/month';
+};
+
+export type attendanceRosterReadRosterMonthErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterReadRosterMonthError = attendanceRosterReadRosterMonthErrors[keyof attendanceRosterReadRosterMonthErrors];
+
+export type attendanceRosterReadRosterMonthResponses = {
+    /**
+     * Successful Response
+     */
+    200: RosterMonthPublic;
+};
+
+export type attendanceRosterReadRosterMonthResponse = attendanceRosterReadRosterMonthResponses[keyof attendanceRosterReadRosterMonthResponses];
+
+export type attendanceRosterReadRosterEmployeesData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month: string;
+        /**
+         * Dept Id
+         */
+        dept_id?: string | null;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/roster/employees';
+};
+
+export type attendanceRosterReadRosterEmployeesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterReadRosterEmployeesError = attendanceRosterReadRosterEmployeesErrors[keyof attendanceRosterReadRosterEmployeesErrors];
+
+export type attendanceRosterReadRosterEmployeesResponses = {
+    /**
+     * Successful Response
+     */
+    200: RosterEmployeeSummariesPublic;
+};
+
+export type attendanceRosterReadRosterEmployeesResponse = attendanceRosterReadRosterEmployeesResponses[keyof attendanceRosterReadRosterEmployeesResponses];
+
+export type attendanceRosterSyncPreviewData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month: string;
+    };
+    url: '/api/v1/attendance/roster/sync-preview';
+};
+
+export type attendanceRosterSyncPreviewErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterSyncPreviewError = attendanceRosterSyncPreviewErrors[keyof attendanceRosterSyncPreviewErrors];
+
+export type attendanceRosterSyncPreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: PersonnelSyncPreview;
+};
+
+export type attendanceRosterSyncPreviewResponse = attendanceRosterSyncPreviewResponses[keyof attendanceRosterSyncPreviewResponses];
+
+export type attendanceRosterSyncPersonnelData = {
+    body: PersonnelSyncRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/roster/sync';
+};
+
+export type attendanceRosterSyncPersonnelErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterSyncPersonnelError = attendanceRosterSyncPersonnelErrors[keyof attendanceRosterSyncPersonnelErrors];
+
+export type attendanceRosterSyncPersonnelResponses = {
+    /**
+     * Successful Response
+     */
+    200: PersonnelSyncResult;
+};
+
+export type attendanceRosterSyncPersonnelResponse = attendanceRosterSyncPersonnelResponses[keyof attendanceRosterSyncPersonnelResponses];
+
+export type attendanceRosterReadRosterEntriesData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month?: string | null;
+        /**
+         * Employee Id
+         */
+        employee_id?: string | null;
+        /**
+         * Dept Id
+         */
+        dept_id?: string | null;
+        /**
+         * State
+         */
+        state?: RosterState | null;
+        /**
+         * Source
+         */
+        source?: RosterSource | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/roster-entries/';
+};
+
+export type attendanceRosterReadRosterEntriesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterReadRosterEntriesError = attendanceRosterReadRosterEntriesErrors[keyof attendanceRosterReadRosterEntriesErrors];
+
+export type attendanceRosterReadRosterEntriesResponses = {
+    /**
+     * Successful Response
+     */
+    200: RosterEntriesPublic;
+};
+
+export type attendanceRosterReadRosterEntriesResponse = attendanceRosterReadRosterEntriesResponses[keyof attendanceRosterReadRosterEntriesResponses];
+
+export type attendanceRosterCreateRosterEntryData = {
+    body: RosterEntryCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/roster-entries/';
+};
+
+export type attendanceRosterCreateRosterEntryErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterCreateRosterEntryError = attendanceRosterCreateRosterEntryErrors[keyof attendanceRosterCreateRosterEntryErrors];
+
+export type attendanceRosterCreateRosterEntryResponses = {
+    /**
+     * Successful Response
+     */
+    201: RosterEntryPublic;
+};
+
+export type attendanceRosterCreateRosterEntryResponse = attendanceRosterCreateRosterEntryResponses[keyof attendanceRosterCreateRosterEntryResponses];
+
+export type attendanceRosterDeleteRosterEntryData = {
+    body?: never;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/roster-entries/{entry_id}';
+};
+
+export type attendanceRosterDeleteRosterEntryErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterDeleteRosterEntryError = attendanceRosterDeleteRosterEntryErrors[keyof attendanceRosterDeleteRosterEntryErrors];
+
+export type attendanceRosterDeleteRosterEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type attendanceRosterDeleteRosterEntryResponse = attendanceRosterDeleteRosterEntryResponses[keyof attendanceRosterDeleteRosterEntryResponses];
+
+export type attendanceRosterReadRosterEntryData = {
+    body?: never;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/roster-entries/{entry_id}';
+};
+
+export type attendanceRosterReadRosterEntryErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterReadRosterEntryError = attendanceRosterReadRosterEntryErrors[keyof attendanceRosterReadRosterEntryErrors];
+
+export type attendanceRosterReadRosterEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: RosterEntryPublic;
+};
+
+export type attendanceRosterReadRosterEntryResponse = attendanceRosterReadRosterEntryResponses[keyof attendanceRosterReadRosterEntryResponses];
+
+export type attendanceRosterUpdateRosterEntryData = {
+    body: RosterEntryUpdate;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/roster-entries/{entry_id}';
+};
+
+export type attendanceRosterUpdateRosterEntryErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterUpdateRosterEntryError = attendanceRosterUpdateRosterEntryErrors[keyof attendanceRosterUpdateRosterEntryErrors];
+
+export type attendanceRosterUpdateRosterEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: RosterEntryPublic;
+};
+
+export type attendanceRosterUpdateRosterEntryResponse = attendanceRosterUpdateRosterEntryResponses[keyof attendanceRosterUpdateRosterEntryResponses];
+
+export type attendanceRosterBatchRosterEntriesData = {
+    body: RosterEntryBatchRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/roster-entries/batch';
+};
+
+export type attendanceRosterBatchRosterEntriesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceRosterBatchRosterEntriesError = attendanceRosterBatchRosterEntriesErrors[keyof attendanceRosterBatchRosterEntriesErrors];
+
+export type attendanceRosterBatchRosterEntriesResponses = {
+    /**
+     * Successful Response
+     */
+    200: RosterEntryBatchResult;
+};
+
+export type attendanceRosterBatchRosterEntriesResponse = attendanceRosterBatchRosterEntriesResponses[keyof attendanceRosterBatchRosterEntriesResponses];
 
 export type utilsTestEmailData = {
     body?: never;

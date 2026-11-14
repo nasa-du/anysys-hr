@@ -13,12 +13,10 @@ from datetime import date
 from typing import NoReturn
 
 from sqlalchemy import ColumnElement, func
-from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
 from app.core.errors import Blocker, DomainError
 from app.enums import (
-    AttendanceMonthStatus,
     PlanStatus,
     RosterSource,
     RosterState,
@@ -58,6 +56,21 @@ from app.schemas_attendance.scheduling import (
 )
 from app.services.attendance import expansion
 from app.services.attendance.errors import AttendanceErrorCode
+from app.services.attendance.month_state import (
+    EXPANSION_BLOCKED_MESSAGE,
+)
+from app.services.attendance.month_state import (
+    ensure_month_editable as _ensure_month_editable,
+)
+from app.services.attendance.month_state import (
+    ensure_month_expandable as _ensure_month_expandable,
+)
+from app.services.attendance.month_state import (
+    existing_month as _existing_month,
+)
+from app.services.attendance.month_state import (
+    get_or_create_month as _get_or_create_month,
+)
 from app.services.attendance.rules import (
     RULE_FIELDS,
     _override_values,
@@ -88,9 +101,6 @@ __all__ = [
 
 PLAN_NOT_FOUND_MESSAGE = "排班方案不存在"
 PLAN_ARCHIVED_MESSAGE = "已归档的排班方案不可修改，请先取消归档"
-MONTH_CONFIRMED_MESSAGE = "考勤月份已确认，请先取消确认"
-MONTH_LOCKED_MESSAGE = "考勤月份已锁定，请先解锁"
-EXPANSION_BLOCKED_MESSAGE = "考勤月份已确认或锁定，无法展开排班"
 SCHEDULE_CONFLICT_MESSAGE = "同一范围内已存在其他启用方案"
 SCOPE_ALL_WITH_CHILDREN_MESSAGE = "全公司方案不能指定具体范围"
 SCOPE_EMPTY_MESSAGE = "请至少选择一个排班范围"
@@ -250,7 +260,9 @@ def _scope_publics(
     return result
 
 
-def _plan_publics(session: Session, plans: list[SchedulePlan]) -> list[SchedulePlanPublic]:
+def _plan_publics(
+    session: Session, plans: list[SchedulePlan]
+) -> list[SchedulePlanPublic]:
     plan_ids = [plan.id for plan in plans]
     scopes = _scopes_by_plan(session, plan_ids)
     scope_publics = _scope_publics(session, plans, scopes)
@@ -329,69 +341,14 @@ def get_schedule_plan(session: Session, plan_id: uuid.UUID) -> SchedulePlanPubli
 # ---------------------------------------------------------------------------
 
 
-def _existing_month(
-    session: Session, company_id: uuid.UUID, month: date, *, for_update: bool = False
-) -> AttendanceMonth | None:
-    statement = select(AttendanceMonth).where(
-        col(AttendanceMonth.company_id) == company_id,
-        col(AttendanceMonth.month) == month,
-    )
-    if for_update:
-        statement = statement.with_for_update()
-    return session.exec(statement).first()
-
-
-def _get_or_create_month(
-    session: Session, company_id: uuid.UUID, month: date
-) -> AttendanceMonth:
-    existing = _existing_month(session, company_id, month, for_update=True)
-    if existing is not None:
-        return existing
-    month_row = AttendanceMonth(
-        company_id=company_id,
-        month=month,
-        status=AttendanceMonthStatus.DRAFT,
-        is_stale=True,
-    )
-    try:
-        with session.begin_nested():
-            session.add(month_row)
-            session.flush()
-    except IntegrityError:
-        # Another request created the row between the select and the insert.
-        existing = _existing_month(session, company_id, month, for_update=True)
-        if existing is None:
-            raise
-        return existing
-    return month_row
-
-
-def _ensure_month_editable(month: AttendanceMonth) -> None:
-    if month.status == AttendanceMonthStatus.LOCKED:
-        raise DomainError(AttendanceErrorCode.MONTH_LOCKED, MONTH_LOCKED_MESSAGE)
-    if month.status == AttendanceMonthStatus.CONFIRMED:
-        raise DomainError(AttendanceErrorCode.MONTH_CONFIRMED, MONTH_CONFIRMED_MESSAGE)
-
-
-def _ensure_month_expandable(month: AttendanceMonth) -> None:
-    if month.status not in EDITABLE_MONTH_STATUSES:
-        raise DomainError(
-            AttendanceErrorCode.SCHEDULE_EXPANSION_BLOCKED, EXPANSION_BLOCKED_MESSAGE
-        )
-
-
-def _ensure_plan_mutable(
-    plan: SchedulePlan, month: AttendanceMonth | None
-) -> None:
+def _ensure_plan_mutable(plan: SchedulePlan, month: AttendanceMonth | None) -> None:
     if plan.status == PlanStatus.ARCHIVED:
         raise DomainError(AttendanceErrorCode.PLAN_ARCHIVED, PLAN_ARCHIVED_MESSAGE)
     if month is not None:
         _ensure_month_editable(month)
 
 
-def _ensure_plan_expandable(
-    plan: SchedulePlan, month: AttendanceMonth | None
-) -> None:
+def _ensure_plan_expandable(plan: SchedulePlan, month: AttendanceMonth | None) -> None:
     if plan.status == PlanStatus.ARCHIVED:
         raise DomainError(AttendanceErrorCode.PLAN_ARCHIVED, PLAN_ARCHIVED_MESSAGE)
     if month is not None:
@@ -711,9 +668,7 @@ def _run_expansion(
     try:
         change = expansion.expand_month(session, company_id, month)
     except expansion.SamePrecisionConflict:
-        raise DomainError(
-            AttendanceErrorCode.SCHEDULE_CONFLICT, SAME_PRECISION_MESSAGE
-        )
+        raise DomainError(AttendanceErrorCode.SCHEDULE_CONFLICT, SAME_PRECISION_MESSAGE)
     mark_month_stale(month_row)
     return change
 
@@ -749,9 +704,7 @@ def _mutation_response(
     return SchedulePlanMutationPublic(
         plan=_plan_public(session, plan),
         roster_change=(
-            _change_summary(change)
-            if change is not None
-            else RosterChangeSummary()
+            _change_summary(change) if change is not None else RosterChangeSummary()
         ),
         month_stale=bool(month_row.is_stale) if month_row is not None else False,
     )
@@ -776,9 +729,7 @@ def create_schedule_plan(
     month_row = _get_or_create_month(session, company.id, month)
     _ensure_month_editable(month_row)
 
-    _validate_scopes(
-        session, company.id, month, payload.scope_type, payload.scope_ids
-    )
+    _validate_scopes(session, company.id, month, payload.scope_type, payload.scope_ids)
     shifts = _load_day_shifts(session, company.id, month, payload.days)
     _raise_on_conflict(
         _conflict_rows(
@@ -875,9 +826,7 @@ def update_schedule_plan(
 # ---------------------------------------------------------------------------
 
 
-def _warnings_for_days(
-    session: Session, days: list[PlanDayInput]
-) -> list[str]:
+def _warnings_for_days(session: Session, days: list[PlanDayInput]) -> list[str]:
     shifts = {
         shift.id: shift
         for shift in session.exec(
@@ -943,22 +892,16 @@ def preview_schedule_plan(
     if payload.plan_id is not None:
         existing_plan = get_plan_or_404(session, payload.plan_id)
         if existing_plan.company_id != company.id:
-            raise DomainError(
-                AttendanceErrorCode.CROSS_COMPANY, CROSS_COMPANY_MESSAGE
-            )
+            raise DomainError(AttendanceErrorCode.CROSS_COMPANY, CROSS_COMPANY_MESSAGE)
         if existing_plan.month != month:
             raise DomainError(
                 AttendanceErrorCode.INVALID_REFERENCE,
                 "排班方案与目标月份不一致",
             )
         if existing_plan.status == PlanStatus.ARCHIVED:
-            raise DomainError(
-                AttendanceErrorCode.PLAN_ARCHIVED, PLAN_ARCHIVED_MESSAGE
-            )
+            raise DomainError(AttendanceErrorCode.PLAN_ARCHIVED, PLAN_ARCHIVED_MESSAGE)
 
-    _validate_scopes(
-        session, company.id, month, payload.scope_type, payload.scope_ids
-    )
+    _validate_scopes(session, company.id, month, payload.scope_type, payload.scope_ids)
     shifts = _load_day_shifts(session, company.id, month, payload.days)
     conflicts = _conflict_rows(
         session,
@@ -1076,9 +1019,7 @@ def archive_schedule_plan(
     return _finish_mutation(session, plan, month, change)
 
 
-def _inactive_shift_blockers(
-    session: Session, plan: SchedulePlan
-) -> list[Blocker]:
+def _inactive_shift_blockers(session: Session, plan: SchedulePlan) -> list[Blocker]:
     rows = session.exec(
         select(Shift)
         .join(PlanDay, col(PlanDay.shift_id) == col(Shift.id))
@@ -1445,9 +1386,7 @@ def copy_schedule_plan(
     source_overrides = session.get(PlanRuleOverride, source_plan.id)
     if source_overrides is not None:
         session.add(
-            PlanRuleOverride(
-                plan_id=new_plan.id, **_override_values(source_overrides)
-            )
+            PlanRuleOverride(plan_id=new_plan.id, **_override_values(source_overrides))
         )
     session.flush()
 
@@ -1465,15 +1404,11 @@ def _insert_copied_manuals(
 ) -> None:
     if not copied:
         return
-    candidates = expansion.load_candidates(
-        session, new_plan.company_id, new_plan.month
-    )
+    candidates = expansion.load_candidates(session, new_plan.company_id, new_plan.month)
     employees = {
         employee.id: employee
         for employee in session.exec(
-            select(Employee).where(
-                col(Employee.id).in_({key[0] for key in copied})
-            )
+            select(Employee).where(col(Employee.id).in_({key[0] for key in copied}))
         ).all()
     }
     for key in sorted(copied, key=lambda item: (str(item[0]), item[1])):

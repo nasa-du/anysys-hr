@@ -3935,6 +3935,900 @@
         }
       }
     },
+    "/api/v1/attendance/roster/calendar": {
+      "get": {
+        "tags": ["attendance-roster"],
+        "summary": "Read Employee Calendar",
+        "description": "Return one employee's full month; dates without a row are unscheduled.",
+        "operationId": "attendance-roster-read_employee_calendar",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "employee_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Employee Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeRosterCalendarPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/roster/day": {
+      "get": {
+        "tags": ["attendance-roster"],
+        "summary": "Read Roster Day",
+        "description": "Return who works that day plus the count of employed but unscheduled staff.",
+        "operationId": "attendance-roster-read_roster_day",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date", "title": "Date" }
+          },
+          {
+            "name": "dept_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Dept Id"
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Plan Id"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/RosterSource" },
+                { "type": "null" }
+              ],
+              "title": "Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RosterDayPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/roster/month": {
+      "get": {
+        "tags": ["attendance-roster"],
+        "summary": "Read Roster Month",
+        "description": "Return daily counts, shift counts, and the month's plans.",
+        "operationId": "attendance-roster-read_roster_month",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "dept_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Dept Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RosterMonthPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/roster/employees": {
+      "get": {
+        "tags": ["attendance-roster"],
+        "summary": "Read Roster Employees",
+        "description": "Return per-employee work/rest/unscheduled counts for the month.",
+        "operationId": "attendance-roster-read_roster_employees",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "dept_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Dept Id"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "maxLength": 100 },
+                { "type": "null" }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RosterEmployeeSummariesPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/roster/sync-preview": {
+      "get": {
+        "tags": ["attendance-roster"],
+        "summary": "Sync Preview",
+        "description": "Dry-run personnel sync without writing roster rows.",
+        "operationId": "attendance-roster-sync_preview",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelSyncPreview"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/roster/sync": {
+      "post": {
+        "tags": ["attendance-roster"],
+        "summary": "Sync Personnel",
+        "description": "Apply a full company-month re-expansion in one transaction.",
+        "operationId": "attendance-roster-sync_personnel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PersonnelSyncRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PersonnelSyncResult" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/v1/attendance/roster-entries/": {
+      "get": {
+        "tags": ["attendance-roster"],
+        "summary": "Read Roster Entries",
+        "description": "List persisted roster rows only; unscheduled dates have no row.",
+        "operationId": "attendance-roster-read_roster_entries",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "examples": ["2026-09"] },
+                { "type": "null" }
+              ],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "employee_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Employee Id"
+            }
+          },
+          {
+            "name": "dept_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Dept Id"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/RosterState" },
+                { "type": "null" }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/RosterSource" },
+                { "type": "null" }
+              ],
+              "title": "Source"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RosterEntriesPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      },
+      "post": {
+        "tags": ["attendance-roster"],
+        "summary": "Create Roster Entry",
+        "description": "Create a manual exception, overriding a plan row when one exists.",
+        "operationId": "attendance-roster-create_roster_entry",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RosterEntryCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RosterEntryPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/roster-entries/{entry_id}": {
+      "get": {
+        "tags": ["attendance-roster"],
+        "summary": "Read Roster Entry",
+        "description": "Get one roster entry with its shift snapshots.",
+        "operationId": "attendance-roster-read_roster_entry",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RosterEntryPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["attendance-roster"],
+        "summary": "Update Roster Entry",
+        "description": "Edit a manual exception; plan-generated rows return 409.",
+        "operationId": "attendance-roster-update_roster_entry",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RosterEntryUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RosterEntryPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["attendance-roster"],
+        "summary": "Delete Roster Entry",
+        "description": "Delete a manual exception and restore the current plan resolution.",
+        "operationId": "attendance-roster-delete_roster_entry",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/roster-entries/batch": {
+      "post": {
+        "tags": ["attendance-roster"],
+        "summary": "Batch Roster Entries",
+        "description": "Apply a batch of manual exceptions all-or-nothing.",
+        "operationId": "attendance-roster-batch_roster_entries",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RosterEntryBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RosterEntryBatchResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
     "/api/v1/utils/test-email/": {
       "post": {
         "tags": ["utils"],
@@ -4973,6 +5867,11 @@
         "required": ["data", "count"],
         "title": "CostCentersPublic"
       },
+      "DayType": {
+        "type": "string",
+        "enum": ["workday", "weekend", "holiday"],
+        "title": "DayType"
+      },
       "DepartmentCreate": {
         "properties": {
           "dept_code": {
@@ -5335,6 +6234,31 @@
         ],
         "title": "EmployeeCreate"
       },
+      "EmployeeDisplay": {
+        "properties": {
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "employee_no": { "type": "string", "title": "Employee No" },
+          "employee_name": { "type": "string", "title": "Employee Name" },
+          "department_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Department Id"
+          },
+          "department_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Department Name"
+          }
+        },
+        "type": "object",
+        "required": ["employee_id", "employee_no", "employee_name"],
+        "title": "EmployeeDisplay"
+      },
       "EmployeePublic": {
         "properties": {
           "id": { "type": "string", "format": "uuid", "title": "Id" },
@@ -5447,6 +6371,25 @@
           "position_name"
         ],
         "title": "EmployeePublic"
+      },
+      "EmployeeRosterCalendarPublic": {
+        "properties": {
+          "employee": { "$ref": "#/components/schemas/EmployeeDisplay" },
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "days": {
+            "items": { "$ref": "#/components/schemas/RosterCalendarDay" },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": ["employee", "month", "days"],
+        "title": "EmployeeRosterCalendarPublic"
       },
       "EmployeeStatus": {
         "type": "string",
@@ -5920,6 +6863,73 @@
         "required": ["token", "new_password"],
         "title": "NewPassword"
       },
+      "PersonnelSyncPreview": {
+        "properties": {
+          "added": { "type": "integer", "title": "Added" },
+          "removed": { "type": "integer", "title": "Removed" },
+          "changed": { "type": "integer", "title": "Changed" },
+          "entries_added": { "type": "integer", "title": "Entries Added" },
+          "entries_updated": { "type": "integer", "title": "Entries Updated" },
+          "entries_deleted": { "type": "integer", "title": "Entries Deleted" },
+          "manual_preserved": { "type": "integer", "title": "Manual Preserved" }
+        },
+        "type": "object",
+        "required": [
+          "added",
+          "removed",
+          "changed",
+          "entries_added",
+          "entries_updated",
+          "entries_deleted",
+          "manual_preserved"
+        ],
+        "title": "PersonnelSyncPreview"
+      },
+      "PersonnelSyncRequest": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month",
+            "examples": ["2026-09"]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["company_id", "month"],
+        "title": "PersonnelSyncRequest"
+      },
+      "PersonnelSyncResult": {
+        "properties": {
+          "added": { "type": "integer", "title": "Added" },
+          "removed": { "type": "integer", "title": "Removed" },
+          "changed": { "type": "integer", "title": "Changed" },
+          "entries_added": { "type": "integer", "title": "Entries Added" },
+          "entries_updated": { "type": "integer", "title": "Entries Updated" },
+          "entries_deleted": { "type": "integer", "title": "Entries Deleted" },
+          "manual_preserved": {
+            "type": "integer",
+            "title": "Manual Preserved"
+          },
+          "month_stale": { "type": "boolean", "title": "Month Stale" }
+        },
+        "type": "object",
+        "required": [
+          "added",
+          "removed",
+          "changed",
+          "entries_added",
+          "entries_updated",
+          "entries_deleted",
+          "manual_preserved",
+          "month_stale"
+        ],
+        "title": "PersonnelSyncResult"
+      },
       "PlanCopyPreview": {
         "properties": {
           "target_month": {
@@ -6248,6 +7258,46 @@
         "required": ["email", "password", "full_name"],
         "title": "PrivateUserCreate"
       },
+      "RosterCalendarDay": {
+        "properties": {
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "day_type": { "$ref": "#/components/schemas/DayType" },
+          "state": {
+            "type": "string",
+            "enum": ["work", "rest", "unscheduled"],
+            "title": "State"
+          },
+          "source": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/RosterSource" },
+              { "type": "null" }
+            ]
+          },
+          "plan_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Plan Id"
+          },
+          "shifts": {
+            "items": { "$ref": "#/components/schemas/RosterEntryShiftPublic" },
+            "type": "array",
+            "title": "Shifts"
+          },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": ["work_date", "day_type", "state"],
+        "title": "RosterCalendarDay"
+      },
       "RosterChangeSummary": {
         "properties": {
           "added": { "type": "integer", "title": "Added", "default": 0 },
@@ -6261,6 +7311,468 @@
         },
         "type": "object",
         "title": "RosterChangeSummary"
+      },
+      "RosterDayEmployee": {
+        "properties": {
+          "employee": { "$ref": "#/components/schemas/EmployeeDisplay" },
+          "state": {
+            "type": "string",
+            "enum": ["work", "rest"],
+            "title": "State"
+          },
+          "source": { "$ref": "#/components/schemas/RosterSource" },
+          "plan_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Plan Id"
+          },
+          "shifts": {
+            "items": { "$ref": "#/components/schemas/RosterEntryShiftPublic" },
+            "type": "array",
+            "title": "Shifts"
+          },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": ["employee", "state", "source"],
+        "title": "RosterDayEmployee"
+      },
+      "RosterDayPublic": {
+        "properties": {
+          "date": { "type": "string", "format": "date", "title": "Date" },
+          "employees": {
+            "items": { "$ref": "#/components/schemas/RosterDayEmployee" },
+            "type": "array",
+            "title": "Employees"
+          },
+          "unscheduled_count": {
+            "type": "integer",
+            "title": "Unscheduled Count"
+          }
+        },
+        "type": "object",
+        "required": ["date", "employees", "unscheduled_count"],
+        "title": "RosterDayPublic"
+      },
+      "RosterEmployeeSummariesPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/RosterEmployeeSummaryPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "RosterEmployeeSummariesPublic"
+      },
+      "RosterEmployeeSummaryPublic": {
+        "properties": {
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "employee_no": { "type": "string", "title": "Employee No" },
+          "employee_name": { "type": "string", "title": "Employee Name" },
+          "department_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Department Id"
+          },
+          "department_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Department Name"
+          },
+          "work_days": { "type": "integer", "title": "Work Days" },
+          "rest_days": { "type": "integer", "title": "Rest Days" },
+          "unscheduled_days": {
+            "type": "integer",
+            "title": "Unscheduled Days"
+          },
+          "manual_exception_count": {
+            "type": "integer",
+            "title": "Manual Exception Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "employee_id",
+          "employee_no",
+          "employee_name",
+          "work_days",
+          "rest_days",
+          "unscheduled_days",
+          "manual_exception_count"
+        ],
+        "title": "RosterEmployeeSummaryPublic"
+      },
+      "RosterEntriesPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/RosterEntryPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "RosterEntriesPublic"
+      },
+      "RosterEntryBatchRequest": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "entries": {
+            "items": { "$ref": "#/components/schemas/RosterEntryUpsert" },
+            "type": "array",
+            "title": "Entries"
+          },
+          "delete_entry_ids": {
+            "items": { "type": "string", "format": "uuid" },
+            "type": "array",
+            "title": "Delete Entry Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["company_id"],
+        "title": "RosterEntryBatchRequest"
+      },
+      "RosterEntryBatchResult": {
+        "properties": {
+          "created": { "type": "integer", "title": "Created" },
+          "updated": { "type": "integer", "title": "Updated" },
+          "deleted": { "type": "integer", "title": "Deleted" },
+          "month_stale": { "type": "boolean", "title": "Month Stale" }
+        },
+        "type": "object",
+        "required": ["created", "updated", "deleted", "month_stale"],
+        "title": "RosterEntryBatchResult"
+      },
+      "RosterEntryCreate": {
+        "properties": {
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "state": { "$ref": "#/components/schemas/RosterState" },
+          "shifts": {
+            "items": { "$ref": "#/components/schemas/RosterShiftInput" },
+            "type": "array",
+            "title": "Shifts"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["employee_id", "work_date", "state"],
+        "title": "RosterEntryCreate"
+      },
+      "RosterEntryPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "employee_no": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Employee No"
+          },
+          "employee_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Employee Name"
+          },
+          "department_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Department Name"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "state": { "$ref": "#/components/schemas/RosterState" },
+          "source": { "$ref": "#/components/schemas/RosterSource" },
+          "plan_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Plan Id"
+          },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "shifts": {
+            "items": { "$ref": "#/components/schemas/RosterEntryShiftPublic" },
+            "type": "array",
+            "title": "Shifts"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "employee_id",
+          "work_date",
+          "state",
+          "source",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RosterEntryPublic"
+      },
+      "RosterEntryShiftPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "seq": { "type": "integer", "title": "Seq" },
+          "shift_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Shift Id"
+          },
+          "shift_code": { "type": "string", "title": "Shift Code" },
+          "shift_name": { "type": "string", "title": "Shift Name" },
+          "start_time": {
+            "type": "string",
+            "format": "time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "time",
+            "title": "End Time"
+          },
+          "cross_day": { "type": "boolean", "title": "Cross Day" },
+          "break_start": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break Start"
+          },
+          "break_end": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break End"
+          },
+          "rest_minutes": { "type": "integer", "title": "Rest Minutes" }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "seq",
+          "shift_id",
+          "shift_code",
+          "shift_name",
+          "start_time",
+          "end_time",
+          "cross_day",
+          "rest_minutes"
+        ],
+        "title": "RosterEntryShiftPublic"
+      },
+      "RosterEntryUpdate": {
+        "properties": {
+          "state": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/RosterState" },
+              { "type": "null" }
+            ]
+          },
+          "shifts": {
+            "anyOf": [
+              {
+                "items": { "$ref": "#/components/schemas/RosterShiftInput" },
+                "type": "array"
+              },
+              { "type": "null" }
+            ],
+            "title": "Shifts"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RosterEntryUpdate"
+      },
+      "RosterEntryUpsert": {
+        "properties": {
+          "entry_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Entry Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "state": { "$ref": "#/components/schemas/RosterState" },
+          "shifts": {
+            "items": { "$ref": "#/components/schemas/RosterShiftInput" },
+            "type": "array",
+            "title": "Shifts"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["employee_id", "work_date", "state"],
+        "title": "RosterEntryUpsert"
+      },
+      "RosterMonthDayPublic": {
+        "properties": {
+          "date": { "type": "string", "format": "date", "title": "Date" },
+          "day_type": { "$ref": "#/components/schemas/DayType" },
+          "work_count": { "type": "integer", "title": "Work Count" },
+          "rest_count": { "type": "integer", "title": "Rest Count" },
+          "unscheduled_count": {
+            "type": "integer",
+            "title": "Unscheduled Count"
+          },
+          "manual_count": { "type": "integer", "title": "Manual Count" },
+          "shift_counts": {
+            "items": { "$ref": "#/components/schemas/ShiftCountPublic" },
+            "type": "array",
+            "title": "Shift Counts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "day_type",
+          "work_count",
+          "rest_count",
+          "unscheduled_count",
+          "manual_count"
+        ],
+        "title": "RosterMonthDayPublic"
+      },
+      "RosterMonthPlanPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "plan_name": { "type": "string", "title": "Plan Name" },
+          "scope_type": { "$ref": "#/components/schemas/ScheduleScopeType" },
+          "status": { "$ref": "#/components/schemas/PlanStatus" }
+        },
+        "type": "object",
+        "required": ["id", "plan_name", "scope_type", "status"],
+        "title": "RosterMonthPlanPublic"
+      },
+      "RosterMonthPublic": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "days": {
+            "items": { "$ref": "#/components/schemas/RosterMonthDayPublic" },
+            "type": "array",
+            "title": "Days"
+          },
+          "plans": {
+            "items": { "$ref": "#/components/schemas/RosterMonthPlanPublic" },
+            "type": "array",
+            "title": "Plans"
+          }
+        },
+        "type": "object",
+        "required": ["month", "days", "plans"],
+        "title": "RosterMonthPublic"
+      },
+      "RosterShiftInput": {
+        "properties": {
+          "seq": { "type": "integer", "minimum": 0.0, "title": "Seq" },
+          "shift_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Shift Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["seq", "shift_id"],
+        "title": "RosterShiftInput"
+      },
+      "RosterSource": {
+        "type": "string",
+        "enum": ["plan", "manual"],
+        "title": "RosterSource"
+      },
+      "RosterState": {
+        "type": "string",
+        "enum": ["work", "rest"],
+        "title": "RosterState",
+        "description": "States persisted on roster entries. ``unscheduled`` is API-only."
       },
       "RulePatch-Input": {
         "properties": {
@@ -6924,6 +8436,25 @@
         "type": "string",
         "enum": ["all", "dept", "position", "employee"],
         "title": "ScheduleScopeType"
+      },
+      "ShiftCountPublic": {
+        "properties": {
+          "shift_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Shift Id"
+          },
+          "shift_code": { "type": "string", "title": "Shift Code" },
+          "shift_name": { "type": "string", "title": "Shift Name" },
+          "color": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Color"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["shift_id", "shift_code", "shift_name", "count"],
+        "title": "ShiftCountPublic"
       },
       "ShiftCreate": {
         "properties": {

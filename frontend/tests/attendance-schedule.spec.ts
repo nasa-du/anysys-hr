@@ -3,9 +3,11 @@ import {
   createCompany,
   createDepartment,
   createEmployee,
+  createManualRosterEntry,
   createPosition,
   createSchedulePlan,
   createShift,
+  readRosterEntries,
   readSchedulePlans,
 } from "./utils/api"
 import { setActiveCompany } from "./utils/company"
@@ -27,9 +29,15 @@ const NEXT_MONTH = "2026-10"
 
 type Setup = {
   companyId: string
+  departmentId: string
+  positionId: string
+  employeeId: string
+  employeeNo: string
   employeeName: string
   shiftId: string
   shiftName: string
+  secondShiftId: string
+  secondShiftName: string
 }
 
 async function setup(page: Page): Promise<Setup> {
@@ -49,8 +57,9 @@ async function setup(page: Page): Promise<Setup> {
     dept_id: department.id,
   })
   const employeeName = randomEmployeeName()
-  await createEmployee({
-    employee_no: randomEmployeeNo(),
+  const employeeNo = randomEmployeeNo()
+  const employee = await createEmployee({
+    employee_no: employeeNo,
     name: employeeName,
     dept_id: department.id,
     position_id: position.id,
@@ -62,15 +71,29 @@ async function setup(page: Page): Promise<Setup> {
     shift_code: randomShiftCode(),
     shift_name: shiftName,
   })
+  const secondShiftName = randomShiftName()
+  const secondShift = await createShift({
+    company_id: company.id,
+    shift_code: randomShiftCode(),
+    shift_name: secondShiftName,
+    start_time: "18:00:00",
+    end_time: "22:00:00",
+  })
   await setActiveCompany(page, company.id)
   await page.addInitScript((month: string) => {
     window.localStorage.setItem("attendance.month", month)
   }, MONTH)
   return {
     companyId: company.id,
+    departmentId: department.id,
+    positionId: position.id,
+    employeeId: employee.id,
+    employeeNo,
     employeeName,
     shiftId: shift.id,
     shiftName,
+    secondShiftId: secondShift.id,
+    secondShiftName,
   }
 }
 
@@ -237,4 +260,140 @@ test("archives a plan and keeps it visible as archived", async ({ page }) => {
 
   const [archived] = await readSchedulePlans(setupData.companyId, MONTH)
   expect(archived.status).toBe("archived")
+})
+
+test("creates, edits, and deletes a multi-shift manual exception", async ({
+  page,
+}) => {
+  const setupData = await setup(page)
+  await openWorkbench(page)
+  await page.getByTestId("view-employee").click()
+  await expect(page.getByTestId("employee-calendar")).toBeVisible()
+  await expect(page.getByTestId("roster-month-overview")).toContainText(
+    "上班人日",
+  )
+  await page.getByTestId(`roster-employee-${setupData.employeeNo}`).click()
+  await expect(page.getByTestId("roster-day-1")).toContainText("未排班")
+
+  await page.getByTestId("roster-day-1").click()
+  const dialog = page.getByTestId("manual-exception-dialog")
+  await expect(
+    dialog.getByRole("heading", { name: "新建人工例外" }),
+  ).toBeVisible()
+  await dialog.getByRole("button", { name: "休息", exact: true }).click()
+  await dialog.getByRole("button", { name: "保存例外" }).click()
+  await expect(page.getByText(/人工例外已保存/).first()).toBeVisible()
+  await expect(dialog).toBeHidden()
+  await expect(page.getByTestId("roster-day-1")).toContainText("休息")
+  await expect(page.getByTestId("roster-day-1")).toContainText("人工")
+
+  await page.getByTestId("roster-day-1").click()
+  await expect(
+    dialog.getByRole("heading", { name: "编辑人工例外" }),
+  ).toBeVisible()
+  await dialog.getByRole("button", { name: "上班", exact: true }).click()
+  await dialog.getByLabel(`班次 ${setupData.shiftName}`).check()
+  await dialog.getByLabel(`班次 ${setupData.secondShiftName}`).check()
+  await dialog.getByRole("button", { name: "保存例外" }).click()
+  await expect(page.getByText(/人工例外已更新/).first()).toBeVisible()
+  await expect(dialog).toBeHidden()
+  await expect(page.getByTestId("roster-day-1")).toContainText(
+    setupData.shiftName,
+  )
+  await expect(page.getByTestId("roster-day-1")).toContainText(
+    setupData.secondShiftName,
+  )
+  await expect(page.getByTestId("roster-month-overview")).toContainText(
+    setupData.shiftName,
+  )
+  await expect(page.getByTestId("roster-month-overview")).toContainText(
+    setupData.secondShiftName,
+  )
+
+  await page.getByTestId("roster-day-1").click()
+  await dialog.getByRole("button", { name: "删除例外" }).click()
+  await page.getByRole("button", { name: "确认删除" }).click()
+  await expect(page.getByText(/人工例外已删除/).first()).toBeVisible()
+  await expect(page.getByTestId("roster-day-1")).toContainText("未排班")
+})
+
+test("batch fill applies workdays and clearing restores the plan", async ({
+  page,
+}) => {
+  const setupData = await setup(page)
+  await createSchedulePlan({
+    company_id: setupData.companyId,
+    month: MONTH,
+    plan_name: "标准班",
+    days: [{ day_of_month: 1, seq: 0, shift_id: setupData.shiftId }],
+  })
+  await openWorkbench(page)
+  await page.getByTestId("view-employee").click()
+  await page.getByTestId(`roster-employee-${setupData.employeeNo}`).click()
+  await expect(page.getByTestId("roster-day-1")).toContainText("方案")
+
+  await page.getByTestId("open-batch-fill").click()
+  const dialog = page.getByTestId("batch-fill-dialog")
+  await expect(dialog.getByRole("heading", { name: "批量填充" })).toBeVisible()
+  await dialog.getByLabel(`班次 ${setupData.shiftName}`).check()
+  await expect(dialog.getByText("预计人日")).toBeVisible()
+  await dialog.getByRole("button", { name: "应用批量调整" }).click()
+  await expect(page.getByText(/已批量调整/).first()).toBeVisible()
+  await expect(dialog).toBeHidden()
+  await expect(page.getByTestId("roster-day-1")).toContainText("人工")
+
+  await page.getByTestId("open-batch-fill").click()
+  await dialog.getByRole("button", { name: "清除人工例外" }).click()
+  await dialog.getByRole("button", { name: "应用批量调整" }).click()
+  await expect(page.getByText(/已清除/).first()).toBeVisible()
+  await expect(page.getByTestId("roster-day-1")).toContainText("方案")
+  await expect(page.getByTestId("roster-day-1")).toContainText(
+    setupData.shiftName,
+  )
+})
+
+test("sync personnel previews hires and preserves manual exceptions", async ({
+  page,
+}) => {
+  const setupData = await setup(page)
+  await createSchedulePlan({
+    company_id: setupData.companyId,
+    month: MONTH,
+    plan_name: "标准班",
+    days: [{ day_of_month: 1, seq: 0, shift_id: setupData.shiftId }],
+  })
+  await createManualRosterEntry({
+    employee_id: setupData.employeeId,
+    work_date: `${MONTH}-02`,
+    state: "rest",
+    note: "手动休息",
+  })
+  const newHire = await createEmployee({
+    employee_no: randomEmployeeNo(),
+    name: randomEmployeeName(),
+    dept_id: setupData.departmentId,
+    position_id: setupData.positionId,
+    hire_date: `${MONTH}-03`,
+  })
+
+  await openWorkbench(page)
+  await page.getByTestId("open-sync-personnel").click()
+  const dialog = page.getByTestId("sync-personnel-dialog")
+  await expect(dialog.getByText("员工变化")).toBeVisible()
+  await expect(dialog.getByTestId("sync-added")).toContainText("1")
+  await expect(dialog.getByTestId("sync-manual-preserved")).toContainText("1")
+  await dialog.getByRole("button", { name: "确认同步" }).click()
+  await expect(page.getByText(/人员已同步/).first()).toBeVisible()
+
+  const newEntries = await readRosterEntries(
+    setupData.companyId,
+    MONTH,
+    newHire.id,
+  )
+  expect(newEntries.length).toBe(28)
+  expect(newEntries[0].work_date).toBe(`${MONTH}-03`)
+  const manual = (
+    await readRosterEntries(setupData.companyId, MONTH, setupData.employeeId)
+  ).find((entry) => entry.work_date === `${MONTH}-02`)
+  expect(manual?.source).toBe("manual")
 })

@@ -14,8 +14,10 @@ import {
   type SchedulePlanPreview,
   type SchedulePlanPublic,
 } from "@/client"
+import { BatchFillDialog } from "@/components/Attendance/schedule/BatchFillDialog"
 import { CopyMonthDialog } from "@/components/Attendance/schedule/CopyMonthDialog"
 import { DaySheetDialog } from "@/components/Attendance/schedule/DaySheetDialog"
+import { EmployeeCalendarView } from "@/components/Attendance/schedule/EmployeeCalendarView"
 import { PlanCalendar } from "@/components/Attendance/schedule/PlanCalendar"
 import { PlanEditorDialog } from "@/components/Attendance/schedule/PlanEditorDialog"
 import { PlanListPanel } from "@/components/Attendance/schedule/PlanListPanel"
@@ -37,6 +39,7 @@ import {
   planPositionsQueryKey,
   planShiftsQueryKey,
 } from "@/components/Attendance/schedule/queries"
+import { SyncPersonnelDialog } from "@/components/Attendance/schedule/SyncPersonnelDialog"
 import { AttendancePage } from "@/components/Attendance/shared/AttendancePage"
 import {
   EmptyState,
@@ -104,6 +107,7 @@ function ScheduleWorkspace({ companyId }: { companyId: string }) {
 
   const [selectedPlanId, setSelectedPlanId] = useState<string>("all")
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const [view, setView] = useState<"plan" | "employee">("plan")
   const [editorOpen, setEditorOpen] = useState(false)
   const [editorDay, setEditorDay] = useState(1)
   const [editingPlan, setEditingPlan] = useState<SchedulePlanPublic | null>(
@@ -111,6 +115,8 @@ function ScheduleWorkspace({ companyId }: { companyId: string }) {
   )
   const [daySheetOpen, setDaySheetOpen] = useState(false)
   const [copyOpen, setCopyOpen] = useState(false)
+  const [batchOpen, setBatchOpen] = useState(false)
+  const [syncOpen, setSyncOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null)
   const [expandPreview, setExpandPreview] =
     useState<SchedulePlanPreview | null>(null)
@@ -333,15 +339,19 @@ function ScheduleWorkspace({ companyId }: { companyId: string }) {
         selectedCompany?.company_name ?? "—"
       }。${PAGE_DESCRIPTION}`}
       actions={
-        <Button
-          type="button"
-          size="sm"
-          disabled={!editable}
-          title={editable ? undefined : "本月已确认或锁定，请先取消确认或解锁"}
-          onClick={openCreate}
-        >
-          新建方案
-        </Button>
+        view === "plan" ? (
+          <Button
+            type="button"
+            size="sm"
+            disabled={!editable}
+            title={
+              editable ? undefined : "本月已确认或锁定，请先取消确认或解锁"
+            }
+            onClick={openCreate}
+          >
+            新建方案
+          </Button>
+        ) : null
       }
     >
       {monthStatus === "locked" && (
@@ -372,10 +382,63 @@ function ScheduleWorkspace({ companyId }: { companyId: string }) {
         </div>
       )}
 
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-fit gap-1 rounded-md border p-1">
+          <Button
+            type="button"
+            size="sm"
+            variant={view === "plan" ? "default" : "ghost"}
+            data-testid="view-plan"
+            onClick={() => setView("plan")}
+          >
+            方案视图
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={view === "employee" ? "default" : "ghost"}
+            data-testid="view-employee"
+            onClick={() => setView("employee")}
+          >
+            员工明细
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            data-testid="open-batch-fill"
+            disabled={!editable}
+            onClick={() => setBatchOpen(true)}
+          >
+            批量填充
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            data-testid="open-sync-personnel"
+            disabled={!editable}
+            onClick={() => setSyncOpen(true)}
+          >
+            同步人员
+          </Button>
+        </div>
+      </div>
+
       {loading ? (
         <LoadingState rows={5} />
       ) : queryError ? (
         <ErrorState message={getErrorMessage(queryError)} onRetry={retryAll} />
+      ) : view === "employee" ? (
+        <EmployeeCalendarView
+          companyId={companyId}
+          month={month}
+          editable={editable}
+          employees={employees}
+          shifts={shifts}
+        />
       ) : plans.length === 0 ? (
         <EmptyState
           title={`${month} 还没有排班方案`}
@@ -529,13 +592,36 @@ function ScheduleWorkspace({ companyId }: { companyId: string }) {
 
       <DaySheetDialog
         open={daySheetOpen}
+        companyId={companyId}
         month={month}
         day={selectedDay}
-        plans={enabledPlans}
+        onClose={() => setDaySheetOpen(false)}
+      />
+
+      <BatchFillDialog
+        open={batchOpen}
+        companyId={companyId}
+        month={month}
         employees={employees}
         departments={departments}
-        holidays={holidays}
-        onClose={() => setDaySheetOpen(false)}
+        shifts={shifts}
+        onClose={() => setBatchOpen(false)}
+        onApplied={() => {
+          setBatchOpen(false)
+          invalidatePlanQueries(queryClient)
+        }}
+      />
+
+      <SyncPersonnelDialog
+        open={syncOpen}
+        companyId={companyId}
+        month={month}
+        editable={editable}
+        onClose={() => setSyncOpen(false)}
+        onSynced={() => {
+          setSyncOpen(false)
+          invalidatePlanQueries(queryClient)
+        }}
       />
 
       <CopyMonthDialog

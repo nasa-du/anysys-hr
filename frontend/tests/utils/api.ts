@@ -1,5 +1,6 @@
 import {
   AttendanceHolidaysService,
+  AttendanceRosterService,
   AttendanceSchedulePlansService,
   AttendanceShiftsService,
   CompaniesService,
@@ -18,6 +19,8 @@ import {
   type PlanDayInput,
   type PositionPublic,
   PositionsService,
+  type RosterEntryPublic,
+  type RosterState,
   type SchedulePlanPublic,
   type ScheduleScopeType,
   type ShiftPublic,
@@ -238,6 +241,43 @@ export async function readSchedulePlans(
   await ensureAuthenticated()
   const response = await AttendanceSchedulePlansService.readSchedulePlans({
     query: { company_id: companyId, month, limit: 500 },
+  })
+  return response.data.data
+}
+
+export async function createManualRosterEntry(input: {
+  employee_id: string
+  work_date: string
+  state: RosterState
+  shifts?: Array<{ seq: number; shift_id: string }>
+  note?: string | null
+}): Promise<RosterEntryPublic> {
+  await ensureAuthenticated()
+  const response = await AttendanceRosterService.createRosterEntry({
+    body: {
+      employee_id: input.employee_id,
+      work_date: input.work_date,
+      state: input.state,
+      shifts: input.shifts ?? [],
+      note: input.note ?? null,
+    },
+  })
+  return response.data
+}
+
+export async function readRosterEntries(
+  companyId: string,
+  month: string,
+  employeeId?: string,
+): Promise<RosterEntryPublic[]> {
+  await ensureAuthenticated()
+  const response = await AttendanceRosterService.readRosterEntries({
+    query: {
+      company_id: companyId,
+      month,
+      employee_id: employeeId,
+      limit: 500,
+    },
   })
   return response.data.data
 }

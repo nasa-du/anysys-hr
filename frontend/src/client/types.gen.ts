@@ -5,6 +5,225 @@ export type ClientOptions = {
 };
 
 /**
+ * AttendanceMonthPublic
+ */
+export type AttendanceMonthPublic = {
+    /**
+     * Id
+     */
+    id?: string | null;
+    /**
+     * Exists
+     */
+    exists: boolean;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Month
+     */
+    month: string;
+    status: AttendanceMonthStatus;
+    /**
+     * Is Stale
+     */
+    is_stale: boolean;
+    /**
+     * Calculated At
+     */
+    calculated_at?: string | null;
+    /**
+     * Confirmed At
+     */
+    confirmed_at?: string | null;
+    /**
+     * Locked At
+     */
+    locked_at?: string | null;
+    /**
+     * Unlock Reason
+     */
+    unlock_reason?: string | null;
+    latest_calc_run?: CalcRunPublic | null;
+    active_batches: InputBatches;
+    counts: MonthCounts;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Updated At
+     */
+    updated_at?: string | null;
+};
+
+/**
+ * AttendanceMonthStatus
+ */
+export type AttendanceMonthStatus = 'draft' | 'calculated' | 'confirmed' | 'locked';
+
+/**
+ * AttendanceMonthsPublic
+ */
+export type AttendanceMonthsPublic = {
+    /**
+     * Data
+     */
+    data: Array<AttendanceMonthPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * AttendanceRulePublic
+ */
+export type AttendanceRulePublic = {
+    /**
+     * Id
+     */
+    id?: string | null;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Is Default
+     */
+    is_default: boolean;
+    /**
+     * Punch Window Min
+     */
+    punch_window_min: number;
+    /**
+     * Late Cap Min
+     */
+    late_cap_min: number;
+    /**
+     * Early Cap Min
+     */
+    early_cap_min: number;
+    /**
+     * Ot Max Min
+     */
+    ot_max_min: number;
+    /**
+     * Late Grace Min
+     */
+    late_grace_min: number;
+    /**
+     * Early Grace Min
+     */
+    early_grace_min: number;
+    /**
+     * Ot Threshold Min
+     */
+    ot_threshold_min: number;
+    /**
+     * Absent If No Punch
+     */
+    absent_if_no_punch: boolean;
+    /**
+     * Break Punch Required
+     */
+    break_punch_required: boolean;
+    /**
+     * Break Punch Tolerance Min
+     */
+    break_punch_tolerance_min: number;
+    /**
+     * Absent Deduct Per Day
+     */
+    absent_deduct_per_day: string;
+    /**
+     * Late Deduct Per Occurrence
+     */
+    late_deduct_per_occurrence: string;
+    /**
+     * Early Deduct Per Occurrence
+     */
+    early_deduct_per_occurrence: string;
+    /**
+     * Missing Punch Deduct Per Occurrence
+     */
+    missing_punch_deduct_per_occurrence: string;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Updated At
+     */
+    updated_at?: string | null;
+};
+
+/**
+ * AttendanceRuleUpdate
+ *
+ * Company default rule update; omitted fields keep their current value.
+ */
+export type AttendanceRuleUpdate = {
+    /**
+     * Punch Window Min
+     */
+    punch_window_min?: number;
+    /**
+     * Late Cap Min
+     */
+    late_cap_min?: number;
+    /**
+     * Early Cap Min
+     */
+    early_cap_min?: number;
+    /**
+     * Ot Max Min
+     */
+    ot_max_min?: number;
+    /**
+     * Late Grace Min
+     */
+    late_grace_min?: number;
+    /**
+     * Early Grace Min
+     */
+    early_grace_min?: number;
+    /**
+     * Ot Threshold Min
+     */
+    ot_threshold_min?: number;
+    /**
+     * Absent If No Punch
+     */
+    absent_if_no_punch?: boolean;
+    /**
+     * Break Punch Required
+     */
+    break_punch_required?: boolean;
+    /**
+     * Break Punch Tolerance Min
+     */
+    break_punch_tolerance_min?: number;
+    /**
+     * Absent Deduct Per Day
+     */
+    absent_deduct_per_day?: number | string;
+    /**
+     * Late Deduct Per Occurrence
+     */
+    late_deduct_per_occurrence?: number | string;
+    /**
+     * Early Deduct Per Occurrence
+     */
+    early_deduct_per_occurrence?: number | string;
+    /**
+     * Missing Punch Deduct Per Occurrence
+     */
+    missing_punch_deduct_per_occurrence?: number | string;
+};
+
+/**
  * Blocker
  *
  * A reference that prevents a delete or deactivate operation.
@@ -57,6 +276,147 @@ export type Body_login_login_access_token = {
      */
     client_secret?: string | null;
 };
+
+/**
+ * CalcRunPublic
+ */
+export type CalcRunPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Attendance Month Id
+     */
+    attendance_month_id: string;
+    trigger: CalcRunTrigger;
+    status: CalcRunStatus;
+    /**
+     * Calc Version
+     */
+    calc_version: string;
+    /**
+     * Rules Version
+     */
+    rules_version: string;
+    /**
+     * Roster Version
+     */
+    roster_version: string;
+    rules_snapshot: RulesSnapshot;
+    input_batches: InputBatches;
+    summary?: CalcRunSummary | null;
+    /**
+     * Error Code
+     */
+    error_code?: string | null;
+    /**
+     * Error Message
+     */
+    error_message?: string | null;
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Finished At
+     */
+    finished_at: string;
+};
+
+/**
+ * CalcRunStatus
+ */
+export type CalcRunStatus = 'success' | 'failed';
+
+/**
+ * CalcRunSummary
+ */
+export type CalcRunSummary = {
+    /**
+     * Employees Total
+     */
+    employees_total?: number;
+    /**
+     * Employees Calculated
+     */
+    employees_calculated?: number;
+    /**
+     * Employees Skipped
+     */
+    employees_skipped?: number;
+    /**
+     * Skipped Reasons
+     */
+    skipped_reasons?: {
+        [key: string]: number;
+    };
+    /**
+     * Days Total
+     */
+    days_total?: number;
+    /**
+     * Days By Status
+     */
+    days_by_status?: {
+        [key: string]: number;
+    };
+    /**
+     * Flag Counts
+     */
+    flag_counts?: {
+        [key: string]: number;
+    };
+    /**
+     * Late Count
+     */
+    late_count?: number;
+    /**
+     * Late Minutes
+     */
+    late_minutes?: number;
+    /**
+     * Early Count
+     */
+    early_count?: number;
+    /**
+     * Early Minutes
+     */
+    early_minutes?: number;
+    /**
+     * Missing Punch Count
+     */
+    missing_punch_count?: number;
+    /**
+     * Absent Days
+     */
+    absent_days?: number;
+    /**
+     * Ot Weekday Minutes
+     */
+    ot_weekday_minutes?: number;
+    /**
+     * Ot Weekend Minutes
+     */
+    ot_weekend_minutes?: number;
+    /**
+     * Ot Holiday Minutes
+     */
+    ot_holiday_minutes?: number;
+    /**
+     * Comp Offset Unused Minutes
+     */
+    comp_offset_unused_minutes?: number;
+    /**
+     * Attendance Deduct
+     */
+    attendance_deduct?: string;
+};
+
+/**
+ * CalcRunTrigger
+ */
+export type CalcRunTrigger = 'initial' | 'manual' | 'reimport' | 'roster_change' | 'rule_change' | 'holiday_change';
 
 /**
  * CompaniesPublic
@@ -897,6 +1257,240 @@ export type HTTPValidationError = {
 };
 
 /**
+ * HolidayCopyConflict
+ */
+export type HolidayCopyConflict = {
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Existing Name
+     */
+    existing_name: string;
+};
+
+/**
+ * HolidayCopyCreate
+ */
+export type HolidayCopyCreate = {
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Name
+     */
+    name: string;
+    day_type: HolidayDayType;
+};
+
+/**
+ * HolidayCopyPreview
+ */
+export type HolidayCopyPreview = {
+    /**
+     * Create Count
+     */
+    create_count: number;
+    /**
+     * Conflict Count
+     */
+    conflict_count: number;
+    /**
+     * Creates
+     */
+    creates?: Array<HolidayCopyCreate>;
+    /**
+     * Conflicts
+     */
+    conflicts: Array<HolidayCopyConflict>;
+};
+
+/**
+ * HolidayCopyRequest
+ */
+export type HolidayCopyRequest = {
+    /**
+     * Source Year
+     */
+    source_year: number;
+    /**
+     * Target Year
+     */
+    target_year: number;
+    /**
+     * Overwrite
+     */
+    overwrite?: boolean;
+};
+
+/**
+ * HolidayCopyResult
+ */
+export type HolidayCopyResult = {
+    /**
+     * Created
+     */
+    created: number;
+    /**
+     * Updated
+     */
+    updated: number;
+    /**
+     * Skipped
+     */
+    skipped: number;
+};
+
+/**
+ * HolidayCreate
+ */
+export type HolidayCreate = {
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Name
+     */
+    name: string;
+    day_type: HolidayDayType;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * HolidayDayType
+ */
+export type HolidayDayType = 'holiday' | 'adjusted_workday';
+
+/**
+ * HolidayPublic
+ */
+export type HolidayPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Name
+     */
+    name: string;
+    day_type: HolidayDayType;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * HolidaySnapshot
+ */
+export type HolidaySnapshot = {
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Name
+     */
+    name: string;
+    day_type: HolidayDayType;
+};
+
+/**
+ * HolidayUpdate
+ */
+export type HolidayUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    day_type?: HolidayDayType | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * HolidaysPublic
+ */
+export type HolidaysPublic = {
+    /**
+     * Data
+     */
+    data: Array<HolidayPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * InputBatchInfo
+ */
+export type InputBatchInfo = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Committed At
+     */
+    committed_at?: string | null;
+    /**
+     * File Name
+     */
+    file_name?: string | null;
+    /**
+     * Source Rows
+     */
+    source_rows?: number | null;
+    /**
+     * Valid Records
+     */
+    valid_records?: number | null;
+};
+
+/**
+ * InputBatches
+ */
+export type InputBatches = {
+    punch?: InputBatchInfo | null;
+    trip?: InputBatchInfo | null;
+    ot?: InputBatchInfo | null;
+    leave?: InputBatchInfo | null;
+};
+
+/**
  * Message
  */
 export type Message = {
@@ -904,6 +1498,28 @@ export type Message = {
      * Message
      */
     message: string;
+};
+
+/**
+ * MonthCounts
+ */
+export type MonthCounts = {
+    /**
+     * Employee Count
+     */
+    employee_count?: number;
+    /**
+     * Day Result Count
+     */
+    day_result_count?: number;
+    /**
+     * Abnormal Day Count
+     */
+    abnormal_day_count?: number;
+    /**
+     * Month Summary Count
+     */
+    month_summary_count?: number;
 };
 
 /**
@@ -919,6 +1535,98 @@ export type NewPassword = {
      */
     new_password: string;
 };
+
+/**
+ * PlanDayPublic
+ */
+export type PlanDayPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Day Of Month
+     */
+    day_of_month: number;
+    /**
+     * Seq
+     */
+    seq: number;
+    /**
+     * Shift Id
+     */
+    shift_id: string;
+    /**
+     * Shift Code
+     */
+    shift_code?: string | null;
+    /**
+     * Shift Name
+     */
+    shift_name?: string | null;
+    /**
+     * Shift Color
+     */
+    shift_color?: string | null;
+    /**
+     * Shift Is Active
+     */
+    shift_is_active?: boolean | null;
+};
+
+/**
+ * PlanRuleOverrideSnapshot
+ */
+export type PlanRuleOverrideSnapshot = {
+    /**
+     * Plan Id
+     */
+    plan_id: string;
+    overrides: RuleSnapshotPatch;
+};
+
+/**
+ * PlanRuleOverridesPublic
+ */
+export type PlanRuleOverridesPublic = {
+    overrides: RulePatch_Output;
+    effective: RuleValues;
+    company_default: RuleValues;
+};
+
+/**
+ * PlanRuleOverridesUpdate
+ */
+export type PlanRuleOverridesUpdate = {
+    overrides?: RulePatch_Input;
+};
+
+/**
+ * PlanScopePublic
+ */
+export type PlanScopePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Scope Id
+     */
+    scope_id: string;
+    /**
+     * Scope Code
+     */
+    scope_code?: string | null;
+    /**
+     * Scope Name
+     */
+    scope_name?: string | null;
+};
+
+/**
+ * PlanStatus
+ */
+export type PlanStatus = 'enabled' | 'archived';
 
 /**
  * PositionCreate
@@ -1069,6 +1777,345 @@ export type PrivateUserCreate = {
      */
     is_verified?: boolean;
 };
+
+/**
+ * RulePatch
+ *
+ * Nullable plan override fields; ``None`` inherits the company default.
+ */
+export type RulePatch_Input = {
+    /**
+     * Punch Window Min
+     */
+    punch_window_min?: number | null;
+    /**
+     * Late Cap Min
+     */
+    late_cap_min?: number | null;
+    /**
+     * Early Cap Min
+     */
+    early_cap_min?: number | null;
+    /**
+     * Ot Max Min
+     */
+    ot_max_min?: number | null;
+    /**
+     * Late Grace Min
+     */
+    late_grace_min?: number | null;
+    /**
+     * Early Grace Min
+     */
+    early_grace_min?: number | null;
+    /**
+     * Ot Threshold Min
+     */
+    ot_threshold_min?: number | null;
+    /**
+     * Absent If No Punch
+     */
+    absent_if_no_punch?: boolean | null;
+    /**
+     * Break Punch Required
+     */
+    break_punch_required?: boolean | null;
+    /**
+     * Break Punch Tolerance Min
+     */
+    break_punch_tolerance_min?: number | null;
+    /**
+     * Absent Deduct Per Day
+     */
+    absent_deduct_per_day?: number | string | null;
+    /**
+     * Late Deduct Per Occurrence
+     */
+    late_deduct_per_occurrence?: number | string | null;
+    /**
+     * Early Deduct Per Occurrence
+     */
+    early_deduct_per_occurrence?: number | string | null;
+    /**
+     * Missing Punch Deduct Per Occurrence
+     */
+    missing_punch_deduct_per_occurrence?: number | string | null;
+};
+
+/**
+ * RulePatch
+ *
+ * Nullable plan override fields; ``None`` inherits the company default.
+ */
+export type RulePatch_Output = {
+    /**
+     * Punch Window Min
+     */
+    punch_window_min?: number | null;
+    /**
+     * Late Cap Min
+     */
+    late_cap_min?: number | null;
+    /**
+     * Early Cap Min
+     */
+    early_cap_min?: number | null;
+    /**
+     * Ot Max Min
+     */
+    ot_max_min?: number | null;
+    /**
+     * Late Grace Min
+     */
+    late_grace_min?: number | null;
+    /**
+     * Early Grace Min
+     */
+    early_grace_min?: number | null;
+    /**
+     * Ot Threshold Min
+     */
+    ot_threshold_min?: number | null;
+    /**
+     * Absent If No Punch
+     */
+    absent_if_no_punch?: boolean | null;
+    /**
+     * Break Punch Required
+     */
+    break_punch_required?: boolean | null;
+    /**
+     * Break Punch Tolerance Min
+     */
+    break_punch_tolerance_min?: number | null;
+    /**
+     * Absent Deduct Per Day
+     */
+    absent_deduct_per_day?: string | null;
+    /**
+     * Late Deduct Per Occurrence
+     */
+    late_deduct_per_occurrence?: string | null;
+    /**
+     * Early Deduct Per Occurrence
+     */
+    early_deduct_per_occurrence?: string | null;
+    /**
+     * Missing Punch Deduct Per Occurrence
+     */
+    missing_punch_deduct_per_occurrence?: string | null;
+};
+
+/**
+ * RuleSnapshotPatch
+ *
+ * Read-only rule override snapshot; unknown historical fields are kept.
+ */
+export type RuleSnapshotPatch = {
+    /**
+     * Punch Window Min
+     */
+    punch_window_min?: number | null;
+    /**
+     * Late Cap Min
+     */
+    late_cap_min?: number | null;
+    /**
+     * Early Cap Min
+     */
+    early_cap_min?: number | null;
+    /**
+     * Ot Max Min
+     */
+    ot_max_min?: number | null;
+    /**
+     * Late Grace Min
+     */
+    late_grace_min?: number | null;
+    /**
+     * Early Grace Min
+     */
+    early_grace_min?: number | null;
+    /**
+     * Ot Threshold Min
+     */
+    ot_threshold_min?: number | null;
+    /**
+     * Absent If No Punch
+     */
+    absent_if_no_punch?: boolean | null;
+    /**
+     * Break Punch Required
+     */
+    break_punch_required?: boolean | null;
+    /**
+     * Break Punch Tolerance Min
+     */
+    break_punch_tolerance_min?: number | null;
+    /**
+     * Absent Deduct Per Day
+     */
+    absent_deduct_per_day?: string | null;
+    /**
+     * Late Deduct Per Occurrence
+     */
+    late_deduct_per_occurrence?: string | null;
+    /**
+     * Early Deduct Per Occurrence
+     */
+    early_deduct_per_occurrence?: string | null;
+    /**
+     * Missing Punch Deduct Per Occurrence
+     */
+    missing_punch_deduct_per_occurrence?: string | null;
+    [key: string]: unknown;
+};
+
+/**
+ * RuleValues
+ *
+ * A complete effective rule set.
+ */
+export type RuleValues = {
+    /**
+     * Punch Window Min
+     */
+    punch_window_min: number;
+    /**
+     * Late Cap Min
+     */
+    late_cap_min: number;
+    /**
+     * Early Cap Min
+     */
+    early_cap_min: number;
+    /**
+     * Ot Max Min
+     */
+    ot_max_min: number;
+    /**
+     * Late Grace Min
+     */
+    late_grace_min: number;
+    /**
+     * Early Grace Min
+     */
+    early_grace_min: number;
+    /**
+     * Ot Threshold Min
+     */
+    ot_threshold_min: number;
+    /**
+     * Absent If No Punch
+     */
+    absent_if_no_punch: boolean;
+    /**
+     * Break Punch Required
+     */
+    break_punch_required: boolean;
+    /**
+     * Break Punch Tolerance Min
+     */
+    break_punch_tolerance_min: number;
+    /**
+     * Absent Deduct Per Day
+     */
+    absent_deduct_per_day: string;
+    /**
+     * Late Deduct Per Occurrence
+     */
+    late_deduct_per_occurrence: string;
+    /**
+     * Early Deduct Per Occurrence
+     */
+    early_deduct_per_occurrence: string;
+    /**
+     * Missing Punch Deduct Per Occurrence
+     */
+    missing_punch_deduct_per_occurrence: string;
+};
+
+/**
+ * RulesSnapshot
+ */
+export type RulesSnapshot = {
+    company_rule: RuleValues;
+    /**
+     * Plan Overrides
+     */
+    plan_overrides: Array<PlanRuleOverrideSnapshot>;
+    /**
+     * Holidays
+     */
+    holidays: Array<HolidaySnapshot>;
+};
+
+/**
+ * SchedulePlanPublic
+ */
+export type SchedulePlanPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Plan Name
+     */
+    plan_name: string;
+    scope_type: ScheduleScopeType;
+    status: PlanStatus;
+    /**
+     * Copied From Plan Id
+     */
+    copied_from_plan_id?: string | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Scopes
+     */
+    scopes?: Array<PlanScopePublic>;
+    /**
+     * Days
+     */
+    days?: Array<PlanDayPublic>;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * SchedulePlansPublic
+ */
+export type SchedulePlansPublic = {
+    /**
+     * Data
+     */
+    data: Array<SchedulePlanPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * ScheduleScopeType
+ */
+export type ScheduleScopeType = 'all' | 'dept' | 'position' | 'employee';
 
 /**
  * ShiftCreate
@@ -3091,6 +4138,497 @@ export type attendanceShiftsUpdateShiftResponses = {
 };
 
 export type attendanceShiftsUpdateShiftResponse = attendanceShiftsUpdateShiftResponses[keyof attendanceShiftsUpdateShiftResponses];
+
+export type attendanceRulesReadCompanyRuleData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/rules/';
+};
+
+export type attendanceRulesReadCompanyRuleErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceRulesReadCompanyRuleError = attendanceRulesReadCompanyRuleErrors[keyof attendanceRulesReadCompanyRuleErrors];
+
+export type attendanceRulesReadCompanyRuleResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceRulePublic;
+};
+
+export type attendanceRulesReadCompanyRuleResponse = attendanceRulesReadCompanyRuleResponses[keyof attendanceRulesReadCompanyRuleResponses];
+
+export type attendanceRulesUpdateCompanyRuleData = {
+    body: AttendanceRuleUpdate;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/rules/';
+};
+
+export type attendanceRulesUpdateCompanyRuleErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceRulesUpdateCompanyRuleError = attendanceRulesUpdateCompanyRuleErrors[keyof attendanceRulesUpdateCompanyRuleErrors];
+
+export type attendanceRulesUpdateCompanyRuleResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceRulePublic;
+};
+
+export type attendanceRulesUpdateCompanyRuleResponse = attendanceRulesUpdateCompanyRuleResponses[keyof attendanceRulesUpdateCompanyRuleResponses];
+
+export type attendanceHolidaysReadHolidaysData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Year
+         */
+        year?: number | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/holidays/';
+};
+
+export type attendanceHolidaysReadHolidaysErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceHolidaysReadHolidaysError = attendanceHolidaysReadHolidaysErrors[keyof attendanceHolidaysReadHolidaysErrors];
+
+export type attendanceHolidaysReadHolidaysResponses = {
+    /**
+     * Successful Response
+     */
+    200: HolidaysPublic;
+};
+
+export type attendanceHolidaysReadHolidaysResponse = attendanceHolidaysReadHolidaysResponses[keyof attendanceHolidaysReadHolidaysResponses];
+
+export type attendanceHolidaysCreateHolidayData = {
+    body: HolidayCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/holidays/';
+};
+
+export type attendanceHolidaysCreateHolidayErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceHolidaysCreateHolidayError = attendanceHolidaysCreateHolidayErrors[keyof attendanceHolidaysCreateHolidayErrors];
+
+export type attendanceHolidaysCreateHolidayResponses = {
+    /**
+     * Successful Response
+     */
+    201: HolidayPublic;
+};
+
+export type attendanceHolidaysCreateHolidayResponse = attendanceHolidaysCreateHolidayResponses[keyof attendanceHolidaysCreateHolidayResponses];
+
+export type attendanceHolidaysPreviewCopyYearData = {
+    body: HolidayCopyRequest;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/holidays/copy-year/preview';
+};
+
+export type attendanceHolidaysPreviewCopyYearErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceHolidaysPreviewCopyYearError = attendanceHolidaysPreviewCopyYearErrors[keyof attendanceHolidaysPreviewCopyYearErrors];
+
+export type attendanceHolidaysPreviewCopyYearResponses = {
+    /**
+     * Successful Response
+     */
+    200: HolidayCopyPreview;
+};
+
+export type attendanceHolidaysPreviewCopyYearResponse = attendanceHolidaysPreviewCopyYearResponses[keyof attendanceHolidaysPreviewCopyYearResponses];
+
+export type attendanceHolidaysCopyYearData = {
+    body: HolidayCopyRequest;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/holidays/copy-year';
+};
+
+export type attendanceHolidaysCopyYearErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceHolidaysCopyYearError = attendanceHolidaysCopyYearErrors[keyof attendanceHolidaysCopyYearErrors];
+
+export type attendanceHolidaysCopyYearResponses = {
+    /**
+     * Successful Response
+     */
+    200: HolidayCopyResult;
+};
+
+export type attendanceHolidaysCopyYearResponse = attendanceHolidaysCopyYearResponses[keyof attendanceHolidaysCopyYearResponses];
+
+export type attendanceHolidaysDeleteHolidayData = {
+    body?: never;
+    path: {
+        /**
+         * Holiday Id
+         */
+        holiday_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/holidays/{holiday_id}';
+};
+
+export type attendanceHolidaysDeleteHolidayErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceHolidaysDeleteHolidayError = attendanceHolidaysDeleteHolidayErrors[keyof attendanceHolidaysDeleteHolidayErrors];
+
+export type attendanceHolidaysDeleteHolidayResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type attendanceHolidaysDeleteHolidayResponse = attendanceHolidaysDeleteHolidayResponses[keyof attendanceHolidaysDeleteHolidayResponses];
+
+export type attendanceHolidaysUpdateHolidayData = {
+    body: HolidayUpdate;
+    path: {
+        /**
+         * Holiday Id
+         */
+        holiday_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/holidays/{holiday_id}';
+};
+
+export type attendanceHolidaysUpdateHolidayErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceHolidaysUpdateHolidayError = attendanceHolidaysUpdateHolidayErrors[keyof attendanceHolidaysUpdateHolidayErrors];
+
+export type attendanceHolidaysUpdateHolidayResponses = {
+    /**
+     * Successful Response
+     */
+    200: HolidayPublic;
+};
+
+export type attendanceHolidaysUpdateHolidayResponse = attendanceHolidaysUpdateHolidayResponses[keyof attendanceHolidaysUpdateHolidayResponses];
+
+export type attendanceMonthsReadMonthsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Year
+         */
+        year?: number | null;
+    };
+    url: '/api/v1/attendance/months/';
+};
+
+export type attendanceMonthsReadMonthsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsReadMonthsError = attendanceMonthsReadMonthsErrors[keyof attendanceMonthsReadMonthsErrors];
+
+export type attendanceMonthsReadMonthsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthsPublic;
+};
+
+export type attendanceMonthsReadMonthsResponse = attendanceMonthsReadMonthsResponses[keyof attendanceMonthsReadMonthsResponses];
+
+export type attendanceSchedulePlansReadSchedulePlansData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month?: string | null;
+        /**
+         * Status
+         */
+        status?: PlanStatus | null;
+        /**
+         * Scope Type
+         */
+        scope_type?: ScheduleScopeType | null;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/schedule-plans/';
+};
+
+export type attendanceSchedulePlansReadSchedulePlansErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansReadSchedulePlansError = attendanceSchedulePlansReadSchedulePlansErrors[keyof attendanceSchedulePlansReadSchedulePlansErrors];
+
+export type attendanceSchedulePlansReadSchedulePlansResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulePlansPublic;
+};
+
+export type attendanceSchedulePlansReadSchedulePlansResponse = attendanceSchedulePlansReadSchedulePlansResponses[keyof attendanceSchedulePlansReadSchedulePlansResponses];
+
+export type attendanceSchedulePlansReadPlanRuleOverridesData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}/rule-overrides';
+};
+
+export type attendanceSchedulePlansReadPlanRuleOverridesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansReadPlanRuleOverridesError = attendanceSchedulePlansReadPlanRuleOverridesErrors[keyof attendanceSchedulePlansReadPlanRuleOverridesErrors];
+
+export type attendanceSchedulePlansReadPlanRuleOverridesResponses = {
+    /**
+     * Successful Response
+     */
+    200: PlanRuleOverridesPublic;
+};
+
+export type attendanceSchedulePlansReadPlanRuleOverridesResponse = attendanceSchedulePlansReadPlanRuleOverridesResponses[keyof attendanceSchedulePlansReadPlanRuleOverridesResponses];
+
+export type attendanceSchedulePlansUpdatePlanRuleOverridesData = {
+    body: PlanRuleOverridesUpdate;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}/rule-overrides';
+};
+
+export type attendanceSchedulePlansUpdatePlanRuleOverridesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansUpdatePlanRuleOverridesError = attendanceSchedulePlansUpdatePlanRuleOverridesErrors[keyof attendanceSchedulePlansUpdatePlanRuleOverridesErrors];
+
+export type attendanceSchedulePlansUpdatePlanRuleOverridesResponses = {
+    /**
+     * Successful Response
+     */
+    200: PlanRuleOverridesPublic;
+};
+
+export type attendanceSchedulePlansUpdatePlanRuleOverridesResponse = attendanceSchedulePlansUpdatePlanRuleOverridesResponses[keyof attendanceSchedulePlansUpdatePlanRuleOverridesResponses];
 
 export type utilsTestEmailData = {
     body?: never;

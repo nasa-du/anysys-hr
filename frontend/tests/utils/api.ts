@@ -1,4 +1,5 @@
 import {
+  AttendanceHolidaysService,
   AttendanceShiftsService,
   CompaniesService,
   type CompanyPublic,
@@ -10,6 +11,8 @@ import {
   type EmployeePublic,
   type EmployeeStatus,
   EmployeesService,
+  type HolidayDayType,
+  type HolidayPublic,
   LoginService,
   type PositionPublic,
   PositionsService,
@@ -27,6 +30,7 @@ export type ApiPosition = PositionPublic
 export type ApiCostCenter = CostCenterPublic
 export type ApiEmployee = EmployeePublic
 export type ApiShift = ShiftPublic
+export type ApiHoliday = HolidayPublic
 
 let authentication: Promise<void> | null = null
 
@@ -131,6 +135,37 @@ export async function readShift(shiftId: string): Promise<ApiShift> {
     path: { shift_id: shiftId },
   })
   return response.data
+}
+
+export async function createHoliday(input: {
+  company_id: string
+  date: string
+  name: string
+  day_type?: HolidayDayType
+  note?: string | null
+}): Promise<ApiHoliday> {
+  await ensureAuthenticated()
+  const response = await AttendanceHolidaysService.createHoliday({
+    body: {
+      company_id: input.company_id,
+      date: input.date,
+      name: input.name,
+      day_type: input.day_type ?? "holiday",
+      note: input.note ?? null,
+    },
+  })
+  return response.data
+}
+
+export async function readHolidays(
+  companyId: string,
+  year: number,
+): Promise<ApiHoliday[]> {
+  await ensureAuthenticated()
+  const response = await AttendanceHolidaysService.readHolidays({
+    query: { company_id: companyId, year, skip: 0, limit: 500 },
+  })
+  return response.data.data
 }
 
 export async function resignEmployee(employeeId: string): Promise<ApiEmployee> {

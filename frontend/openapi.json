@@ -2538,6 +2538,816 @@
         }
       }
     },
+    "/api/v1/attendance/rules/": {
+      "get": {
+        "tags": ["attendance-rules"],
+        "summary": "Read Company Rule",
+        "description": "Read the company default rule; an absent row means system defaults.",
+        "operationId": "attendance-rules-read_company_rule",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceRulePublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["attendance-rules"],
+        "summary": "Update Company Rule",
+        "description": "Create the first company rule row or update the supplied fields.",
+        "operationId": "attendance-rules-update_company_rule",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AttendanceRuleUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceRulePublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/holidays/": {
+      "get": {
+        "tags": ["attendance-holidays"],
+        "summary": "Read Holidays",
+        "description": "List the company's holiday calendar ordered by date.",
+        "operationId": "attendance-holidays-read_holidays",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "integer", "maximum": 9999, "minimum": 1900 },
+                { "type": "null" }
+              ],
+              "title": "Year"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HolidaysPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["attendance-holidays"],
+        "summary": "Create Holiday",
+        "description": "Create one holiday; ``(company_id, date)`` is unique.",
+        "operationId": "attendance-holidays-create_holiday",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/HolidayCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HolidayPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/holidays/copy-year/preview": {
+      "post": {
+        "tags": ["attendance-holidays"],
+        "summary": "Preview Copy Year",
+        "description": "Preview creates and conflicts for copy-from-previous-year.",
+        "operationId": "attendance-holidays-preview_copy_year",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/HolidayCopyRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HolidayCopyPreview" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/holidays/copy-year": {
+      "post": {
+        "tags": ["attendance-holidays"],
+        "summary": "Copy Year",
+        "description": "Copy same month/day holidays; conflicts require ``overwrite = true``.",
+        "operationId": "attendance-holidays-copy_year",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/HolidayCopyRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HolidayCopyResult" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/holidays/{holiday_id}": {
+      "patch": {
+        "tags": ["attendance-holidays"],
+        "summary": "Update Holiday",
+        "description": "Update name, day type, or note; the date is immutable.",
+        "operationId": "attendance-holidays-update_holiday",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "holiday_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Holiday Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/HolidayUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HolidayPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["attendance-holidays"],
+        "summary": "Delete Holiday",
+        "description": "Delete one holiday; calculated months become stale.",
+        "operationId": "attendance-holidays-delete_holiday",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "holiday_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Holiday Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/months/": {
+      "get": {
+        "tags": ["attendance-months"],
+        "summary": "Read Months",
+        "description": "List existing attendance months; synthetic drafts are not listed.",
+        "operationId": "attendance-months-read_months",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "integer", "maximum": 9999, "minimum": 1900 },
+                { "type": "null" }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthsPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/": {
+      "get": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Read Schedule Plans",
+        "description": "List company plans; the rules page uses this to pick an override target.",
+        "operationId": "attendance-schedule-plans-read_schedule_plans",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "examples": ["2026-09"] },
+                { "type": "null" }
+              ],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/PlanStatus" },
+                { "type": "null" }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "scope_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/ScheduleScopeType" },
+                { "type": "null" }
+              ],
+              "title": "Scope Type"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "maxLength": 100 },
+                { "type": "null" }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SchedulePlansPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/{plan_id}/rule-overrides": {
+      "get": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Read Plan Rule Overrides",
+        "description": "Return overrides, the effective rule, and the company default.",
+        "operationId": "attendance-schedule-plans-read_plan_rule_overrides",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanRuleOverridesPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Update Plan Rule Overrides",
+        "description": "Replace plan overrides wholesale; ``null`` means inherit.",
+        "operationId": "attendance-schedule-plans-update_plan_rule_overrides",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanRuleOverridesUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanRuleOverridesPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/utils/test-email/": {
       "post": {
         "tags": ["utils"],
@@ -2634,6 +3444,303 @@
   },
   "components": {
     "schemas": {
+      "AttendanceMonthPublic": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Id"
+          },
+          "exists": { "type": "boolean", "title": "Exists" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "status": { "$ref": "#/components/schemas/AttendanceMonthStatus" },
+          "is_stale": { "type": "boolean", "title": "Is Stale" },
+          "calculated_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Calculated At"
+          },
+          "confirmed_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Confirmed At"
+          },
+          "locked_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Locked At"
+          },
+          "unlock_reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Unlock Reason"
+          },
+          "latest_calc_run": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CalcRunPublic" },
+              { "type": "null" }
+            ]
+          },
+          "active_batches": { "$ref": "#/components/schemas/InputBatches" },
+          "counts": { "$ref": "#/components/schemas/MonthCounts" },
+          "created_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exists",
+          "company_id",
+          "month",
+          "status",
+          "is_stale",
+          "active_batches",
+          "counts"
+        ],
+        "title": "AttendanceMonthPublic"
+      },
+      "AttendanceMonthStatus": {
+        "type": "string",
+        "enum": ["draft", "calculated", "confirmed", "locked"],
+        "title": "AttendanceMonthStatus"
+      },
+      "AttendanceMonthsPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/AttendanceMonthPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "AttendanceMonthsPublic"
+      },
+      "AttendanceRulePublic": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "is_default": { "type": "boolean", "title": "Is Default" },
+          "punch_window_min": {
+            "type": "integer",
+            "title": "Punch Window Min"
+          },
+          "late_cap_min": { "type": "integer", "title": "Late Cap Min" },
+          "early_cap_min": { "type": "integer", "title": "Early Cap Min" },
+          "ot_max_min": { "type": "integer", "title": "Ot Max Min" },
+          "late_grace_min": { "type": "integer", "title": "Late Grace Min" },
+          "early_grace_min": { "type": "integer", "title": "Early Grace Min" },
+          "ot_threshold_min": {
+            "type": "integer",
+            "title": "Ot Threshold Min"
+          },
+          "absent_if_no_punch": {
+            "type": "boolean",
+            "title": "Absent If No Punch"
+          },
+          "break_punch_required": {
+            "type": "boolean",
+            "title": "Break Punch Required"
+          },
+          "break_punch_tolerance_min": {
+            "type": "integer",
+            "title": "Break Punch Tolerance Min"
+          },
+          "absent_deduct_per_day": {
+            "type": "string",
+            "title": "Absent Deduct Per Day"
+          },
+          "late_deduct_per_occurrence": {
+            "type": "string",
+            "title": "Late Deduct Per Occurrence"
+          },
+          "early_deduct_per_occurrence": {
+            "type": "string",
+            "title": "Early Deduct Per Occurrence"
+          },
+          "missing_punch_deduct_per_occurrence": {
+            "type": "string",
+            "title": "Missing Punch Deduct Per Occurrence"
+          },
+          "created_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "is_default",
+          "punch_window_min",
+          "late_cap_min",
+          "early_cap_min",
+          "ot_max_min",
+          "late_grace_min",
+          "early_grace_min",
+          "ot_threshold_min",
+          "absent_if_no_punch",
+          "break_punch_required",
+          "break_punch_tolerance_min",
+          "absent_deduct_per_day",
+          "late_deduct_per_occurrence",
+          "early_deduct_per_occurrence",
+          "missing_punch_deduct_per_occurrence"
+        ],
+        "title": "AttendanceRulePublic"
+      },
+      "AttendanceRuleUpdate": {
+        "properties": {
+          "punch_window_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Punch Window Min"
+          },
+          "late_cap_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Late Cap Min"
+          },
+          "early_cap_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Early Cap Min"
+          },
+          "ot_max_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Ot Max Min"
+          },
+          "late_grace_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Late Grace Min"
+          },
+          "early_grace_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Early Grace Min"
+          },
+          "ot_threshold_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Ot Threshold Min"
+          },
+          "absent_if_no_punch": {
+            "type": "boolean",
+            "title": "Absent If No Punch"
+          },
+          "break_punch_required": {
+            "type": "boolean",
+            "title": "Break Punch Required"
+          },
+          "break_punch_tolerance_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Break Punch Tolerance Min"
+          },
+          "absent_deduct_per_day": {
+            "anyOf": [
+              { "type": "number", "maximum": 999999999999.99, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Absent Deduct Per Day"
+          },
+          "late_deduct_per_occurrence": {
+            "anyOf": [
+              { "type": "number", "maximum": 999999999999.99, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Late Deduct Per Occurrence"
+          },
+          "early_deduct_per_occurrence": {
+            "anyOf": [
+              { "type": "number", "maximum": 999999999999.99, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Early Deduct Per Occurrence"
+          },
+          "missing_punch_deduct_per_occurrence": {
+            "anyOf": [
+              { "type": "number", "maximum": 999999999999.99, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Missing Punch Deduct Per Occurrence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AttendanceRuleUpdate",
+        "description": "Company default rule update; omitted fields keep their current value."
+      },
       "Blocker": {
         "properties": {
           "type": {
@@ -2688,6 +3795,178 @@
         "type": "object",
         "required": ["username", "password"],
         "title": "Body_login-login_access_token"
+      },
+      "CalcRunPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "attendance_month_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Attendance Month Id"
+          },
+          "trigger": { "$ref": "#/components/schemas/CalcRunTrigger" },
+          "status": { "$ref": "#/components/schemas/CalcRunStatus" },
+          "calc_version": { "type": "string", "title": "Calc Version" },
+          "rules_version": { "type": "string", "title": "Rules Version" },
+          "roster_version": { "type": "string", "title": "Roster Version" },
+          "rules_snapshot": { "$ref": "#/components/schemas/RulesSnapshot" },
+          "input_batches": { "$ref": "#/components/schemas/InputBatches" },
+          "summary": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CalcRunSummary" },
+              { "type": "null" }
+            ]
+          },
+          "error_code": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Error Message"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "attendance_month_id",
+          "trigger",
+          "status",
+          "calc_version",
+          "rules_version",
+          "roster_version",
+          "rules_snapshot",
+          "input_batches",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "CalcRunPublic"
+      },
+      "CalcRunStatus": {
+        "type": "string",
+        "enum": ["success", "failed"],
+        "title": "CalcRunStatus"
+      },
+      "CalcRunSummary": {
+        "properties": {
+          "employees_total": {
+            "type": "integer",
+            "title": "Employees Total",
+            "default": 0
+          },
+          "employees_calculated": {
+            "type": "integer",
+            "title": "Employees Calculated",
+            "default": 0
+          },
+          "employees_skipped": {
+            "type": "integer",
+            "title": "Employees Skipped",
+            "default": 0
+          },
+          "skipped_reasons": {
+            "additionalProperties": { "type": "integer" },
+            "type": "object",
+            "title": "Skipped Reasons",
+            "default": {}
+          },
+          "days_total": {
+            "type": "integer",
+            "title": "Days Total",
+            "default": 0
+          },
+          "days_by_status": {
+            "additionalProperties": { "type": "integer" },
+            "type": "object",
+            "title": "Days By Status",
+            "default": {}
+          },
+          "flag_counts": {
+            "additionalProperties": { "type": "integer" },
+            "type": "object",
+            "title": "Flag Counts",
+            "default": {}
+          },
+          "late_count": {
+            "type": "integer",
+            "title": "Late Count",
+            "default": 0
+          },
+          "late_minutes": {
+            "type": "integer",
+            "title": "Late Minutes",
+            "default": 0
+          },
+          "early_count": {
+            "type": "integer",
+            "title": "Early Count",
+            "default": 0
+          },
+          "early_minutes": {
+            "type": "integer",
+            "title": "Early Minutes",
+            "default": 0
+          },
+          "missing_punch_count": {
+            "type": "integer",
+            "title": "Missing Punch Count",
+            "default": 0
+          },
+          "absent_days": {
+            "type": "integer",
+            "title": "Absent Days",
+            "default": 0
+          },
+          "ot_weekday_minutes": {
+            "type": "integer",
+            "title": "Ot Weekday Minutes",
+            "default": 0
+          },
+          "ot_weekend_minutes": {
+            "type": "integer",
+            "title": "Ot Weekend Minutes",
+            "default": 0
+          },
+          "ot_holiday_minutes": {
+            "type": "integer",
+            "title": "Ot Holiday Minutes",
+            "default": 0
+          },
+          "comp_offset_unused_minutes": {
+            "type": "integer",
+            "title": "Comp Offset Unused Minutes",
+            "default": 0
+          },
+          "attendance_deduct": {
+            "type": "string",
+            "title": "Attendance Deduct",
+            "default": "0"
+          }
+        },
+        "type": "object",
+        "title": "CalcRunSummary"
+      },
+      "CalcRunTrigger": {
+        "type": "string",
+        "enum": [
+          "initial",
+          "manual",
+          "reimport",
+          "roster_change",
+          "rule_change",
+          "holiday_change"
+        ],
+        "title": "CalcRunTrigger"
       },
       "CompaniesPublic": {
         "properties": {
@@ -3756,11 +5035,289 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "HolidayCopyConflict": {
+        "properties": {
+          "date": { "type": "string", "format": "date", "title": "Date" },
+          "name": { "type": "string", "title": "Name" },
+          "existing_name": { "type": "string", "title": "Existing Name" }
+        },
+        "type": "object",
+        "required": ["date", "name", "existing_name"],
+        "title": "HolidayCopyConflict"
+      },
+      "HolidayCopyCreate": {
+        "properties": {
+          "date": { "type": "string", "format": "date", "title": "Date" },
+          "name": { "type": "string", "title": "Name" },
+          "day_type": { "$ref": "#/components/schemas/HolidayDayType" }
+        },
+        "type": "object",
+        "required": ["date", "name", "day_type"],
+        "title": "HolidayCopyCreate"
+      },
+      "HolidayCopyPreview": {
+        "properties": {
+          "create_count": { "type": "integer", "title": "Create Count" },
+          "conflict_count": { "type": "integer", "title": "Conflict Count" },
+          "creates": {
+            "items": { "$ref": "#/components/schemas/HolidayCopyCreate" },
+            "type": "array",
+            "title": "Creates"
+          },
+          "conflicts": {
+            "items": { "$ref": "#/components/schemas/HolidayCopyConflict" },
+            "type": "array",
+            "title": "Conflicts"
+          }
+        },
+        "type": "object",
+        "required": ["create_count", "conflict_count", "conflicts"],
+        "title": "HolidayCopyPreview"
+      },
+      "HolidayCopyRequest": {
+        "properties": {
+          "source_year": {
+            "type": "integer",
+            "maximum": 9999.0,
+            "minimum": 1900.0,
+            "title": "Source Year"
+          },
+          "target_year": {
+            "type": "integer",
+            "maximum": 9999.0,
+            "minimum": 1900.0,
+            "title": "Target Year"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "title": "Overwrite",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["source_year", "target_year"],
+        "title": "HolidayCopyRequest"
+      },
+      "HolidayCopyResult": {
+        "properties": {
+          "created": { "type": "integer", "title": "Created" },
+          "updated": { "type": "integer", "title": "Updated" },
+          "skipped": { "type": "integer", "title": "Skipped" }
+        },
+        "type": "object",
+        "required": ["created", "updated", "skipped"],
+        "title": "HolidayCopyResult"
+      },
+      "HolidayCreate": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "date": { "type": "string", "format": "date", "title": "Date" },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "day_type": { "$ref": "#/components/schemas/HolidayDayType" },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["company_id", "date", "name", "day_type"],
+        "title": "HolidayCreate"
+      },
+      "HolidayDayType": {
+        "type": "string",
+        "enum": ["holiday", "adjusted_workday"],
+        "title": "HolidayDayType"
+      },
+      "HolidayPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "date": { "type": "string", "format": "date", "title": "Date" },
+          "name": { "type": "string", "title": "Name" },
+          "day_type": { "$ref": "#/components/schemas/HolidayDayType" },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "date",
+          "name",
+          "day_type",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "HolidayPublic"
+      },
+      "HolidaySnapshot": {
+        "properties": {
+          "date": { "type": "string", "format": "date", "title": "Date" },
+          "name": { "type": "string", "title": "Name" },
+          "day_type": { "$ref": "#/components/schemas/HolidayDayType" }
+        },
+        "type": "object",
+        "required": ["date", "name", "day_type"],
+        "title": "HolidaySnapshot"
+      },
+      "HolidayUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "type": "null" }
+            ],
+            "title": "Name"
+          },
+          "day_type": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/HolidayDayType" },
+              { "type": "null" }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "HolidayUpdate"
+      },
+      "HolidaysPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/HolidayPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "HolidaysPublic"
+      },
+      "InputBatchInfo": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "committed_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Committed At"
+          },
+          "file_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "File Name"
+          },
+          "source_rows": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Source Rows"
+          },
+          "valid_records": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Valid Records"
+          }
+        },
+        "type": "object",
+        "required": ["id"],
+        "title": "InputBatchInfo"
+      },
+      "InputBatches": {
+        "properties": {
+          "punch": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/InputBatchInfo" },
+              { "type": "null" }
+            ]
+          },
+          "trip": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/InputBatchInfo" },
+              { "type": "null" }
+            ]
+          },
+          "ot": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/InputBatchInfo" },
+              { "type": "null" }
+            ]
+          },
+          "leave": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/InputBatchInfo" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "InputBatches"
+      },
       "Message": {
         "properties": { "message": { "type": "string", "title": "Message" } },
         "type": "object",
         "required": ["message"],
         "title": "Message"
+      },
+      "MonthCounts": {
+        "properties": {
+          "employee_count": {
+            "type": "integer",
+            "title": "Employee Count",
+            "default": 0
+          },
+          "day_result_count": {
+            "type": "integer",
+            "title": "Day Result Count",
+            "default": 0
+          },
+          "abnormal_day_count": {
+            "type": "integer",
+            "title": "Abnormal Day Count",
+            "default": 0
+          },
+          "month_summary_count": {
+            "type": "integer",
+            "title": "Month Summary Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "MonthCounts"
       },
       "NewPassword": {
         "properties": {
@@ -3775,6 +5332,90 @@
         "type": "object",
         "required": ["token", "new_password"],
         "title": "NewPassword"
+      },
+      "PlanDayPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "day_of_month": { "type": "integer", "title": "Day Of Month" },
+          "seq": { "type": "integer", "title": "Seq" },
+          "shift_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Shift Id"
+          },
+          "shift_code": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Shift Code"
+          },
+          "shift_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Shift Name"
+          },
+          "shift_color": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Shift Color"
+          },
+          "shift_is_active": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Shift Is Active"
+          }
+        },
+        "type": "object",
+        "required": ["id", "day_of_month", "seq", "shift_id"],
+        "title": "PlanDayPublic"
+      },
+      "PlanRuleOverrideSnapshot": {
+        "properties": {
+          "plan_id": { "type": "string", "format": "uuid", "title": "Plan Id" },
+          "overrides": { "$ref": "#/components/schemas/RuleSnapshotPatch" }
+        },
+        "type": "object",
+        "required": ["plan_id", "overrides"],
+        "title": "PlanRuleOverrideSnapshot"
+      },
+      "PlanRuleOverridesPublic": {
+        "properties": {
+          "overrides": { "$ref": "#/components/schemas/RulePatch-Output" },
+          "effective": { "$ref": "#/components/schemas/RuleValues" },
+          "company_default": { "$ref": "#/components/schemas/RuleValues" }
+        },
+        "type": "object",
+        "required": ["overrides", "effective", "company_default"],
+        "title": "PlanRuleOverridesPublic"
+      },
+      "PlanRuleOverridesUpdate": {
+        "properties": {
+          "overrides": { "$ref": "#/components/schemas/RulePatch-Input" }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PlanRuleOverridesUpdate"
+      },
+      "PlanScopePublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "scope_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Scope Id"
+          },
+          "scope_code": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Scope Code"
+          },
+          "scope_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Scope Name"
+          }
+        },
+        "type": "object",
+        "required": ["id", "scope_id"],
+        "title": "PlanScopePublic"
+      },
+      "PlanStatus": {
+        "type": "string",
+        "enum": ["enabled", "archived"],
+        "title": "PlanStatus"
       },
       "PositionCreate": {
         "properties": {
@@ -3938,6 +5579,469 @@
         "type": "object",
         "required": ["email", "password", "full_name"],
         "title": "PrivateUserCreate"
+      },
+      "RulePatch-Input": {
+        "properties": {
+          "punch_window_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Punch Window Min"
+          },
+          "late_cap_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Late Cap Min"
+          },
+          "early_cap_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Early Cap Min"
+          },
+          "ot_max_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Ot Max Min"
+          },
+          "late_grace_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Late Grace Min"
+          },
+          "early_grace_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Early Grace Min"
+          },
+          "ot_threshold_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Ot Threshold Min"
+          },
+          "absent_if_no_punch": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Absent If No Punch"
+          },
+          "break_punch_required": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Break Punch Required"
+          },
+          "break_punch_tolerance_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Break Punch Tolerance Min"
+          },
+          "absent_deduct_per_day": {
+            "anyOf": [
+              { "type": "number", "maximum": 999999999999.99, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Absent Deduct Per Day"
+          },
+          "late_deduct_per_occurrence": {
+            "anyOf": [
+              { "type": "number", "maximum": 999999999999.99, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Late Deduct Per Occurrence"
+          },
+          "early_deduct_per_occurrence": {
+            "anyOf": [
+              { "type": "number", "maximum": 999999999999.99, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Early Deduct Per Occurrence"
+          },
+          "missing_punch_deduct_per_occurrence": {
+            "anyOf": [
+              { "type": "number", "maximum": 999999999999.99, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Missing Punch Deduct Per Occurrence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RulePatch",
+        "description": "Nullable plan override fields; ``None`` inherits the company default."
+      },
+      "RulePatch-Output": {
+        "properties": {
+          "punch_window_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Punch Window Min"
+          },
+          "late_cap_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Late Cap Min"
+          },
+          "early_cap_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Early Cap Min"
+          },
+          "ot_max_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Ot Max Min"
+          },
+          "late_grace_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Late Grace Min"
+          },
+          "early_grace_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Early Grace Min"
+          },
+          "ot_threshold_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Ot Threshold Min"
+          },
+          "absent_if_no_punch": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Absent If No Punch"
+          },
+          "break_punch_required": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Break Punch Required"
+          },
+          "break_punch_tolerance_min": {
+            "anyOf": [
+              { "type": "integer", "maximum": 2147483647.0, "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Break Punch Tolerance Min"
+          },
+          "absent_deduct_per_day": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Absent Deduct Per Day"
+          },
+          "late_deduct_per_occurrence": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Late Deduct Per Occurrence"
+          },
+          "early_deduct_per_occurrence": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Early Deduct Per Occurrence"
+          },
+          "missing_punch_deduct_per_occurrence": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Missing Punch Deduct Per Occurrence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RulePatch",
+        "description": "Nullable plan override fields; ``None`` inherits the company default."
+      },
+      "RuleSnapshotPatch": {
+        "properties": {
+          "punch_window_min": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Punch Window Min"
+          },
+          "late_cap_min": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Late Cap Min"
+          },
+          "early_cap_min": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Early Cap Min"
+          },
+          "ot_max_min": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Ot Max Min"
+          },
+          "late_grace_min": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Late Grace Min"
+          },
+          "early_grace_min": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Early Grace Min"
+          },
+          "ot_threshold_min": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Ot Threshold Min"
+          },
+          "absent_if_no_punch": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Absent If No Punch"
+          },
+          "break_punch_required": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Break Punch Required"
+          },
+          "break_punch_tolerance_min": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Break Punch Tolerance Min"
+          },
+          "absent_deduct_per_day": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Absent Deduct Per Day"
+          },
+          "late_deduct_per_occurrence": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Late Deduct Per Occurrence"
+          },
+          "early_deduct_per_occurrence": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Early Deduct Per Occurrence"
+          },
+          "missing_punch_deduct_per_occurrence": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Missing Punch Deduct Per Occurrence"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "RuleSnapshotPatch",
+        "description": "Read-only rule override snapshot; unknown historical fields are kept."
+      },
+      "RuleValues": {
+        "properties": {
+          "punch_window_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Punch Window Min"
+          },
+          "late_cap_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Late Cap Min"
+          },
+          "early_cap_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Early Cap Min"
+          },
+          "ot_max_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Ot Max Min"
+          },
+          "late_grace_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Late Grace Min"
+          },
+          "early_grace_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Early Grace Min"
+          },
+          "ot_threshold_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Ot Threshold Min"
+          },
+          "absent_if_no_punch": {
+            "type": "boolean",
+            "title": "Absent If No Punch"
+          },
+          "break_punch_required": {
+            "type": "boolean",
+            "title": "Break Punch Required"
+          },
+          "break_punch_tolerance_min": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Break Punch Tolerance Min"
+          },
+          "absent_deduct_per_day": {
+            "type": "string",
+            "title": "Absent Deduct Per Day"
+          },
+          "late_deduct_per_occurrence": {
+            "type": "string",
+            "title": "Late Deduct Per Occurrence"
+          },
+          "early_deduct_per_occurrence": {
+            "type": "string",
+            "title": "Early Deduct Per Occurrence"
+          },
+          "missing_punch_deduct_per_occurrence": {
+            "type": "string",
+            "title": "Missing Punch Deduct Per Occurrence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "punch_window_min",
+          "late_cap_min",
+          "early_cap_min",
+          "ot_max_min",
+          "late_grace_min",
+          "early_grace_min",
+          "ot_threshold_min",
+          "absent_if_no_punch",
+          "break_punch_required",
+          "break_punch_tolerance_min",
+          "absent_deduct_per_day",
+          "late_deduct_per_occurrence",
+          "early_deduct_per_occurrence",
+          "missing_punch_deduct_per_occurrence"
+        ],
+        "title": "RuleValues",
+        "description": "A complete effective rule set."
+      },
+      "RulesSnapshot": {
+        "properties": {
+          "company_rule": { "$ref": "#/components/schemas/RuleValues" },
+          "plan_overrides": {
+            "items": {
+              "$ref": "#/components/schemas/PlanRuleOverrideSnapshot"
+            },
+            "type": "array",
+            "title": "Plan Overrides"
+          },
+          "holidays": {
+            "items": { "$ref": "#/components/schemas/HolidaySnapshot" },
+            "type": "array",
+            "title": "Holidays"
+          }
+        },
+        "type": "object",
+        "required": ["company_rule", "plan_overrides", "holidays"],
+        "title": "RulesSnapshot"
+      },
+      "SchedulePlanPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "plan_name": { "type": "string", "title": "Plan Name" },
+          "scope_type": { "$ref": "#/components/schemas/ScheduleScopeType" },
+          "status": { "$ref": "#/components/schemas/PlanStatus" },
+          "copied_from_plan_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Copied From Plan Id"
+          },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "scopes": {
+            "items": { "$ref": "#/components/schemas/PlanScopePublic" },
+            "type": "array",
+            "title": "Scopes"
+          },
+          "days": {
+            "items": { "$ref": "#/components/schemas/PlanDayPublic" },
+            "type": "array",
+            "title": "Days"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "month",
+          "plan_name",
+          "scope_type",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SchedulePlanPublic"
+      },
+      "SchedulePlansPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/SchedulePlanPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "SchedulePlansPublic"
+      },
+      "ScheduleScopeType": {
+        "type": "string",
+        "enum": ["all", "dept", "position", "employee"],
+        "title": "ScheduleScopeType"
       },
       "ShiftCreate": {
         "properties": {

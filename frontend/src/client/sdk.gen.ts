@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { attendanceShiftsCreateShiftData, attendanceShiftsCreateShiftErrors, attendanceShiftsCreateShiftResponses, attendanceShiftsDeleteShiftData, attendanceShiftsDeleteShiftErrors, attendanceShiftsDeleteShiftResponses, attendanceShiftsReadShiftData, attendanceShiftsReadShiftErrors, attendanceShiftsReadShiftResponses, attendanceShiftsReadShiftsData, attendanceShiftsReadShiftsErrors, attendanceShiftsReadShiftsResponses, attendanceShiftsUpdateShiftData, attendanceShiftsUpdateShiftErrors, attendanceShiftsUpdateShiftResponses, companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { attendanceHolidaysCopyYearData, attendanceHolidaysCopyYearErrors, attendanceHolidaysCopyYearResponses, attendanceHolidaysCreateHolidayData, attendanceHolidaysCreateHolidayErrors, attendanceHolidaysCreateHolidayResponses, attendanceHolidaysDeleteHolidayData, attendanceHolidaysDeleteHolidayErrors, attendanceHolidaysDeleteHolidayResponses, attendanceHolidaysPreviewCopyYearData, attendanceHolidaysPreviewCopyYearErrors, attendanceHolidaysPreviewCopyYearResponses, attendanceHolidaysReadHolidaysData, attendanceHolidaysReadHolidaysErrors, attendanceHolidaysReadHolidaysResponses, attendanceHolidaysUpdateHolidayData, attendanceHolidaysUpdateHolidayErrors, attendanceHolidaysUpdateHolidayResponses, attendanceMonthsReadMonthsData, attendanceMonthsReadMonthsErrors, attendanceMonthsReadMonthsResponses, attendanceRulesReadCompanyRuleData, attendanceRulesReadCompanyRuleErrors, attendanceRulesReadCompanyRuleResponses, attendanceRulesUpdateCompanyRuleData, attendanceRulesUpdateCompanyRuleErrors, attendanceRulesUpdateCompanyRuleResponses, attendanceSchedulePlansReadPlanRuleOverridesData, attendanceSchedulePlansReadPlanRuleOverridesErrors, attendanceSchedulePlansReadPlanRuleOverridesResponses, attendanceSchedulePlansReadSchedulePlansData, attendanceSchedulePlansReadSchedulePlansErrors, attendanceSchedulePlansReadSchedulePlansResponses, attendanceSchedulePlansUpdatePlanRuleOverridesData, attendanceSchedulePlansUpdatePlanRuleOverridesErrors, attendanceSchedulePlansUpdatePlanRuleOverridesResponses, attendanceShiftsCreateShiftData, attendanceShiftsCreateShiftErrors, attendanceShiftsCreateShiftResponses, attendanceShiftsDeleteShiftData, attendanceShiftsDeleteShiftErrors, attendanceShiftsDeleteShiftResponses, attendanceShiftsReadShiftData, attendanceShiftsReadShiftErrors, attendanceShiftsReadShiftResponses, attendanceShiftsReadShiftsData, attendanceShiftsReadShiftsErrors, attendanceShiftsReadShiftsResponses, attendanceShiftsUpdateShiftData, attendanceShiftsUpdateShiftErrors, attendanceShiftsUpdateShiftResponses, companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -742,6 +742,206 @@ export class AttendanceShiftsService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/attendance/shifts/{shift_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
+export class AttendanceRulesService {
+    /**
+     * Read Company Rule
+     *
+     * Read the company default rule; an absent row means system defaults.
+     */
+    public static readCompanyRule<ThrowOnError extends boolean = true>(options: Options<attendanceRulesReadCompanyRuleData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceRulesReadCompanyRuleResponses, attendanceRulesReadCompanyRuleErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/rules/',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Company Rule
+     *
+     * Create the first company rule row or update the supplied fields.
+     */
+    public static updateCompanyRule<ThrowOnError extends boolean = true>(options: Options<attendanceRulesUpdateCompanyRuleData, ThrowOnError>) {
+        return (options.client ?? client).put<attendanceRulesUpdateCompanyRuleResponses, attendanceRulesUpdateCompanyRuleErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/rules/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
+export class AttendanceHolidaysService {
+    /**
+     * Read Holidays
+     *
+     * List the company's holiday calendar ordered by date.
+     */
+    public static readHolidays<ThrowOnError extends boolean = true>(options: Options<attendanceHolidaysReadHolidaysData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceHolidaysReadHolidaysResponses, attendanceHolidaysReadHolidaysErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/holidays/',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Holiday
+     *
+     * Create one holiday; ``(company_id, date)`` is unique.
+     */
+    public static createHoliday<ThrowOnError extends boolean = true>(options: Options<attendanceHolidaysCreateHolidayData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceHolidaysCreateHolidayResponses, attendanceHolidaysCreateHolidayErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/holidays/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Preview Copy Year
+     *
+     * Preview creates and conflicts for copy-from-previous-year.
+     */
+    public static previewCopyYear<ThrowOnError extends boolean = true>(options: Options<attendanceHolidaysPreviewCopyYearData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceHolidaysPreviewCopyYearResponses, attendanceHolidaysPreviewCopyYearErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/holidays/copy-year/preview',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Copy Year
+     *
+     * Copy same month/day holidays; conflicts require ``overwrite = true``.
+     */
+    public static copyYear<ThrowOnError extends boolean = true>(options: Options<attendanceHolidaysCopyYearData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceHolidaysCopyYearResponses, attendanceHolidaysCopyYearErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/holidays/copy-year',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Holiday
+     *
+     * Delete one holiday; calculated months become stale.
+     */
+    public static deleteHoliday<ThrowOnError extends boolean = true>(options: Options<attendanceHolidaysDeleteHolidayData, ThrowOnError>) {
+        return (options.client ?? client).delete<attendanceHolidaysDeleteHolidayResponses, attendanceHolidaysDeleteHolidayErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/holidays/{holiday_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Holiday
+     *
+     * Update name, day type, or note; the date is immutable.
+     */
+    public static updateHoliday<ThrowOnError extends boolean = true>(options: Options<attendanceHolidaysUpdateHolidayData, ThrowOnError>) {
+        return (options.client ?? client).patch<attendanceHolidaysUpdateHolidayResponses, attendanceHolidaysUpdateHolidayErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/holidays/{holiday_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
+export class AttendanceMonthsService {
+    /**
+     * Read Months
+     *
+     * List existing attendance months; synthetic drafts are not listed.
+     */
+    public static readMonths<ThrowOnError extends boolean = true>(options: Options<attendanceMonthsReadMonthsData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceMonthsReadMonthsResponses, attendanceMonthsReadMonthsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/months/',
+            ...options
+        });
+    }
+}
+
+export class AttendanceSchedulePlansService {
+    /**
+     * Read Schedule Plans
+     *
+     * List company plans; the rules page uses this to pick an override target.
+     */
+    public static readSchedulePlans<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansReadSchedulePlansData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceSchedulePlansReadSchedulePlansResponses, attendanceSchedulePlansReadSchedulePlansErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Plan Rule Overrides
+     *
+     * Return overrides, the effective rule, and the company default.
+     */
+    public static readPlanRuleOverrides<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansReadPlanRuleOverridesData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceSchedulePlansReadPlanRuleOverridesResponses, attendanceSchedulePlansReadPlanRuleOverridesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}/rule-overrides',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Plan Rule Overrides
+     *
+     * Replace plan overrides wholesale; ``null`` means inherit.
+     */
+    public static updatePlanRuleOverrides<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansUpdatePlanRuleOverridesData, ThrowOnError>) {
+        return (options.client ?? client).put<attendanceSchedulePlansUpdatePlanRuleOverridesResponses, attendanceSchedulePlansUpdatePlanRuleOverridesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}/rule-overrides',
             ...options,
             headers: {
                 'Content-Type': 'application/json',

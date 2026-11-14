@@ -26,6 +26,12 @@ from app.services.common import normalize_code
 SHIFT_CODE_PATTERN = r"^[A-Z0-9_-]{1,32}$"
 COLOR_PATTERN = r"^#[0-9A-Fa-f]{6}$"
 
+# Rule integers are PostgreSQL ``INTEGER`` columns and amounts are
+# ``NUMERIC(14, 2)``. Reject values the database cannot store as a 422 rather
+# than letting the driver raise a 500 on commit.
+MAX_RULE_MINUTES = 2_147_483_647
+MAX_RULE_AMOUNT = Decimal("999999999999.99")
+
 
 def _contract_shift_time(value: time) -> time:
     """Shift times are naive HH:MM:SS values without fractional seconds."""
@@ -42,40 +48,48 @@ ShiftTime = Annotated[time, AfterValidator(_contract_shift_time)]
 class RuleValues(SQLModel):
     """A complete effective rule set."""
 
-    punch_window_min: int = Field(ge=0)
-    late_cap_min: int = Field(ge=0)
-    early_cap_min: int = Field(ge=0)
-    ot_max_min: int = Field(ge=0)
-    late_grace_min: int = Field(ge=0)
-    early_grace_min: int = Field(ge=0)
-    ot_threshold_min: int = Field(ge=0)
+    punch_window_min: int = Field(ge=0, le=MAX_RULE_MINUTES)
+    late_cap_min: int = Field(ge=0, le=MAX_RULE_MINUTES)
+    early_cap_min: int = Field(ge=0, le=MAX_RULE_MINUTES)
+    ot_max_min: int = Field(ge=0, le=MAX_RULE_MINUTES)
+    late_grace_min: int = Field(ge=0, le=MAX_RULE_MINUTES)
+    early_grace_min: int = Field(ge=0, le=MAX_RULE_MINUTES)
+    ot_threshold_min: int = Field(ge=0, le=MAX_RULE_MINUTES)
     absent_if_no_punch: bool
     break_punch_required: bool
-    break_punch_tolerance_min: int = Field(ge=0)
-    absent_deduct_per_day: DecimalString = Field(ge=0)
-    late_deduct_per_occurrence: DecimalString = Field(ge=0)
-    early_deduct_per_occurrence: DecimalString = Field(ge=0)
-    missing_punch_deduct_per_occurrence: DecimalString = Field(ge=0)
+    break_punch_tolerance_min: int = Field(ge=0, le=MAX_RULE_MINUTES)
+    absent_deduct_per_day: DecimalString = Field(ge=0, le=MAX_RULE_AMOUNT)
+    late_deduct_per_occurrence: DecimalString = Field(ge=0, le=MAX_RULE_AMOUNT)
+    early_deduct_per_occurrence: DecimalString = Field(ge=0, le=MAX_RULE_AMOUNT)
+    missing_punch_deduct_per_occurrence: DecimalString = Field(ge=0, le=MAX_RULE_AMOUNT)
 
 
 class RulePatch(WriteModel):
     """Nullable plan override fields; ``None`` inherits the company default."""
 
-    punch_window_min: int | None = Field(default=None, ge=0)
-    late_cap_min: int | None = Field(default=None, ge=0)
-    early_cap_min: int | None = Field(default=None, ge=0)
-    ot_max_min: int | None = Field(default=None, ge=0)
-    late_grace_min: int | None = Field(default=None, ge=0)
-    early_grace_min: int | None = Field(default=None, ge=0)
-    ot_threshold_min: int | None = Field(default=None, ge=0)
+    punch_window_min: int | None = Field(default=None, ge=0, le=MAX_RULE_MINUTES)
+    late_cap_min: int | None = Field(default=None, ge=0, le=MAX_RULE_MINUTES)
+    early_cap_min: int | None = Field(default=None, ge=0, le=MAX_RULE_MINUTES)
+    ot_max_min: int | None = Field(default=None, ge=0, le=MAX_RULE_MINUTES)
+    late_grace_min: int | None = Field(default=None, ge=0, le=MAX_RULE_MINUTES)
+    early_grace_min: int | None = Field(default=None, ge=0, le=MAX_RULE_MINUTES)
+    ot_threshold_min: int | None = Field(default=None, ge=0, le=MAX_RULE_MINUTES)
     absent_if_no_punch: bool | None = None
     break_punch_required: bool | None = None
-    break_punch_tolerance_min: int | None = Field(default=None, ge=0)
-    absent_deduct_per_day: DecimalString | None = Field(default=None, ge=0)
-    late_deduct_per_occurrence: DecimalString | None = Field(default=None, ge=0)
-    early_deduct_per_occurrence: DecimalString | None = Field(default=None, ge=0)
+    break_punch_tolerance_min: int | None = Field(
+        default=None, ge=0, le=MAX_RULE_MINUTES
+    )
+    absent_deduct_per_day: DecimalString | None = Field(
+        default=None, ge=0, le=MAX_RULE_AMOUNT
+    )
+    late_deduct_per_occurrence: DecimalString | None = Field(
+        default=None, ge=0, le=MAX_RULE_AMOUNT
+    )
+    early_deduct_per_occurrence: DecimalString | None = Field(
+        default=None, ge=0, le=MAX_RULE_AMOUNT
+    )
     missing_punch_deduct_per_occurrence: DecimalString | None = Field(
-        default=None, ge=0
+        default=None, ge=0, le=MAX_RULE_AMOUNT
     )
 
 
@@ -97,10 +111,40 @@ _RULE_FIELD_NAMES: tuple[str, ...] = (
 )
 
 
-class AttendanceRuleUpdate(RulePatch):
+# Pydantic treats a ``None`` default as "omitted", while the annotation stays
+# non-nullable: the OpenAPI schema therefore advertises optional integer/bool/
+# decimal fields rather than ``anyOf [<type>, null]``. An explicit ``null`` is
+# still rejected by the validator below.
+_OMIT: Any = None
+
+
+class AttendanceRuleUpdate(WriteModel):
     """Company default rule update; omitted fields keep their current value."""
 
-    @field_validator(*_RULE_FIELD_NAMES)
+    punch_window_min: int = Field(default=_OMIT, ge=0, le=MAX_RULE_MINUTES)
+    late_cap_min: int = Field(default=_OMIT, ge=0, le=MAX_RULE_MINUTES)
+    early_cap_min: int = Field(default=_OMIT, ge=0, le=MAX_RULE_MINUTES)
+    ot_max_min: int = Field(default=_OMIT, ge=0, le=MAX_RULE_MINUTES)
+    late_grace_min: int = Field(default=_OMIT, ge=0, le=MAX_RULE_MINUTES)
+    early_grace_min: int = Field(default=_OMIT, ge=0, le=MAX_RULE_MINUTES)
+    ot_threshold_min: int = Field(default=_OMIT, ge=0, le=MAX_RULE_MINUTES)
+    absent_if_no_punch: bool = Field(default=_OMIT)
+    break_punch_required: bool = Field(default=_OMIT)
+    break_punch_tolerance_min: int = Field(default=_OMIT, ge=0, le=MAX_RULE_MINUTES)
+    absent_deduct_per_day: DecimalString = Field(
+        default=_OMIT, ge=0, le=MAX_RULE_AMOUNT
+    )
+    late_deduct_per_occurrence: DecimalString = Field(
+        default=_OMIT, ge=0, le=MAX_RULE_AMOUNT
+    )
+    early_deduct_per_occurrence: DecimalString = Field(
+        default=_OMIT, ge=0, le=MAX_RULE_AMOUNT
+    )
+    missing_punch_deduct_per_occurrence: DecimalString = Field(
+        default=_OMIT, ge=0, le=MAX_RULE_AMOUNT
+    )
+
+    @field_validator(*_RULE_FIELD_NAMES, mode="before")
     @classmethod
     def _not_null(cls, value: Any) -> Any:
         if value is None:
@@ -243,6 +287,12 @@ class HolidayCopyRequest(WriteModel):
     overwrite: bool = False
 
 
+class HolidayCopyCreate(SQLModel):
+    date: date
+    name: str
+    day_type: HolidayDayType
+
+
 class HolidayCopyConflict(SQLModel):
     date: date
     name: str
@@ -252,6 +302,7 @@ class HolidayCopyConflict(SQLModel):
 class HolidayCopyPreview(SQLModel):
     create_count: int
     conflict_count: int
+    creates: list[HolidayCopyCreate] = Field(default_factory=list)
     conflicts: list[HolidayCopyConflict]
 
 

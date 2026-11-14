@@ -248,6 +248,37 @@ export type Blocker = {
 };
 
 /**
+ * Body_attendance-imports-preview_imports
+ */
+export type Body_attendance_imports_preview_imports = {
+    /**
+     * Company Id
+     */
+    company_id: string;
+    data_type: ImportDataType;
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * File
+     */
+    file?: Blob | File | null;
+    /**
+     * Text
+     */
+    text?: string | null;
+    /**
+     * Sheet Name
+     */
+    sheet_name?: string | null;
+    /**
+     * Column Mapping
+     */
+    column_mapping?: string | null;
+};
+
+/**
  * Body_login-login_access_token
  */
 export type Body_login_login_access_token = {
@@ -1498,6 +1529,370 @@ export type HolidaysPublic = {
      * Count
      */
     count: number;
+};
+
+/**
+ * ImportBatchErrorPublic
+ */
+export type ImportBatchErrorPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Source Row Number
+     */
+    source_row_number: number;
+    /**
+     * Column Name
+     */
+    column_name?: string | null;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Message
+     */
+    message: string;
+    severity: ImportSeverity;
+    /**
+     * Raw Row
+     */
+    raw_row: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * ImportBatchPublic
+ */
+export type ImportBatchPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    data_type: ImportDataType;
+    /**
+     * Month
+     */
+    month: string;
+    status: ImportBatchStatus;
+    source: ImportSource;
+    /**
+     * File Name
+     */
+    file_name?: string | null;
+    /**
+     * File Size
+     */
+    file_size?: number | null;
+    /**
+     * File Sha256
+     */
+    file_sha256?: string | null;
+    /**
+     * Sheet Name
+     */
+    sheet_name?: string | null;
+    /**
+     * Header Row Number
+     */
+    header_row_number?: number | null;
+    /**
+     * Header Columns
+     */
+    header_columns?: Array<unknown>;
+    /**
+     * Column Mapping
+     */
+    column_mapping?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Parser Version
+     */
+    parser_version: string;
+    /**
+     * Source Rows
+     */
+    source_rows: number;
+    /**
+     * Valid Records
+     */
+    valid_records: number;
+    /**
+     * Skipped Records
+     */
+    skipped_records: number;
+    /**
+     * Error Records
+     */
+    error_records: number;
+    /**
+     * Warning Records
+     */
+    warning_records: number;
+    /**
+     * Skip Counts
+     */
+    skip_counts?: {
+        [key: string]: number;
+    };
+    /**
+     * Warning Counts
+     */
+    warning_counts?: {
+        [key: string]: number;
+    };
+    /**
+     * Operator Id
+     */
+    operator_id: string;
+    /**
+     * Operator Name
+     */
+    operator_name?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Committed At
+     */
+    committed_at?: string | null;
+    /**
+     * Superseded At
+     */
+    superseded_at?: string | null;
+    /**
+     * Discarded At
+     */
+    discarded_at?: string | null;
+    /**
+     * Revoked At
+     */
+    revoked_at?: string | null;
+    /**
+     * Expires At
+     */
+    expires_at?: string | null;
+    /**
+     * Superseded By Batch Id
+     */
+    superseded_by_batch_id?: string | null;
+    /**
+     * Discard Reason
+     */
+    discard_reason?: string | null;
+    /**
+     * Samples
+     */
+    samples?: Array<{
+        [key: string]: unknown;
+    }> | null;
+};
+
+/**
+ * ImportBatchStatus
+ */
+export type ImportBatchStatus = 'preview' | 'committed' | 'superseded' | 'discarded' | 'revoked';
+
+/**
+ * ImportDataType
+ */
+export type ImportDataType = 'punch' | 'trip' | 'ot' | 'leave';
+
+/**
+ * ImportEmployeeStats
+ */
+export type ImportEmployeeStats = {
+    /**
+     * Matched
+     */
+    matched?: number;
+    /**
+     * Unknown
+     */
+    unknown?: number;
+    /**
+     * Duplicate Name
+     */
+    duplicate_name?: number;
+    /**
+     * Affected
+     */
+    affected?: number;
+};
+
+/**
+ * ImportImpact
+ */
+export type ImportImpact = {
+    current_batch?: ImportImpactBatch | null;
+    /**
+     * Valid Records Delta
+     */
+    valid_records_delta?: number;
+    /**
+     * Employee Overlap
+     */
+    employee_overlap?: number;
+    /**
+     * Employees Added
+     */
+    employees_added?: number;
+    /**
+     * Employees Removed
+     */
+    employees_removed?: number;
+};
+
+/**
+ * ImportImpactBatch
+ */
+export type ImportImpactBatch = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Committed At
+     */
+    committed_at: string;
+    /**
+     * File Name
+     */
+    file_name?: string | null;
+    /**
+     * Source Rows
+     */
+    source_rows: number;
+    /**
+     * Valid Records
+     */
+    valid_records: number;
+};
+
+/**
+ * ImportMappingTemplatePublic
+ */
+export type ImportMappingTemplatePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    data_type: ImportDataType;
+    /**
+     * Mapping
+     */
+    mapping: {
+        [key: string]: unknown;
+    };
+    /**
+     * Header Columns
+     */
+    header_columns: Array<unknown>;
+    /**
+     * Updated By
+     */
+    updated_by: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * ImportPreviewPublic
+ */
+export type ImportPreviewPublic = {
+    batch: ImportBatchPublic;
+    stats: ImportStats;
+    employees: ImportEmployeeStats;
+    /**
+     * Errors
+     */
+    errors?: Array<ImportBatchErrorPublic>;
+    /**
+     * Error Total
+     */
+    error_total?: number;
+    /**
+     * Samples
+     */
+    samples?: Array<{
+        [key: string]: unknown;
+    }>;
+    impact: ImportImpact;
+    /**
+     * Can Commit
+     */
+    can_commit: boolean;
+    /**
+     * Commit Blocked Reason
+     */
+    commit_blocked_reason?: string | null;
+};
+
+/**
+ * ImportSeverity
+ */
+export type ImportSeverity = 'error' | 'warning';
+
+/**
+ * ImportSource
+ */
+export type ImportSource = 'upload' | 'paste';
+
+/**
+ * ImportStats
+ */
+export type ImportStats = {
+    /**
+     * Source Rows
+     */
+    source_rows?: number;
+    /**
+     * Valid Records
+     */
+    valid_records?: number;
+    /**
+     * Skipped Records
+     */
+    skipped_records?: number;
+    /**
+     * Error Records
+     */
+    error_records?: number;
+    /**
+     * Warning Records
+     */
+    warning_records?: number;
+    /**
+     * Skip Counts
+     */
+    skip_counts?: {
+        [key: string]: number;
+    };
+    /**
+     * Warning Counts
+     */
+    warning_counts?: {
+        [key: string]: number;
+    };
 };
 
 /**
@@ -6410,6 +6805,94 @@ export type attendanceRosterBatchRosterEntriesResponses = {
 };
 
 export type attendanceRosterBatchRosterEntriesResponse = attendanceRosterBatchRosterEntriesResponses[keyof attendanceRosterBatchRosterEntriesResponses];
+
+export type attendanceImportsPreviewImportsData = {
+    body: Body_attendance_imports_preview_imports;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/imports/preview';
+};
+
+export type attendanceImportsPreviewImportsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsPreviewImportsError = attendanceImportsPreviewImportsErrors[keyof attendanceImportsPreviewImportsErrors];
+
+export type attendanceImportsPreviewImportsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportPreviewPublic;
+};
+
+export type attendanceImportsPreviewImportsResponse = attendanceImportsPreviewImportsResponses[keyof attendanceImportsPreviewImportsResponses];
+
+export type attendanceImportsReadMappingTemplateData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        data_type: ImportDataType;
+    };
+    url: '/api/v1/attendance/imports/mapping-template';
+};
+
+export type attendanceImportsReadMappingTemplateErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsReadMappingTemplateError = attendanceImportsReadMappingTemplateErrors[keyof attendanceImportsReadMappingTemplateErrors];
+
+export type attendanceImportsReadMappingTemplateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportMappingTemplatePublic;
+};
+
+export type attendanceImportsReadMappingTemplateResponse = attendanceImportsReadMappingTemplateResponses[keyof attendanceImportsReadMappingTemplateResponses];
 
 export type utilsTestEmailData = {
     body?: never;

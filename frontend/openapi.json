@@ -4829,6 +4829,154 @@
         "security": [{ "OAuth2PasswordBearer": [] }]
       }
     },
+    "/api/v1/attendance/imports/preview": {
+      "post": {
+        "tags": ["attendance-imports"],
+        "summary": "Preview Imports",
+        "description": "Parse an uploaded or pasted file and return a persistent preview batch.",
+        "operationId": "attendance-imports-preview_imports",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_attendance-imports-preview_imports"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ImportPreviewPublic" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/v1/attendance/imports/mapping-template": {
+      "get": {
+        "tags": ["attendance-imports"],
+        "summary": "Read Mapping Template",
+        "description": "Return the saved mapping for one company and data type; 404 when absent.",
+        "operationId": "attendance-imports-read_mapping_template",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "data_type",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/ImportDataType" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportMappingTemplatePublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/v1/utils/test-email/": {
       "post": {
         "tags": ["utils"],
@@ -5246,6 +5394,42 @@
         "required": ["type", "id", "code", "label"],
         "title": "Blocker",
         "description": "A reference that prevents a delete or deactivate operation."
+      },
+      "Body_attendance-imports-preview_imports": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "data_type": { "$ref": "#/components/schemas/ImportDataType" },
+          "month": { "type": "string", "title": "Month" },
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              { "type": "null" }
+            ],
+            "title": "File"
+          },
+          "text": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Text"
+          },
+          "sheet_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Sheet Name"
+          },
+          "column_mapping": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Column Mapping"
+          }
+        },
+        "type": "object",
+        "required": ["company_id", "data_type", "month"],
+        "title": "Body_attendance-imports-preview_imports"
       },
       "Body_login-login_access_token": {
         "properties": {
@@ -6759,6 +6943,399 @@
         "type": "object",
         "required": ["data", "count"],
         "title": "HolidaysPublic"
+      },
+      "ImportBatchErrorPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "source_row_number": {
+            "type": "integer",
+            "title": "Source Row Number"
+          },
+          "column_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Column Name"
+          },
+          "code": { "type": "string", "title": "Code" },
+          "message": { "type": "string", "title": "Message" },
+          "severity": { "$ref": "#/components/schemas/ImportSeverity" },
+          "raw_row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Raw Row"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_row_number",
+          "code",
+          "message",
+          "severity",
+          "raw_row"
+        ],
+        "title": "ImportBatchErrorPublic"
+      },
+      "ImportBatchPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "data_type": { "$ref": "#/components/schemas/ImportDataType" },
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "status": { "$ref": "#/components/schemas/ImportBatchStatus" },
+          "source": { "$ref": "#/components/schemas/ImportSource" },
+          "file_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "File Name"
+          },
+          "file_size": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "File Size"
+          },
+          "file_sha256": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "File Sha256"
+          },
+          "sheet_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Sheet Name"
+          },
+          "header_row_number": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Header Row Number"
+          },
+          "header_columns": {
+            "items": {},
+            "type": "array",
+            "title": "Header Columns",
+            "default": []
+          },
+          "column_mapping": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Column Mapping",
+            "default": {}
+          },
+          "parser_version": { "type": "string", "title": "Parser Version" },
+          "source_rows": { "type": "integer", "title": "Source Rows" },
+          "valid_records": { "type": "integer", "title": "Valid Records" },
+          "skipped_records": { "type": "integer", "title": "Skipped Records" },
+          "error_records": { "type": "integer", "title": "Error Records" },
+          "warning_records": { "type": "integer", "title": "Warning Records" },
+          "skip_counts": {
+            "additionalProperties": { "type": "integer" },
+            "type": "object",
+            "title": "Skip Counts",
+            "default": {}
+          },
+          "warning_counts": {
+            "additionalProperties": { "type": "integer" },
+            "type": "object",
+            "title": "Warning Counts",
+            "default": {}
+          },
+          "operator_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Operator Id"
+          },
+          "operator_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Operator Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "committed_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Committed At"
+          },
+          "superseded_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Superseded At"
+          },
+          "discarded_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Discarded At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Revoked At"
+          },
+          "expires_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Expires At"
+          },
+          "superseded_by_batch_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Superseded By Batch Id"
+          },
+          "discard_reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Discard Reason"
+          },
+          "samples": {
+            "anyOf": [
+              {
+                "items": { "additionalProperties": true, "type": "object" },
+                "type": "array"
+              },
+              { "type": "null" }
+            ],
+            "title": "Samples"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "data_type",
+          "month",
+          "status",
+          "source",
+          "parser_version",
+          "source_rows",
+          "valid_records",
+          "skipped_records",
+          "error_records",
+          "warning_records",
+          "operator_id",
+          "created_at"
+        ],
+        "title": "ImportBatchPublic"
+      },
+      "ImportBatchStatus": {
+        "type": "string",
+        "enum": ["preview", "committed", "superseded", "discarded", "revoked"],
+        "title": "ImportBatchStatus"
+      },
+      "ImportDataType": {
+        "type": "string",
+        "enum": ["punch", "trip", "ot", "leave"],
+        "title": "ImportDataType"
+      },
+      "ImportEmployeeStats": {
+        "properties": {
+          "matched": { "type": "integer", "title": "Matched", "default": 0 },
+          "unknown": { "type": "integer", "title": "Unknown", "default": 0 },
+          "duplicate_name": {
+            "type": "integer",
+            "title": "Duplicate Name",
+            "default": 0
+          },
+          "affected": { "type": "integer", "title": "Affected", "default": 0 }
+        },
+        "type": "object",
+        "title": "ImportEmployeeStats"
+      },
+      "ImportImpact": {
+        "properties": {
+          "current_batch": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/ImportImpactBatch" },
+              { "type": "null" }
+            ]
+          },
+          "valid_records_delta": {
+            "type": "integer",
+            "title": "Valid Records Delta",
+            "default": 0
+          },
+          "employee_overlap": {
+            "type": "integer",
+            "title": "Employee Overlap",
+            "default": 0
+          },
+          "employees_added": {
+            "type": "integer",
+            "title": "Employees Added",
+            "default": 0
+          },
+          "employees_removed": {
+            "type": "integer",
+            "title": "Employees Removed",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ImportImpact"
+      },
+      "ImportImpactBatch": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "committed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Committed At"
+          },
+          "file_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "File Name"
+          },
+          "source_rows": { "type": "integer", "title": "Source Rows" },
+          "valid_records": { "type": "integer", "title": "Valid Records" }
+        },
+        "type": "object",
+        "required": ["id", "committed_at", "source_rows", "valid_records"],
+        "title": "ImportImpactBatch"
+      },
+      "ImportMappingTemplatePublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "data_type": { "$ref": "#/components/schemas/ImportDataType" },
+          "mapping": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Mapping"
+          },
+          "header_columns": {
+            "items": {},
+            "type": "array",
+            "title": "Header Columns"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Updated By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "data_type",
+          "mapping",
+          "header_columns",
+          "updated_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ImportMappingTemplatePublic"
+      },
+      "ImportPreviewPublic": {
+        "properties": {
+          "batch": { "$ref": "#/components/schemas/ImportBatchPublic" },
+          "stats": { "$ref": "#/components/schemas/ImportStats" },
+          "employees": { "$ref": "#/components/schemas/ImportEmployeeStats" },
+          "errors": {
+            "items": { "$ref": "#/components/schemas/ImportBatchErrorPublic" },
+            "type": "array",
+            "title": "Errors"
+          },
+          "error_total": {
+            "type": "integer",
+            "title": "Error Total",
+            "default": 0
+          },
+          "samples": {
+            "items": { "additionalProperties": true, "type": "object" },
+            "type": "array",
+            "title": "Samples"
+          },
+          "impact": { "$ref": "#/components/schemas/ImportImpact" },
+          "can_commit": { "type": "boolean", "title": "Can Commit" },
+          "commit_blocked_reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Commit Blocked Reason"
+          }
+        },
+        "type": "object",
+        "required": ["batch", "stats", "employees", "impact", "can_commit"],
+        "title": "ImportPreviewPublic"
+      },
+      "ImportSeverity": {
+        "type": "string",
+        "enum": ["error", "warning"],
+        "title": "ImportSeverity"
+      },
+      "ImportSource": {
+        "type": "string",
+        "enum": ["upload", "paste"],
+        "title": "ImportSource"
+      },
+      "ImportStats": {
+        "properties": {
+          "source_rows": {
+            "type": "integer",
+            "title": "Source Rows",
+            "default": 0
+          },
+          "valid_records": {
+            "type": "integer",
+            "title": "Valid Records",
+            "default": 0
+          },
+          "skipped_records": {
+            "type": "integer",
+            "title": "Skipped Records",
+            "default": 0
+          },
+          "error_records": {
+            "type": "integer",
+            "title": "Error Records",
+            "default": 0
+          },
+          "warning_records": {
+            "type": "integer",
+            "title": "Warning Records",
+            "default": 0
+          },
+          "skip_counts": {
+            "additionalProperties": { "type": "integer" },
+            "type": "object",
+            "title": "Skip Counts"
+          },
+          "warning_counts": {
+            "additionalProperties": { "type": "integer" },
+            "type": "object",
+            "title": "Warning Counts"
+          }
+        },
+        "type": "object",
+        "title": "ImportStats"
       },
       "InputBatchInfo": {
         "properties": {

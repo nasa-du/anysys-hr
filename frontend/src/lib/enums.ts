@@ -397,3 +397,46 @@ export const DAY_FLAG_LABELS: Record<AttendanceDayFlag, string> = {
   no_valid_punch: "无有效打卡",
   manual_adjustment: "人工调整",
 }
+
+export const IMPORT_DATA_TYPE_DESCRIPTIONS: Record<
+  AttendanceImportDataType,
+  string
+> = {
+  punch: "考勤机或钉钉导出的打卡明细",
+  trip: "外出、出差审批单",
+  ot: "加班审批单，按自然日折分钟",
+  leave: "请假、补休审批单",
+}
+
+/** Row-level import codes from spec §6.5; they never become API error codes. */
+export const IMPORT_ROW_CODE_LABELS: Record<string, string> = {
+  unknown_employee: "员工不存在",
+  duplicate_name: "员工重名",
+  out_of_employment: "不在任职期间",
+  missing_required: "缺少必填内容",
+  invalid_time: "时间格式错误",
+  invalid_range: "时间范围错误",
+  invalid_leave_type: "未识别请假类型",
+  missing_punch_time: "缺少打卡时间",
+  invalid_punch: "无效打卡",
+  not_in_month: "不在目标月份",
+  duplicate_punch: "重复打卡",
+  duplicate_approval: "重复审批单",
+  pending: "审批中",
+  terminated: "审批已终止",
+  rejected: "审批未通过",
+  unknown_approval: "审批结果无法识别",
+  empty_result: "打卡结果为空",
+  unknown_result: "未知打卡结果",
+  name_mismatch: "姓名与工号不一致",
+  date_mismatch: "考勤日期与打卡日期相差较大",
+  result_conflict: "同一时刻打卡结果不一致",
+  amount_mismatch: "填报时长与计算时长相差较大",
+  missing_work_start: "补休缺少上班开始时间",
+}
+
+export const IMPORT_COMMIT_BLOCKED_LABELS: Record<string, string> = {
+  month_confirmed: "考勤月份已确认，无法提交；可取消确认后再导入",
+  month_locked: "考勤月份已锁定，无法提交；可先解锁",
+  no_valid_rows: "没有有效记录，无法提交",
+}

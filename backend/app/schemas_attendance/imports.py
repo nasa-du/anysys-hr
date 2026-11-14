@@ -27,8 +27,31 @@ class ImportStats(SQLModel):
     skipped_records: int = 0
     error_records: int = 0
     warning_records: int = 0
-    skip_counts: dict[str, int] = {}
-    warning_counts: dict[str, int] = {}
+    skip_counts: dict[str, int] = Field(default_factory=dict)
+    warning_counts: dict[str, int] = Field(default_factory=dict)
+
+
+class ImportEmployeeStats(SQLModel):
+    matched: int = 0
+    unknown: int = 0
+    duplicate_name: int = 0
+    affected: int = 0
+
+
+class ImportImpactBatch(SQLModel):
+    id: uuid.UUID
+    committed_at: datetime
+    file_name: str | None = None
+    source_rows: int
+    valid_records: int
+
+
+class ImportImpact(SQLModel):
+    current_batch: ImportImpactBatch | None = None
+    valid_records_delta: int = 0
+    employee_overlap: int = 0
+    employees_added: int = 0
+    employees_removed: int = 0
 
 
 class ImportBatchPublic(ReadModel):
@@ -206,10 +229,11 @@ class ImportMappingTemplatePublic(ReadModel):
 class ImportPreviewPublic(SQLModel):
     batch: ImportBatchPublic
     stats: ImportStats
-    employees: list[dict[str, Any]] = []
-    errors: list[ImportBatchErrorPublic] = []
-    samples: list[dict[str, Any]] = []
-    impact: dict[str, Any] = {}
+    employees: ImportEmployeeStats
+    errors: list[ImportBatchErrorPublic] = Field(default_factory=list)
+    error_total: int = 0
+    samples: list[dict[str, Any]] = Field(default_factory=list)
+    impact: ImportImpact
     can_commit: bool
     commit_blocked_reason: str | None = None
 

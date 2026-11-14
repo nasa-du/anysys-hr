@@ -175,13 +175,16 @@ export async function readHolidays(
   return response.data.data
 }
 
-export async function resignEmployee(employeeId: string): Promise<ApiEmployee> {
+export async function resignEmployee(
+  employeeId: string,
+  resignDate?: string,
+): Promise<ApiEmployee> {
   await ensureAuthenticated()
   const response = await EmployeesService.updateEmployee({
     path: { employee_id: employeeId },
     body: {
       status: "resigned",
-      resign_date: todayShanghai(),
+      resign_date: resignDate ?? todayShanghai(),
     },
   })
   return response.data

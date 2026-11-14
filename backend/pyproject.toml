@@ -39,6 +39,11 @@ build-backend = "hatchling.build"
 strict = true
 exclude = ["venv", ".venv", "alembic"]
 
+[[tool.mypy.overrides]]
+# openpyxl ships without type stubs; parsing is covered by runtime tests.
+module = ["openpyxl", "openpyxl.*"]
+ignore_missing_imports = true
+
 [tool.ruff]
 target-version = "py314"
 exclude = ["alembic"]

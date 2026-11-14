@@ -13,6 +13,7 @@ from app.api.routes import (
 )
 from app.api.routes.attendance import (
     holidays,
+    imports,
     months,
     roster,
     rules,
@@ -36,6 +37,7 @@ api_router.include_router(months.router)
 api_router.include_router(schedule_plans.router)
 api_router.include_router(roster.roster_router)
 api_router.include_router(roster.entries_router)
+api_router.include_router(imports.router)
 api_router.include_router(utils.router)
 
 

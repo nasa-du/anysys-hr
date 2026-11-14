@@ -1537,6 +1537,80 @@ export type NewPassword = {
 };
 
 /**
+ * PlanCopyPreview
+ */
+export type PlanCopyPreview = {
+    /**
+     * Target Month
+     */
+    target_month: string;
+    /**
+     * Can Apply
+     */
+    can_apply: boolean;
+    /**
+     * Added
+     */
+    added: number;
+    /**
+     * Updated
+     */
+    updated: number;
+    /**
+     * Deleted
+     */
+    deleted: number;
+    /**
+     * Manual Preserved
+     */
+    manual_preserved: number;
+    /**
+     * Conflicts
+     */
+    conflicts?: Array<SchedulePlanConflict>;
+    /**
+     * Warnings
+     */
+    warnings?: Array<string>;
+};
+
+/**
+ * PlanCopyRequest
+ */
+export type PlanCopyRequest = {
+    /**
+     * Target Month
+     */
+    target_month: string;
+    /**
+     * Include Manual Exceptions
+     */
+    include_manual_exceptions?: boolean;
+    /**
+     * Confirm Overwrite
+     */
+    confirm_overwrite?: boolean;
+};
+
+/**
+ * PlanDayInput
+ */
+export type PlanDayInput = {
+    /**
+     * Day Of Month
+     */
+    day_of_month: number;
+    /**
+     * Seq
+     */
+    seq: number;
+    /**
+     * Shift Id
+     */
+    shift_id: string;
+};
+
+/**
  * PlanDayPublic
  */
 export type PlanDayPublic = {
@@ -1776,6 +1850,28 @@ export type PrivateUserCreate = {
      * Is Verified
      */
     is_verified?: boolean;
+};
+
+/**
+ * RosterChangeSummary
+ */
+export type RosterChangeSummary = {
+    /**
+     * Added
+     */
+    added?: number;
+    /**
+     * Updated
+     */
+    updated?: number;
+    /**
+     * Deleted
+     */
+    deleted?: number;
+    /**
+     * Manual Preserved
+     */
+    manual_preserved?: number;
 };
 
 /**
@@ -2051,6 +2147,134 @@ export type RulesSnapshot = {
 };
 
 /**
+ * SchedulePlanConflict
+ */
+export type SchedulePlanConflict = {
+    scope_type: ScheduleScopeType;
+    /**
+     * Scope Id
+     */
+    scope_id: string;
+    /**
+     * Plan Id
+     */
+    plan_id: string;
+    /**
+     * Plan Name
+     */
+    plan_name: string;
+};
+
+/**
+ * SchedulePlanCreate
+ */
+export type SchedulePlanCreate = {
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Plan Name
+     */
+    plan_name: string;
+    scope_type: ScheduleScopeType;
+    /**
+     * Scope Ids
+     */
+    scope_ids?: Array<string>;
+    /**
+     * Days
+     */
+    days?: Array<PlanDayInput>;
+    rule_overrides?: RulePatch_Input | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * SchedulePlanMutationPublic
+ */
+export type SchedulePlanMutationPublic = {
+    plan: SchedulePlanPublic;
+    roster_change: RosterChangeSummary;
+    /**
+     * Month Stale
+     */
+    month_stale: boolean;
+};
+
+/**
+ * SchedulePlanPreview
+ */
+export type SchedulePlanPreview = {
+    /**
+     * Can Apply
+     */
+    can_apply: boolean;
+    /**
+     * Affected Employees
+     */
+    affected_employees: number;
+    /**
+     * Added
+     */
+    added: number;
+    /**
+     * Updated
+     */
+    updated: number;
+    /**
+     * Deleted
+     */
+    deleted: number;
+    /**
+     * Manual Preserved
+     */
+    manual_preserved: number;
+    /**
+     * Conflicts
+     */
+    conflicts?: Array<SchedulePlanConflict>;
+    /**
+     * Warnings
+     */
+    warnings?: Array<string>;
+};
+
+/**
+ * SchedulePlanPreviewRequest
+ */
+export type SchedulePlanPreviewRequest = {
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Plan Id
+     */
+    plan_id?: string | null;
+    scope_type: ScheduleScopeType;
+    /**
+     * Scope Ids
+     */
+    scope_ids?: Array<string>;
+    /**
+     * Days
+     */
+    days?: Array<PlanDayInput>;
+};
+
+/**
  * SchedulePlanPublic
  */
 export type SchedulePlanPublic = {
@@ -2096,6 +2320,30 @@ export type SchedulePlanPublic = {
      * Updated At
      */
     updated_at: string;
+};
+
+/**
+ * SchedulePlanUpdate
+ */
+export type SchedulePlanUpdate = {
+    /**
+     * Plan Name
+     */
+    plan_name?: string | null;
+    scope_type?: ScheduleScopeType | null;
+    /**
+     * Scope Ids
+     */
+    scope_ids?: Array<string> | null;
+    /**
+     * Days
+     */
+    days?: Array<PlanDayInput> | null;
+    rule_overrides?: RulePatch_Input | null;
+    /**
+     * Note
+     */
+    note?: string | null;
 };
 
 /**
@@ -4553,6 +4801,414 @@ export type attendanceSchedulePlansReadSchedulePlansResponses = {
 };
 
 export type attendanceSchedulePlansReadSchedulePlansResponse = attendanceSchedulePlansReadSchedulePlansResponses[keyof attendanceSchedulePlansReadSchedulePlansResponses];
+
+export type attendanceSchedulePlansCreateSchedulePlanData = {
+    body: SchedulePlanCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/';
+};
+
+export type attendanceSchedulePlansCreateSchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansCreateSchedulePlanError = attendanceSchedulePlansCreateSchedulePlanErrors[keyof attendanceSchedulePlansCreateSchedulePlanErrors];
+
+export type attendanceSchedulePlansCreateSchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    201: SchedulePlanPublic;
+};
+
+export type attendanceSchedulePlansCreateSchedulePlanResponse = attendanceSchedulePlansCreateSchedulePlanResponses[keyof attendanceSchedulePlansCreateSchedulePlanResponses];
+
+export type attendanceSchedulePlansPreviewSchedulePlanData = {
+    body: SchedulePlanPreviewRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/preview';
+};
+
+export type attendanceSchedulePlansPreviewSchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansPreviewSchedulePlanError = attendanceSchedulePlansPreviewSchedulePlanErrors[keyof attendanceSchedulePlansPreviewSchedulePlanErrors];
+
+export type attendanceSchedulePlansPreviewSchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulePlanPreview;
+};
+
+export type attendanceSchedulePlansPreviewSchedulePlanResponse = attendanceSchedulePlansPreviewSchedulePlanResponses[keyof attendanceSchedulePlansPreviewSchedulePlanResponses];
+
+export type attendanceSchedulePlansDeleteSchedulePlanData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}';
+};
+
+export type attendanceSchedulePlansDeleteSchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansDeleteSchedulePlanError = attendanceSchedulePlansDeleteSchedulePlanErrors[keyof attendanceSchedulePlansDeleteSchedulePlanErrors];
+
+export type attendanceSchedulePlansDeleteSchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type attendanceSchedulePlansDeleteSchedulePlanResponse = attendanceSchedulePlansDeleteSchedulePlanResponses[keyof attendanceSchedulePlansDeleteSchedulePlanResponses];
+
+export type attendanceSchedulePlansReadSchedulePlanData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}';
+};
+
+export type attendanceSchedulePlansReadSchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansReadSchedulePlanError = attendanceSchedulePlansReadSchedulePlanErrors[keyof attendanceSchedulePlansReadSchedulePlanErrors];
+
+export type attendanceSchedulePlansReadSchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulePlanPublic;
+};
+
+export type attendanceSchedulePlansReadSchedulePlanResponse = attendanceSchedulePlansReadSchedulePlanResponses[keyof attendanceSchedulePlansReadSchedulePlanResponses];
+
+export type attendanceSchedulePlansUpdateSchedulePlanData = {
+    body: SchedulePlanUpdate;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}';
+};
+
+export type attendanceSchedulePlansUpdateSchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansUpdateSchedulePlanError = attendanceSchedulePlansUpdateSchedulePlanErrors[keyof attendanceSchedulePlansUpdateSchedulePlanErrors];
+
+export type attendanceSchedulePlansUpdateSchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulePlanPublic;
+};
+
+export type attendanceSchedulePlansUpdateSchedulePlanResponse = attendanceSchedulePlansUpdateSchedulePlanResponses[keyof attendanceSchedulePlansUpdateSchedulePlanResponses];
+
+export type attendanceSchedulePlansExpandPreviewData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}/expand-preview';
+};
+
+export type attendanceSchedulePlansExpandPreviewErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansExpandPreviewError = attendanceSchedulePlansExpandPreviewErrors[keyof attendanceSchedulePlansExpandPreviewErrors];
+
+export type attendanceSchedulePlansExpandPreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulePlanPreview;
+};
+
+export type attendanceSchedulePlansExpandPreviewResponse = attendanceSchedulePlansExpandPreviewResponses[keyof attendanceSchedulePlansExpandPreviewResponses];
+
+export type attendanceSchedulePlansExpandSchedulePlanData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}/expand';
+};
+
+export type attendanceSchedulePlansExpandSchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansExpandSchedulePlanError = attendanceSchedulePlansExpandSchedulePlanErrors[keyof attendanceSchedulePlansExpandSchedulePlanErrors];
+
+export type attendanceSchedulePlansExpandSchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulePlanMutationPublic;
+};
+
+export type attendanceSchedulePlansExpandSchedulePlanResponse = attendanceSchedulePlansExpandSchedulePlanResponses[keyof attendanceSchedulePlansExpandSchedulePlanResponses];
+
+export type attendanceSchedulePlansArchiveSchedulePlanData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}/archive';
+};
+
+export type attendanceSchedulePlansArchiveSchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansArchiveSchedulePlanError = attendanceSchedulePlansArchiveSchedulePlanErrors[keyof attendanceSchedulePlansArchiveSchedulePlanErrors];
+
+export type attendanceSchedulePlansArchiveSchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulePlanMutationPublic;
+};
+
+export type attendanceSchedulePlansArchiveSchedulePlanResponse = attendanceSchedulePlansArchiveSchedulePlanResponses[keyof attendanceSchedulePlansArchiveSchedulePlanResponses];
+
+export type attendanceSchedulePlansUnarchiveSchedulePlanData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}/unarchive';
+};
+
+export type attendanceSchedulePlansUnarchiveSchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansUnarchiveSchedulePlanError = attendanceSchedulePlansUnarchiveSchedulePlanErrors[keyof attendanceSchedulePlansUnarchiveSchedulePlanErrors];
+
+export type attendanceSchedulePlansUnarchiveSchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulePlanMutationPublic;
+};
+
+export type attendanceSchedulePlansUnarchiveSchedulePlanResponse = attendanceSchedulePlansUnarchiveSchedulePlanResponses[keyof attendanceSchedulePlansUnarchiveSchedulePlanResponses];
+
+export type attendanceSchedulePlansCopyPreviewData = {
+    body: PlanCopyRequest;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}/copy-preview';
+};
+
+export type attendanceSchedulePlansCopyPreviewErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansCopyPreviewError = attendanceSchedulePlansCopyPreviewErrors[keyof attendanceSchedulePlansCopyPreviewErrors];
+
+export type attendanceSchedulePlansCopyPreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: PlanCopyPreview;
+};
+
+export type attendanceSchedulePlansCopyPreviewResponse = attendanceSchedulePlansCopyPreviewResponses[keyof attendanceSchedulePlansCopyPreviewResponses];
+
+export type attendanceSchedulePlansCopySchedulePlanData = {
+    body: PlanCopyRequest;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/schedule-plans/{plan_id}/copy';
+};
+
+export type attendanceSchedulePlansCopySchedulePlanErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceSchedulePlansCopySchedulePlanError = attendanceSchedulePlansCopySchedulePlanErrors[keyof attendanceSchedulePlansCopySchedulePlanErrors];
+
+export type attendanceSchedulePlansCopySchedulePlanResponses = {
+    /**
+     * Successful Response
+     */
+    201: SchedulePlanPublic;
+};
+
+export type attendanceSchedulePlansCopySchedulePlanResponse = attendanceSchedulePlansCopySchedulePlanResponses[keyof attendanceSchedulePlansCopySchedulePlanResponses];
 
 export type attendanceSchedulePlansReadPlanRuleOverridesData = {
     body?: never;

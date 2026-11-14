@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { attendanceHolidaysCopyYearData, attendanceHolidaysCopyYearErrors, attendanceHolidaysCopyYearResponses, attendanceHolidaysCreateHolidayData, attendanceHolidaysCreateHolidayErrors, attendanceHolidaysCreateHolidayResponses, attendanceHolidaysDeleteHolidayData, attendanceHolidaysDeleteHolidayErrors, attendanceHolidaysDeleteHolidayResponses, attendanceHolidaysPreviewCopyYearData, attendanceHolidaysPreviewCopyYearErrors, attendanceHolidaysPreviewCopyYearResponses, attendanceHolidaysReadHolidaysData, attendanceHolidaysReadHolidaysErrors, attendanceHolidaysReadHolidaysResponses, attendanceHolidaysUpdateHolidayData, attendanceHolidaysUpdateHolidayErrors, attendanceHolidaysUpdateHolidayResponses, attendanceMonthsReadMonthsData, attendanceMonthsReadMonthsErrors, attendanceMonthsReadMonthsResponses, attendanceRulesReadCompanyRuleData, attendanceRulesReadCompanyRuleErrors, attendanceRulesReadCompanyRuleResponses, attendanceRulesUpdateCompanyRuleData, attendanceRulesUpdateCompanyRuleErrors, attendanceRulesUpdateCompanyRuleResponses, attendanceSchedulePlansReadPlanRuleOverridesData, attendanceSchedulePlansReadPlanRuleOverridesErrors, attendanceSchedulePlansReadPlanRuleOverridesResponses, attendanceSchedulePlansReadSchedulePlansData, attendanceSchedulePlansReadSchedulePlansErrors, attendanceSchedulePlansReadSchedulePlansResponses, attendanceSchedulePlansUpdatePlanRuleOverridesData, attendanceSchedulePlansUpdatePlanRuleOverridesErrors, attendanceSchedulePlansUpdatePlanRuleOverridesResponses, attendanceShiftsCreateShiftData, attendanceShiftsCreateShiftErrors, attendanceShiftsCreateShiftResponses, attendanceShiftsDeleteShiftData, attendanceShiftsDeleteShiftErrors, attendanceShiftsDeleteShiftResponses, attendanceShiftsReadShiftData, attendanceShiftsReadShiftErrors, attendanceShiftsReadShiftResponses, attendanceShiftsReadShiftsData, attendanceShiftsReadShiftsErrors, attendanceShiftsReadShiftsResponses, attendanceShiftsUpdateShiftData, attendanceShiftsUpdateShiftErrors, attendanceShiftsUpdateShiftResponses, companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { attendanceHolidaysCopyYearData, attendanceHolidaysCopyYearErrors, attendanceHolidaysCopyYearResponses, attendanceHolidaysCreateHolidayData, attendanceHolidaysCreateHolidayErrors, attendanceHolidaysCreateHolidayResponses, attendanceHolidaysDeleteHolidayData, attendanceHolidaysDeleteHolidayErrors, attendanceHolidaysDeleteHolidayResponses, attendanceHolidaysPreviewCopyYearData, attendanceHolidaysPreviewCopyYearErrors, attendanceHolidaysPreviewCopyYearResponses, attendanceHolidaysReadHolidaysData, attendanceHolidaysReadHolidaysErrors, attendanceHolidaysReadHolidaysResponses, attendanceHolidaysUpdateHolidayData, attendanceHolidaysUpdateHolidayErrors, attendanceHolidaysUpdateHolidayResponses, attendanceMonthsReadMonthsData, attendanceMonthsReadMonthsErrors, attendanceMonthsReadMonthsResponses, attendanceRulesReadCompanyRuleData, attendanceRulesReadCompanyRuleErrors, attendanceRulesReadCompanyRuleResponses, attendanceRulesUpdateCompanyRuleData, attendanceRulesUpdateCompanyRuleErrors, attendanceRulesUpdateCompanyRuleResponses, attendanceSchedulePlansArchiveSchedulePlanData, attendanceSchedulePlansArchiveSchedulePlanErrors, attendanceSchedulePlansArchiveSchedulePlanResponses, attendanceSchedulePlansCopyPreviewData, attendanceSchedulePlansCopyPreviewErrors, attendanceSchedulePlansCopyPreviewResponses, attendanceSchedulePlansCopySchedulePlanData, attendanceSchedulePlansCopySchedulePlanErrors, attendanceSchedulePlansCopySchedulePlanResponses, attendanceSchedulePlansCreateSchedulePlanData, attendanceSchedulePlansCreateSchedulePlanErrors, attendanceSchedulePlansCreateSchedulePlanResponses, attendanceSchedulePlansDeleteSchedulePlanData, attendanceSchedulePlansDeleteSchedulePlanErrors, attendanceSchedulePlansDeleteSchedulePlanResponses, attendanceSchedulePlansExpandPreviewData, attendanceSchedulePlansExpandPreviewErrors, attendanceSchedulePlansExpandPreviewResponses, attendanceSchedulePlansExpandSchedulePlanData, attendanceSchedulePlansExpandSchedulePlanErrors, attendanceSchedulePlansExpandSchedulePlanResponses, attendanceSchedulePlansPreviewSchedulePlanData, attendanceSchedulePlansPreviewSchedulePlanErrors, attendanceSchedulePlansPreviewSchedulePlanResponses, attendanceSchedulePlansReadPlanRuleOverridesData, attendanceSchedulePlansReadPlanRuleOverridesErrors, attendanceSchedulePlansReadPlanRuleOverridesResponses, attendanceSchedulePlansReadSchedulePlanData, attendanceSchedulePlansReadSchedulePlanErrors, attendanceSchedulePlansReadSchedulePlanResponses, attendanceSchedulePlansReadSchedulePlansData, attendanceSchedulePlansReadSchedulePlansErrors, attendanceSchedulePlansReadSchedulePlansResponses, attendanceSchedulePlansUnarchiveSchedulePlanData, attendanceSchedulePlansUnarchiveSchedulePlanErrors, attendanceSchedulePlansUnarchiveSchedulePlanResponses, attendanceSchedulePlansUpdatePlanRuleOverridesData, attendanceSchedulePlansUpdatePlanRuleOverridesErrors, attendanceSchedulePlansUpdatePlanRuleOverridesResponses, attendanceSchedulePlansUpdateSchedulePlanData, attendanceSchedulePlansUpdateSchedulePlanErrors, attendanceSchedulePlansUpdateSchedulePlanResponses, attendanceShiftsCreateShiftData, attendanceShiftsCreateShiftErrors, attendanceShiftsCreateShiftResponses, attendanceShiftsDeleteShiftData, attendanceShiftsDeleteShiftErrors, attendanceShiftsDeleteShiftResponses, attendanceShiftsReadShiftData, attendanceShiftsReadShiftErrors, attendanceShiftsReadShiftResponses, attendanceShiftsReadShiftsData, attendanceShiftsReadShiftsErrors, attendanceShiftsReadShiftsResponses, attendanceShiftsUpdateShiftData, attendanceShiftsUpdateShiftErrors, attendanceShiftsUpdateShiftResponses, companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -915,6 +915,180 @@ export class AttendanceSchedulePlansService {
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/attendance/schedule-plans/',
             ...options
+        });
+    }
+    
+    /**
+     * Create Schedule Plan
+     *
+     * Create a plan, save its children, and expand its month in one transaction.
+     */
+    public static createSchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansCreateSchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceSchedulePlansCreateSchedulePlanResponses, attendanceSchedulePlansCreateSchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Preview Schedule Plan
+     *
+     * Dry-run a plan save: scope conflicts, roster impact, and time warnings.
+     */
+    public static previewSchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansPreviewSchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceSchedulePlansPreviewSchedulePlanResponses, attendanceSchedulePlansPreviewSchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/preview',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Schedule Plan
+     *
+     * Delete a plan only when no roster entry references it.
+     */
+    public static deleteSchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansDeleteSchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).delete<attendanceSchedulePlansDeleteSchedulePlanResponses, attendanceSchedulePlansDeleteSchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Schedule Plan
+     *
+     * Get one plan with its scopes and per-day shifts.
+     */
+    public static readSchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansReadSchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceSchedulePlansReadSchedulePlanResponses, attendanceSchedulePlansReadSchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Schedule Plan
+     *
+     * Replace supplied children wholesale and re-expand the month.
+     */
+    public static updateSchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansUpdateSchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).patch<attendanceSchedulePlansUpdateSchedulePlanResponses, attendanceSchedulePlansUpdateSchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Expand Preview
+     *
+     * Dry-run a full month re-expansion for one saved plan.
+     */
+    public static expandPreview<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansExpandPreviewData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceSchedulePlansExpandPreviewResponses, attendanceSchedulePlansExpandPreviewErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}/expand-preview',
+            ...options
+        });
+    }
+    
+    /**
+     * Expand Schedule Plan
+     *
+     * Re-expand the plan's month without touching manual exceptions.
+     */
+    public static expandSchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansExpandSchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceSchedulePlansExpandSchedulePlanResponses, attendanceSchedulePlansExpandSchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}/expand',
+            ...options
+        });
+    }
+    
+    /**
+     * Archive Schedule Plan
+     *
+     * Archive the plan and re-expand the month without it.
+     */
+    public static archiveSchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansArchiveSchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceSchedulePlansArchiveSchedulePlanResponses, attendanceSchedulePlansArchiveSchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}/archive',
+            ...options
+        });
+    }
+    
+    /**
+     * Unarchive Schedule Plan
+     *
+     * Reactivate an archived plan after shift and scope checks.
+     */
+    public static unarchiveSchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansUnarchiveSchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceSchedulePlansUnarchiveSchedulePlanResponses, attendanceSchedulePlansUnarchiveSchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}/unarchive',
+            ...options
+        });
+    }
+    
+    /**
+     * Copy Preview
+     *
+     * Preview copying the plan definition to the next natural month.
+     */
+    public static copyPreview<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansCopyPreviewData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceSchedulePlansCopyPreviewResponses, attendanceSchedulePlansCopyPreviewErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}/copy-preview',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Copy Schedule Plan
+     *
+     * Copy the plan definition into the next month and expand it.
+     */
+    public static copySchedulePlan<ThrowOnError extends boolean = true>(options: Options<attendanceSchedulePlansCopySchedulePlanData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceSchedulePlansCopySchedulePlanResponses, attendanceSchedulePlansCopySchedulePlanErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/schedule-plans/{plan_id}/copy',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
         });
     }
     

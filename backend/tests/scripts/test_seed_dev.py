@@ -8,8 +8,14 @@ from sqlmodel import Session, select
 
 from app import seed_dev
 from app.core.db import engine
-from app.enums import ContractType, EmployeeStatus, HolidayDayType
+from app.enums import (
+    ContractType,
+    EmployeeStatus,
+    HolidayDayType,
+    ScheduleScopeType,
+)
 from app.models import (
+    AttendanceMonth,
     AttendanceRule,
     Company,
     CostCenter,
@@ -17,7 +23,10 @@ from app.models import (
     Employee,
     Holiday,
     ImportBatch,
+    PlanDay,
+    PlanRuleOverride,
     Position,
+    RosterEntry,
     SchedulePlan,
     Shift,
 )
@@ -709,17 +718,113 @@ def test_seed_attendance_employees_match_the_fixture_contract() -> None:
         assert employees["E111"].dept_id == departments["D2"].id
 
 
-def test_seed_does_not_create_plans_rosters_or_batches() -> None:
+def test_seed_inserts_four_plans_and_expands_september_once() -> None:
+    seed_dev.main()
     seed_dev.main()
 
     with Session(engine) as session:
         c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
-        assert (
-            session.exec(
+        plans = {
+            plan.plan_name: plan
+            for plan in session.exec(
                 select(SchedulePlan).where(SchedulePlan.company_id == c4.id)
             ).all()
-            == []
+        }
+        assert set(plans) == {"行政班", "财务技术班", "园林班", "李金辉夜班"}
+        assert {plan.scope_type for plan in plans.values()} == {
+            ScheduleScopeType.ALL,
+            ScheduleScopeType.DEPT,
+            ScheduleScopeType.POSITION,
+            ScheduleScopeType.EMPLOYEE,
+        }
+        assert all(plan.month == date(2026, 9, 1) for plan in plans.values())
+        assert all(plan.status.value == "enabled" for plan in plans.values())
+
+        garden_override = session.get(PlanRuleOverride, plans["园林班"].id)
+        assert garden_override is not None
+        assert garden_override.ot_threshold_min == 15
+        assert session.get(PlanRuleOverride, plans["行政班"].id) is None
+
+        month = session.exec(
+            select(AttendanceMonth).where(
+                AttendanceMonth.company_id == c4.id,
+                AttendanceMonth.month == date(2026, 9, 1),
+            )
+        ).one()
+        assert month.status.value == "draft"
+
+        employees = {
+            employee.employee_no: employee
+            for employee in session.exec(
+                select(Employee).where(
+                    Employee.dept_id.in_(
+                        select(Department.id).where(Department.company_id == c4.id)
+                    )
+                )
+            ).all()
+        }
+        roster = list(
+            session.exec(
+                select(RosterEntry).where(RosterEntry.company_id == c4.id)
+            ).all()
         )
+        assert roster
+        assert all(
+            date(2026, 9, 1) <= entry.work_date <= date(2026, 9, 30)
+            for entry in roster
+        )
+        assert [
+            entry for entry in roster if entry.employee_id == employees["E112"].id
+        ] == []
+        late_hire_entries = [
+            entry for entry in roster if entry.employee_id == employees["E113"].id
+        ]
+        assert late_hire_entries
+        assert min(entry.work_date for entry in late_hire_entries) == date(2026, 9, 15)
+
+        by_employee_date = {
+            (entry.employee_id, entry.work_date): entry for entry in roster
+        }
+        # Employee scope outranks position/department/all.
+        night_entry = by_employee_date[(employees["E105"].id, date(2026, 9, 30))]
+        assert night_entry.plan_id == plans["李金辉夜班"].id
+        night_shifts = session.exec(
+            select(Shift).where(
+                Shift.id.in_(
+                    select(PlanDay.shift_id).where(
+                        PlanDay.plan_id == plans["李金辉夜班"].id,
+                        PlanDay.day_of_month == 30,
+                    )
+                )
+            )
+        ).all()
+        assert [shift.shift_code for shift in night_shifts] == ["NIGHT"]
+        # The employee plan has no 09-27 row, so higher-specificity rest wins.
+        assert (
+            by_employee_date[(employees["E105"].id, date(2026, 9, 27))].state.value
+            == "rest"
+        )
+        # Position scope outranks the all-company plan.
+        assert (
+            by_employee_date[(employees["E108"].id, date(2026, 9, 1))].plan_id
+            == plans["园林班"].id
+        )
+        # Department scope outranks the all-company plan.
+        assert (
+            by_employee_date[(employees["E102"].id, date(2026, 9, 1))].plan_id
+            == plans["财务技术班"].id
+        )
+        assert (
+            by_employee_date[(employees["E101"].id, date(2026, 9, 1))].plan_id
+            == plans["行政班"].id
+        )
+
+
+def test_seed_does_not_create_import_batches() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
         assert (
             session.exec(
                 select(ImportBatch).where(ImportBatch.company_id == c4.id)

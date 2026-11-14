@@ -1,5 +1,6 @@
 import {
   AttendanceHolidaysService,
+  AttendanceSchedulePlansService,
   AttendanceShiftsService,
   CompaniesService,
   type CompanyPublic,
@@ -14,8 +15,11 @@ import {
   type HolidayDayType,
   type HolidayPublic,
   LoginService,
+  type PlanDayInput,
   type PositionPublic,
   PositionsService,
+  type SchedulePlanPublic,
+  type ScheduleScopeType,
   type ShiftPublic,
 } from "../../src/client"
 import { client } from "../../src/client/client.gen"
@@ -201,4 +205,39 @@ export async function createEmployee(input: {
     },
   })
   return response.data
+}
+
+export async function createSchedulePlan(input: {
+  company_id: string
+  month: string
+  plan_name: string
+  scope_type?: ScheduleScopeType
+  scope_ids?: string[]
+  days?: PlanDayInput[]
+  note?: string | null
+}): Promise<SchedulePlanPublic> {
+  await ensureAuthenticated()
+  const response = await AttendanceSchedulePlansService.createSchedulePlan({
+    body: {
+      company_id: input.company_id,
+      month: input.month,
+      plan_name: input.plan_name,
+      scope_type: input.scope_type ?? "all",
+      scope_ids: input.scope_ids ?? [],
+      days: input.days ?? [],
+      note: input.note ?? null,
+    },
+  })
+  return response.data
+}
+
+export async function readSchedulePlans(
+  companyId: string,
+  month: string,
+): Promise<SchedulePlanPublic[]> {
+  await ensureAuthenticated()
+  const response = await AttendanceSchedulePlansService.readSchedulePlans({
+    query: { company_id: companyId, month, limit: 500 },
+  })
+  return response.data.data
 }

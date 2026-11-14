@@ -5,26 +5,39 @@ The script refuses to run unless ``FASTAPI_ENV=development`` and only inserts
 rows that are missing by business code, so user edits are never overwritten.
 """
 
+import calendar
 import logging
 from datetime import date, time
 from decimal import Decimal
 from typing import Any
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.core.config import settings
 from app.core.db import engine
-from app.enums import ContractType, EmployeeStatus, Gender, HolidayDayType
+from app.enums import (
+    ContractType,
+    EmployeeStatus,
+    Gender,
+    HolidayDayType,
+    ScheduleScopeType,
+)
 from app.models import (
+    AttendanceMonth,
     AttendanceRule,
     Company,
     CostCenter,
     Department,
     Employee,
     Holiday,
+    PlanDay,
+    PlanRuleOverride,
+    PlanScope,
     Position,
+    SchedulePlan,
     Shift,
 )
+from app.services.attendance import expansion
 
 logger = logging.getLogger(__name__)
 
@@ -916,6 +929,92 @@ HOLIDAYS: list[dict[str, Any]] = [
 ]
 
 
+# Four 2026-09 plans from spec section 15.3. ``weekdays`` maps Monday=0 …
+# Sunday=6 to shift codes; ``day_overrides`` adds adjusted workdays and the
+# employee plan's 09-30 night shift.
+WEEKDAY_ADM: dict[int, list[str]] = {
+    0: ["ADM"],
+    1: ["ADM"],
+    2: ["ADM"],
+    3: ["ADM"],
+    4: ["ADM"],
+    5: [],
+    6: [],
+}
+WEEKDAY_TEC: dict[int, list[str]] = {
+    0: ["TEC"],
+    1: ["TEC"],
+    2: ["TEC"],
+    3: ["TEC"],
+    4: ["TEC"],
+    5: [],
+    6: [],
+}
+WEEKDAY_YL: dict[int, list[str]] = {
+    0: ["YL"],
+    1: ["YL"],
+    2: ["YL"],
+    3: ["YL"],
+    4: ["YL"],
+    5: [],
+    6: [],
+}
+ATTENDANCE_PLANS: list[dict[str, Any]] = [
+    {
+        "company_code": "C4",
+        "month": date(2026, 9, 1),
+        "plan_name": "行政班",
+        "scope_type": ScheduleScopeType.ALL,
+        "scope_dept_codes": [],
+        "scope_position_codes": [],
+        "scope_employee_nos": [],
+        "weekdays": WEEKDAY_ADM,
+        "day_overrides": {27: ["ADM"]},
+        "rule_overrides": None,
+        "note": "全公司兜底方案；09-27 调休上班",
+    },
+    {
+        "company_code": "C4",
+        "month": date(2026, 9, 1),
+        "plan_name": "财务技术班",
+        "scope_type": ScheduleScopeType.DEPT,
+        "scope_dept_codes": ["D2"],
+        "scope_position_codes": [],
+        "scope_employee_nos": [],
+        "weekdays": WEEKDAY_TEC,
+        "day_overrides": {27: ["TEC"]},
+        "rule_overrides": None,
+        "note": "财务部固定技术员班；09-27 调休上班",
+    },
+    {
+        "company_code": "C4",
+        "month": date(2026, 9, 1),
+        "plan_name": "园林班",
+        "scope_type": ScheduleScopeType.POSITION,
+        "scope_dept_codes": [],
+        "scope_position_codes": ["P2"],
+        "scope_employee_nos": [],
+        "weekdays": WEEKDAY_YL,
+        "day_overrides": {27: ["YL"]},
+        "rule_overrides": {"ot_threshold_min": 15},
+        "note": "园林工岗位方案；加班起算门槛覆盖为 15 分钟",
+    },
+    {
+        "company_code": "C4",
+        "month": date(2026, 9, 1),
+        "plan_name": "李金辉夜班",
+        "scope_type": ScheduleScopeType.EMPLOYEE,
+        "scope_dept_codes": [],
+        "scope_position_codes": [],
+        "scope_employee_nos": ["E105"],
+        "weekdays": WEEKDAY_ADM,
+        "day_overrides": {30: ["NIGHT"]},
+        "rule_overrides": None,
+        "note": "员工级方案：工作日行政班，09-30 夜班",
+    },
+]
+
+
 def _seed_companies(session: Session) -> dict[str, Company]:
     companies = {
         company.company_code: company for company in session.exec(select(Company)).all()
@@ -1202,6 +1301,116 @@ def _seed_holidays(session: Session, companies: dict[str, Company]) -> None:
         holidays.add(key)
 
 
+def _plan_days(
+    plan: dict[str, Any],
+    shifts: dict[str, Shift],
+) -> list[dict[str, Any]]:
+    """Expand a weekday pattern and date overrides into per-day rows."""
+    month: date = plan["month"]
+    last_day = calendar.monthrange(month.year, month.month)[1]
+    rows: list[dict[str, Any]] = []
+    for day_of_month in range(1, last_day + 1):
+        codes = plan["day_overrides"].get(day_of_month)
+        if codes is None:
+            weekday = date(month.year, month.month, day_of_month).weekday()
+            codes = plan["weekdays"].get(weekday, [])
+        for seq, code in enumerate(codes):
+            rows.append(
+                {
+                    "day_of_month": day_of_month,
+                    "seq": seq,
+                    "shift_id": shifts[code].id,
+                }
+            )
+    return rows
+
+
+def _seed_attendance_plans(
+    session: Session, companies: dict[str, Company], departments: dict[tuple[Any, str], Department]
+) -> None:
+    """Insert the four 2026-09 plans and expand them once.
+
+    Expansion goes through the real service path so the demo roster matches
+    what the API would produce. Existing plans are never overwritten, and a
+    second run does not re-expand the month.
+    """
+    company = companies["C4"]
+    month = date(2026, 9, 1)
+    existing = session.exec(
+        select(SchedulePlan).where(
+            col(SchedulePlan.company_id) == company.id,
+            col(SchedulePlan.month) == month,
+        )
+    ).all()
+    if existing:
+        return
+
+    shifts = {
+        shift.shift_code: shift
+        for shift in session.exec(
+            select(Shift).where(col(Shift.company_id) == company.id)
+        ).all()
+    }
+    positions = {
+        position.position_code: position
+        for position in session.exec(
+            select(Position).where(col(Position.company_id) == company.id)
+        ).all()
+    }
+    employees = {
+        employee.employee_no: employee
+        for employee in session.exec(select(Employee)).all()
+    }
+    for data in ATTENDANCE_PLANS:
+        plan = SchedulePlan(
+            company_id=company.id,
+            month=data["month"],
+            plan_name=data["plan_name"],
+            scope_type=data["scope_type"],
+            note=data["note"],
+        )
+        session.add(plan)
+        session.flush()
+        for dept_code in data["scope_dept_codes"]:
+            session.add(
+                PlanScope(
+                    plan_id=plan.id,
+                    scope_id=departments[(company.id, dept_code)].id,
+                )
+            )
+        for position_code in data["scope_position_codes"]:
+            session.add(
+                PlanScope(
+                    plan_id=plan.id,
+                    scope_id=positions[position_code].id,
+                )
+            )
+        for employee_no in data["scope_employee_nos"]:
+            session.add(
+                PlanScope(
+                    plan_id=plan.id,
+                    scope_id=employees[employee_no].id,
+                )
+            )
+        for day_row in _plan_days(data, shifts):
+            session.add(PlanDay(plan_id=plan.id, **day_row))
+        if data["rule_overrides"] is not None:
+            session.add(PlanRuleOverride(plan_id=plan.id, **data["rule_overrides"]))
+    session.flush()
+
+    month_row = session.exec(
+        select(AttendanceMonth).where(
+            col(AttendanceMonth.company_id) == company.id,
+            col(AttendanceMonth.month) == month,
+        )
+    ).first()
+    if month_row is None:
+        session.add(AttendanceMonth(company_id=company.id, month=month))
+        session.flush()
+    expansion.expand_month(session, company.id, month)
+    session.flush()
+
+
 def seed(session: Session) -> None:
     companies = _seed_companies(session)
     departments = _seed_departments(session, companies)
@@ -1211,6 +1420,7 @@ def seed(session: Session) -> None:
     _seed_shifts(session, companies)
     _seed_attendance_rules(session, companies)
     _seed_holidays(session, companies)
+    _seed_attendance_plans(session, companies, departments)
     session.commit()
 
 

@@ -3232,6 +3232,593 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Create Schedule Plan",
+        "description": "Create a plan, save its children, and expand its month in one transaction.",
+        "operationId": "attendance-schedule-plans-create_schedule_plan",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SchedulePlanCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SchedulePlanPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/preview": {
+      "post": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Preview Schedule Plan",
+        "description": "Dry-run a plan save: scope conflicts, roster impact, and time warnings.",
+        "operationId": "attendance-schedule-plans-preview_schedule_plan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchedulePlanPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SchedulePlanPreview" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/v1/attendance/schedule-plans/{plan_id}": {
+      "get": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Read Schedule Plan",
+        "description": "Get one plan with its scopes and per-day shifts.",
+        "operationId": "attendance-schedule-plans-read_schedule_plan",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SchedulePlanPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Update Schedule Plan",
+        "description": "Replace supplied children wholesale and re-expand the month.",
+        "operationId": "attendance-schedule-plans-update_schedule_plan",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SchedulePlanUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SchedulePlanPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Delete Schedule Plan",
+        "description": "Delete a plan only when no roster entry references it.",
+        "operationId": "attendance-schedule-plans-delete_schedule_plan",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/{plan_id}/expand-preview": {
+      "post": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Expand Preview",
+        "description": "Dry-run a full month re-expansion for one saved plan.",
+        "operationId": "attendance-schedule-plans-expand_preview",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SchedulePlanPreview" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/{plan_id}/expand": {
+      "post": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Expand Schedule Plan",
+        "description": "Re-expand the plan's month without touching manual exceptions.",
+        "operationId": "attendance-schedule-plans-expand_schedule_plan",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchedulePlanMutationPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/{plan_id}/archive": {
+      "post": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Archive Schedule Plan",
+        "description": "Archive the plan and re-expand the month without it.",
+        "operationId": "attendance-schedule-plans-archive_schedule_plan",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchedulePlanMutationPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/{plan_id}/unarchive": {
+      "post": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Unarchive Schedule Plan",
+        "description": "Reactivate an archived plan after shift and scope checks.",
+        "operationId": "attendance-schedule-plans-unarchive_schedule_plan",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchedulePlanMutationPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/{plan_id}/copy-preview": {
+      "post": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Copy Preview",
+        "description": "Preview copying the plan definition to the next natural month.",
+        "operationId": "attendance-schedule-plans-copy_preview",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PlanCopyRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlanCopyPreview" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/schedule-plans/{plan_id}/copy": {
+      "post": {
+        "tags": ["attendance-schedule-plans"],
+        "summary": "Copy Schedule Plan",
+        "description": "Copy the plan definition into the next month and expand it.",
+        "operationId": "attendance-schedule-plans-copy_schedule_plan",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Plan Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PlanCopyRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SchedulePlanPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/attendance/schedule-plans/{plan_id}/rule-overrides": {
@@ -5333,6 +5920,87 @@
         "required": ["token", "new_password"],
         "title": "NewPassword"
       },
+      "PlanCopyPreview": {
+        "properties": {
+          "target_month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Target Month",
+            "examples": ["2026-09"]
+          },
+          "can_apply": { "type": "boolean", "title": "Can Apply" },
+          "added": { "type": "integer", "title": "Added" },
+          "updated": { "type": "integer", "title": "Updated" },
+          "deleted": { "type": "integer", "title": "Deleted" },
+          "manual_preserved": {
+            "type": "integer",
+            "title": "Manual Preserved"
+          },
+          "conflicts": {
+            "items": { "$ref": "#/components/schemas/SchedulePlanConflict" },
+            "type": "array",
+            "title": "Conflicts"
+          },
+          "warnings": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_month",
+          "can_apply",
+          "added",
+          "updated",
+          "deleted",
+          "manual_preserved"
+        ],
+        "title": "PlanCopyPreview"
+      },
+      "PlanCopyRequest": {
+        "properties": {
+          "target_month": {
+            "type": "string",
+            "title": "Target Month",
+            "examples": ["2026-09"]
+          },
+          "include_manual_exceptions": {
+            "type": "boolean",
+            "title": "Include Manual Exceptions",
+            "default": false
+          },
+          "confirm_overwrite": {
+            "type": "boolean",
+            "title": "Confirm Overwrite",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["target_month"],
+        "title": "PlanCopyRequest"
+      },
+      "PlanDayInput": {
+        "properties": {
+          "day_of_month": {
+            "type": "integer",
+            "maximum": 31.0,
+            "minimum": 1.0,
+            "title": "Day Of Month"
+          },
+          "seq": { "type": "integer", "minimum": 0.0, "title": "Seq" },
+          "shift_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Shift Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["day_of_month", "seq", "shift_id"],
+        "title": "PlanDayInput"
+      },
       "PlanDayPublic": {
         "properties": {
           "id": { "type": "string", "format": "uuid", "title": "Id" },
@@ -5579,6 +6247,20 @@
         "type": "object",
         "required": ["email", "password", "full_name"],
         "title": "PrivateUserCreate"
+      },
+      "RosterChangeSummary": {
+        "properties": {
+          "added": { "type": "integer", "title": "Added", "default": 0 },
+          "updated": { "type": "integer", "title": "Updated", "default": 0 },
+          "deleted": { "type": "integer", "title": "Deleted", "default": 0 },
+          "manual_preserved": {
+            "type": "integer",
+            "title": "Manual Preserved",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "RosterChangeSummary"
       },
       "RulePatch-Input": {
         "properties": {
@@ -5963,6 +6645,153 @@
         "required": ["company_rule", "plan_overrides", "holidays"],
         "title": "RulesSnapshot"
       },
+      "SchedulePlanConflict": {
+        "properties": {
+          "scope_type": { "$ref": "#/components/schemas/ScheduleScopeType" },
+          "scope_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Scope Id"
+          },
+          "plan_id": { "type": "string", "format": "uuid", "title": "Plan Id" },
+          "plan_name": { "type": "string", "title": "Plan Name" }
+        },
+        "type": "object",
+        "required": ["scope_type", "scope_id", "plan_id", "plan_name"],
+        "title": "SchedulePlanConflict"
+      },
+      "SchedulePlanCreate": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "plan_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Plan Name"
+          },
+          "scope_type": { "$ref": "#/components/schemas/ScheduleScopeType" },
+          "scope_ids": {
+            "items": { "type": "string", "format": "uuid" },
+            "type": "array",
+            "title": "Scope Ids"
+          },
+          "days": {
+            "items": { "$ref": "#/components/schemas/PlanDayInput" },
+            "type": "array",
+            "title": "Days"
+          },
+          "rule_overrides": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/RulePatch-Input" },
+              { "type": "null" }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["company_id", "month", "plan_name", "scope_type"],
+        "title": "SchedulePlanCreate"
+      },
+      "SchedulePlanMutationPublic": {
+        "properties": {
+          "plan": { "$ref": "#/components/schemas/SchedulePlanPublic" },
+          "roster_change": {
+            "$ref": "#/components/schemas/RosterChangeSummary"
+          },
+          "month_stale": { "type": "boolean", "title": "Month Stale" }
+        },
+        "type": "object",
+        "required": ["plan", "roster_change", "month_stale"],
+        "title": "SchedulePlanMutationPublic"
+      },
+      "SchedulePlanPreview": {
+        "properties": {
+          "can_apply": { "type": "boolean", "title": "Can Apply" },
+          "affected_employees": {
+            "type": "integer",
+            "title": "Affected Employees"
+          },
+          "added": { "type": "integer", "title": "Added" },
+          "updated": { "type": "integer", "title": "Updated" },
+          "deleted": { "type": "integer", "title": "Deleted" },
+          "manual_preserved": {
+            "type": "integer",
+            "title": "Manual Preserved"
+          },
+          "conflicts": {
+            "items": { "$ref": "#/components/schemas/SchedulePlanConflict" },
+            "type": "array",
+            "title": "Conflicts"
+          },
+          "warnings": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_apply",
+          "affected_employees",
+          "added",
+          "updated",
+          "deleted",
+          "manual_preserved"
+        ],
+        "title": "SchedulePlanPreview"
+      },
+      "SchedulePlanPreviewRequest": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "plan_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Plan Id"
+          },
+          "scope_type": { "$ref": "#/components/schemas/ScheduleScopeType" },
+          "scope_ids": {
+            "items": { "type": "string", "format": "uuid" },
+            "type": "array",
+            "title": "Scope Ids"
+          },
+          "days": {
+            "items": { "$ref": "#/components/schemas/PlanDayInput" },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["company_id", "month", "scope_type"],
+        "title": "SchedulePlanPreviewRequest"
+      },
       "SchedulePlanPublic": {
         "properties": {
           "id": { "type": "string", "format": "uuid", "title": "Id" },
@@ -6024,6 +6853,59 @@
           "updated_at"
         ],
         "title": "SchedulePlanPublic"
+      },
+      "SchedulePlanUpdate": {
+        "properties": {
+          "plan_name": {
+            "anyOf": [
+              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "type": "null" }
+            ],
+            "title": "Plan Name"
+          },
+          "scope_type": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/ScheduleScopeType" },
+              { "type": "null" }
+            ]
+          },
+          "scope_ids": {
+            "anyOf": [
+              {
+                "items": { "type": "string", "format": "uuid" },
+                "type": "array"
+              },
+              { "type": "null" }
+            ],
+            "title": "Scope Ids"
+          },
+          "days": {
+            "anyOf": [
+              {
+                "items": { "$ref": "#/components/schemas/PlanDayInput" },
+                "type": "array"
+              },
+              { "type": "null" }
+            ],
+            "title": "Days"
+          },
+          "rule_overrides": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/RulePatch-Input" },
+              { "type": "null" }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SchedulePlanUpdate"
       },
       "SchedulePlansPublic": {
         "properties": {

@@ -1,14 +1,15 @@
 """Attendance-month row locking and editability checks.
 
-Plan saves, roster writes, and personnel sync all need the same
-``SELECT ... FOR UPDATE`` on the month row before they touch roster state.
+Plan saves, roster writes, personnel sync, and adjustments all need the same
+``SELECT ... FOR UPDATE`` on the month row before they touch month data.
 Confirmed and locked months reject every attendance data change (spec
 sections 5.6 and 8.7); the callers own the transaction.
 
-Calculation is stricter: a second concurrent calculation must fail fast with
-``calc_in_progress`` instead of queueing (spec section 7.12). It therefore
-takes a transaction-level advisory lock plus ``FOR UPDATE NOWAIT`` on the
-month row.
+A second concurrent calculation must fail fast with ``calc_in_progress``
+instead of queueing (spec section 7.12). The transaction-level advisory lock
+provides that guard; the month row lock then waits for a short non-calculation
+write (such as an adjustment) to commit instead of misreporting it as a
+calculation in progress.
 """
 
 import hashlib
@@ -17,7 +18,7 @@ from datetime import date
 from typing import Any, cast
 
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
 from app.core.errors import DomainError
@@ -44,12 +45,6 @@ __all__ = [
     "lock_month_for_calculation",
 ]
 
-_LOCK_NOT_AVAILABLE_SQLSTATE = "55P03"
-
-
-def _is_lock_not_available(error: OperationalError) -> bool:
-    return getattr(error.orig, "sqlstate", None) == _LOCK_NOT_AVAILABLE_SQLSTATE
-
 
 def _calculation_lock_key(company_id: uuid.UUID, month: date) -> int:
     digest = hashlib.sha256(
@@ -62,13 +57,8 @@ def _calc_in_progress_error() -> DomainError:
     return DomainError(AttendanceErrorCode.CALC_IN_PROGRESS, CALC_IN_PROGRESS_MESSAGE)
 
 
-def _first_with_nowait_lock(session: Session, statement: Any) -> AttendanceMonth | None:
-    try:
-        return cast(AttendanceMonth | None, session.exec(statement).first())
-    except OperationalError as error:
-        if _is_lock_not_available(error):
-            raise _calc_in_progress_error() from error
-        raise
+def _first_with_lock(session: Session, statement: Any) -> AttendanceMonth | None:
+    return cast(AttendanceMonth | None, session.exec(statement).first())
 
 
 def lock_month_for_calculation(
@@ -92,9 +82,9 @@ def lock_month_for_calculation(
             col(AttendanceMonth.company_id) == company_id,
             col(AttendanceMonth.month) == month,
         )
-        .with_for_update(nowait=True)
+        .with_for_update()
     )
-    month_row = _first_with_nowait_lock(session, statement)
+    month_row = _first_with_lock(session, statement)
     if month_row is not None:
         return month_row
 
@@ -109,7 +99,7 @@ def lock_month_for_calculation(
             session.add(month_row)
             session.flush()
     except IntegrityError:
-        month_row = _first_with_nowait_lock(session, statement)
+        month_row = _first_with_lock(session, statement)
         if month_row is None:
             raise
     return month_row

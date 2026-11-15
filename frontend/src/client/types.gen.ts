@@ -10,6 +10,33 @@ export type ClientOptions = {
 export type AdjustmentStatus = 'active' | 'superseded' | 'orphaned';
 
 /**
+ * AttendanceAdjustmentCreate
+ */
+export type AttendanceAdjustmentCreate = {
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Work Date
+     */
+    work_date: string;
+    /**
+     * Base Version
+     */
+    base_version: number;
+    adjusted_values: AttendanceAdjustmentValues;
+    /**
+     * Reason
+     */
+    reason: string;
+};
+
+/**
  * AttendanceAdjustmentPublic
  */
 export type AttendanceAdjustmentPublic = {
@@ -70,6 +97,69 @@ export type AttendanceAdjustmentPublic = {
      * Calc Run Id
      */
     calc_run_id: string;
+};
+
+/**
+ * AttendanceAdjustmentValues
+ *
+ * The only fields a manual adjustment may override (spec section 7.11).
+ */
+export type AttendanceAdjustmentValues = {
+    day_status?: DayStatus | null;
+    /**
+     * Attendance Fraction
+     */
+    attendance_fraction?: number | string | null;
+    /**
+     * Worked Minutes
+     */
+    worked_minutes?: number | null;
+    /**
+     * Ot Weekday Minutes
+     */
+    ot_weekday_minutes?: number | null;
+    /**
+     * Ot Weekend Minutes
+     */
+    ot_weekend_minutes?: number | null;
+    /**
+     * Ot Holiday Minutes
+     */
+    ot_holiday_minutes?: number | null;
+    /**
+     * Late Minutes
+     */
+    late_minutes?: number | null;
+    /**
+     * Early Minutes
+     */
+    early_minutes?: number | null;
+    /**
+     * Missing Punch Count
+     */
+    missing_punch_count?: number | null;
+    /**
+     * Leave Days
+     */
+    leave_days?: number | string | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * AttendanceAdjustmentsPublic
+ */
+export type AttendanceAdjustmentsPublic = {
+    /**
+     * Data
+     */
+    data: Array<AttendanceAdjustmentPublic>;
+    /**
+     * Count
+     */
+    count: number;
 };
 
 /**
@@ -7173,6 +7263,139 @@ export type attendanceResultsReadDayDetailResponses = {
 };
 
 export type attendanceResultsReadDayDetailResponse = attendanceResultsReadDayDetailResponses[keyof attendanceResultsReadDayDetailResponses];
+
+export type attendanceAdjustmentsReadAdjustmentsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month?: string | null;
+        /**
+         * Employee Id
+         */
+        employee_id?: string | null;
+        /**
+         * Work Date
+         */
+        work_date?: string | null;
+        /**
+         * Status
+         */
+        status?: AdjustmentStatus | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/results/adjustments/';
+};
+
+export type attendanceAdjustmentsReadAdjustmentsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceAdjustmentsReadAdjustmentsError = attendanceAdjustmentsReadAdjustmentsErrors[keyof attendanceAdjustmentsReadAdjustmentsErrors];
+
+export type attendanceAdjustmentsReadAdjustmentsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceAdjustmentsPublic;
+};
+
+export type attendanceAdjustmentsReadAdjustmentsResponse = attendanceAdjustmentsReadAdjustmentsResponses[keyof attendanceAdjustmentsReadAdjustmentsResponses];
+
+export type attendanceAdjustmentsCreateAdjustmentData = {
+    body: AttendanceAdjustmentCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/attendance/results/adjustments/';
+};
+
+export type attendanceAdjustmentsCreateAdjustmentErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceAdjustmentsCreateAdjustmentError = attendanceAdjustmentsCreateAdjustmentErrors[keyof attendanceAdjustmentsCreateAdjustmentErrors];
+
+export type attendanceAdjustmentsCreateAdjustmentResponses = {
+    /**
+     * Successful Response
+     */
+    201: AttendanceAdjustmentPublic;
+};
+
+export type attendanceAdjustmentsCreateAdjustmentResponse = attendanceAdjustmentsCreateAdjustmentResponses[keyof attendanceAdjustmentsCreateAdjustmentResponses];
+
+export type attendanceAdjustmentsReadAdjustmentData = {
+    body?: never;
+    path: {
+        /**
+         * Adjustment Id
+         */
+        adjustment_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/results/adjustments/{adjustment_id}';
+};
+
+export type attendanceAdjustmentsReadAdjustmentErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceAdjustmentsReadAdjustmentError = attendanceAdjustmentsReadAdjustmentErrors[keyof attendanceAdjustmentsReadAdjustmentErrors];
+
+export type attendanceAdjustmentsReadAdjustmentResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceAdjustmentPublic;
+};
+
+export type attendanceAdjustmentsReadAdjustmentResponse = attendanceAdjustmentsReadAdjustmentResponses[keyof attendanceAdjustmentsReadAdjustmentResponses];
 
 export type attendanceSchedulePlansReadSchedulePlansData = {
     body?: never;

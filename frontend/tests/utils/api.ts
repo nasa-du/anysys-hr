@@ -1,4 +1,7 @@
 import {
+  type AttendanceAdjustmentPublic,
+  AttendanceAdjustmentsService,
+  type AttendanceAdjustmentValues,
   AttendanceHolidaysService,
   AttendanceImportsService,
   AttendanceMonthsService,
@@ -331,4 +334,20 @@ export async function updateAttendanceRule(
     query: { company_id: companyId },
     body: input,
   })
+}
+
+/** Create one manual adjustment version through the public API. */
+export async function createAdjustment(input: {
+  company_id: string
+  employee_id: string
+  work_date: string
+  base_version: number
+  adjusted_values: AttendanceAdjustmentValues
+  reason: string
+}): Promise<AttendanceAdjustmentPublic> {
+  await ensureAuthenticated()
+  const response = await AttendanceAdjustmentsService.createAdjustment({
+    body: input,
+  })
+  return response.data
 }

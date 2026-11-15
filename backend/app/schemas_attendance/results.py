@@ -192,6 +192,8 @@ class AttendanceMonthSummariesPublic(SQLModel):
 
 
 class AttendanceAdjustmentValues(WriteModel):
+    """The only fields a manual adjustment may override (spec section 7.11)."""
+
     day_status: DayStatus | None = None
     attendance_fraction: DecimalString | None = Field(default=None, ge=0, le=1)
     worked_minutes: int | None = Field(default=None, ge=0)
@@ -203,6 +205,16 @@ class AttendanceAdjustmentValues(WriteModel):
     missing_punch_count: int | None = Field(default=None, ge=0)
     leave_days: DecimalString | None = Field(default=None, ge=0, le=1)
     note: str | None = Field(default=None, max_length=500)
+
+    @model_validator(mode="after")
+    def _require_override_values(self) -> AttendanceAdjustmentValues:
+        explicitly_set = self.model_fields_set
+        if not explicitly_set:
+            raise ValueError("请至少调整一个字段")
+        for field in explicitly_set:
+            if field != "note" and getattr(self, field) is None:
+                raise ValueError("调整值不能为空")
+        return self
 
 
 class AttendanceAdjustmentCreate(WriteModel):

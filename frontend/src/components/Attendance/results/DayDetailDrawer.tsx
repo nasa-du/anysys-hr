@@ -1,11 +1,17 @@
-import type { ReactNode } from "react"
+import { type ReactNode, useState } from "react"
 
-import type { AttendanceDayDetailPublic } from "@/client"
+import type {
+  AttendanceAdjustmentPublic,
+  AttendanceAdjustmentValues,
+  AttendanceDayDetailPublic,
+} from "@/client"
+import { ConfirmDialog } from "@/components/Attendance/schedule/PreviewDialog"
 import {
   ErrorState,
   LoadingState,
 } from "@/components/Attendance/shared/StateViews"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
@@ -21,17 +27,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { getErrorMessage } from "@/lib/api-error"
-import { formatDateTimeShanghai } from "@/lib/datetime"
-import {
-  ADJUSTMENT_STATUS_LABELS,
-  type AttendanceDayStatus,
-  DAY_TYPE_LABELS,
-  ROSTER_SOURCE_LABELS,
-} from "@/lib/enums"
+import useCustomToast from "@/hooks/useCustomToast"
+import { getErrorDetail, getErrorMessage } from "@/lib/api-error"
+import { DAY_TYPE_LABELS, ROSTER_SOURCE_LABELS } from "@/lib/enums"
 
+import { AdjustmentDialog } from "./AdjustmentDialog"
+import { AdjustmentHistory } from "./AdjustmentHistory"
 import { FourWayTimeline } from "./FourWayTimeline"
-import { useDayDetail } from "./queries"
+import { useCreateAdjustment, useDayDetail } from "./queries"
 import {
   dayFlagLabel,
   dayStatusLabel,
@@ -81,15 +84,17 @@ function Line({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function adjustmentValue(key: string, value: unknown): string {
-  if (value === null || value === undefined) return "—"
-  if (key === "day_status") {
-    return dayStatusLabel(value as AttendanceDayStatus)
-  }
-  return String(value)
-}
-
-function DetailBody({ detail }: { detail: AttendanceDayDetailPublic }) {
+function DetailBody({
+  detail,
+  readOnly,
+  onAdjust,
+  onUndo,
+}: {
+  detail: AttendanceDayDetailPublic
+  readOnly: boolean
+  onAdjust: () => void
+  onUndo: (adjustment: AttendanceAdjustmentPublic) => void
+}) {
   const result = detail.day_result
   const workDate = result.work_date
   const roster = detail.roster_entry
@@ -313,47 +318,40 @@ function DetailBody({ detail }: { detail: AttendanceDayDetailPublic }) {
       </section>
 
       <section className="space-y-2">
-        <h3 className="text-sm font-medium">人工调整</h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">人工调整</h3>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={readOnly}
+            title={readOnly ? "已确认或锁定的月份不可调整" : undefined}
+            data-testid="open-adjustment-dialog"
+            onClick={onAdjust}
+          >
+            {adjustments.some((item) => item.status === "active")
+              ? "再次调整"
+              : "新增调整"}
+          </Button>
+        </div>
+        {readOnly && (
+          <p
+            className="text-xs text-muted-foreground"
+            data-testid="adjustment-readonly"
+          >
+            本月已确认或锁定，人工调整只读。
+          </p>
+        )}
         {adjustments.length === 0 ? (
           <p className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
             当前没有人工调整。调整会保留原值、调整值与理由，并记录操作者。
           </p>
         ) : (
-          <div className="space-y-2" data-testid="adjustment-history">
-            {adjustments.map((adjustment) => (
-              <div
-                key={adjustment.id}
-                className="rounded-md border px-3 py-2 text-sm"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge
-                    variant={
-                      adjustment.status === "active" ? "default" : "secondary"
-                    }
-                  >
-                    版本 {adjustment.version} ·{" "}
-                    {ADJUSTMENT_STATUS_LABELS[adjustment.status]}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {adjustment.adjusted_by_name ?? adjustment.adjusted_by} ·{" "}
-                    {formatDateTimeShanghai(adjustment.adjusted_at)}
-                  </span>
-                </div>
-                <p className="mt-1">{adjustment.reason}</p>
-                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                  {Object.entries(adjustment.adjusted_values).map(
-                    ([key, value]) => (
-                      <span key={key}>
-                        {key}:{" "}
-                        {adjustmentValue(key, adjustment.original_values[key])}{" "}
-                        → {adjustmentValue(key, value)}
-                      </span>
-                    ),
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <AdjustmentHistory
+            adjustments={adjustments}
+            readOnly={readOnly}
+            onUndo={onUndo}
+          />
         )}
       </section>
     </div>
@@ -364,6 +362,7 @@ type DayDetailDrawerProps = {
   companyId: string
   employeeId: string | null
   workDate: string | null
+  readOnly?: boolean
   onClose: () => void
 }
 
@@ -372,16 +371,60 @@ export function DayDetailDrawer({
   companyId,
   employeeId,
   workDate,
+  readOnly = false,
   onClose,
 }: DayDetailDrawerProps) {
   const query = useDayDetail(companyId, employeeId, workDate)
   const detail = query.data
+  const createAdjustment = useCreateAdjustment()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
+  const [adjustmentOpen, setAdjustmentOpen] = useState(false)
+  const [undoTarget, setUndoTarget] =
+    useState<AttendanceAdjustmentPublic | null>(null)
+
+  const closeAll = () => {
+    setAdjustmentOpen(false)
+    setUndoTarget(null)
+    onClose()
+  }
+
+  const confirmUndo = () => {
+    if (!undoTarget || !detail) return
+    createAdjustment.mutate(
+      {
+        company_id: detail.day_result.company_id,
+        employee_id: detail.day_result.employee_id,
+        work_date: detail.day_result.work_date,
+        base_version: undoTarget.version,
+        adjusted_values:
+          undoTarget.original_values as AttendanceAdjustmentValues,
+        reason: `撤销人工调整（版本 ${undoTarget.version}）`,
+      },
+      {
+        onSuccess: () => {
+          showSuccessToast("已撤销调整，并生成了新的版本")
+          setUndoTarget(null)
+          void query.refetch()
+        },
+        onError: (error) => {
+          const detailError = getErrorDetail(error)
+          showErrorToast(
+            detailError?.code === "adjustment_conflict"
+              ? detailError.message
+              : getErrorMessage(error),
+          )
+          setUndoTarget(null)
+          void query.refetch()
+        },
+      },
+    )
+  }
 
   return (
     <Sheet
       open={employeeId !== null && workDate !== null}
       onOpenChange={(open) => {
-        if (!open) onClose()
+        if (!open) closeAll()
       }}
     >
       <SheetContent
@@ -404,7 +447,10 @@ export function DayDetailDrawer({
           </SheetDescription>
           {detail && (
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <Badge variant={dayStatusVariant(detail.day_result.day_status)}>
+              <Badge
+                variant={dayStatusVariant(detail.day_result.day_status)}
+                data-testid="day-result-status"
+              >
                 {dayStatusLabel(detail.day_result.day_status)}
               </Badge>
               {detail.day_result.is_adjusted && (
@@ -430,9 +476,36 @@ export function DayDetailDrawer({
           </div>
         ) : detail ? (
           <div className="px-4 pb-6">
-            <DetailBody detail={detail} />
+            <DetailBody
+              detail={detail}
+              readOnly={readOnly}
+              onAdjust={() => setAdjustmentOpen(true)}
+              onUndo={setUndoTarget}
+            />
           </div>
         ) : null}
+
+        {detail && (
+          <AdjustmentDialog
+            open={adjustmentOpen}
+            detail={detail}
+            onOpenChange={setAdjustmentOpen}
+            onSaved={() => void query.refetch()}
+          />
+        )}
+        <ConfirmDialog
+          open={undoTarget !== null}
+          title="撤销人工调整"
+          description={
+            undoTarget
+              ? `将基于当前生效的版本 ${undoTarget.version} 生成一个新的恢复版本，原值与调整值都会保留在版本历史中。`
+              : ""
+          }
+          confirmLabel="确认撤销"
+          busy={createAdjustment.isPending}
+          onConfirm={confirmUndo}
+          onClose={() => setUndoTarget(null)}
+        />
       </SheetContent>
     </Sheet>
   )

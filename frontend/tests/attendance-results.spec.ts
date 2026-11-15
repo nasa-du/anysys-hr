@@ -2,6 +2,7 @@ import { expect, type Page, test } from "@playwright/test"
 
 import {
   calculateMonth,
+  createAdjustment,
   createCompany,
   createDepartment,
   createEmployee,
@@ -253,4 +254,105 @@ test("renders locked months as read-only with a disabled explanation", async ({
   )
   await expect(page.getByTestId("recalculate-button")).toBeDisabled()
   await expect(page.getByTestId("recalc-hint")).toContainText("已锁定")
+})
+
+async function openAdjustmentDialog(
+  page: Page,
+  setup: ResultSetup,
+): Promise<void> {
+  await dayRow(page, setup, LATE_DAY).click()
+  const drawer = page.getByTestId("day-detail-drawer")
+  await expect(drawer).toBeVisible()
+  await drawer.getByTestId("open-adjustment-dialog").click()
+  await expect(page.getByTestId("adjustment-dialog")).toBeVisible()
+}
+
+test("adjusts a day, keeps version history, re-applies, and undoes", async ({
+  page,
+}) => {
+  const setup = await setupResults(page)
+  await openResults(page)
+  await openAdjustmentDialog(page, setup)
+
+  const dialog = page.getByTestId("adjustment-dialog")
+  const drawer = page.getByTestId("day-detail-drawer")
+  await expect(
+    dialog.getByTestId("adjustment-original-day_status"),
+  ).toContainText("迟到")
+  await expect(
+    dialog.getByTestId("adjustment-original-late_minutes"),
+  ).toContainText("7")
+
+  await dialog.getByTestId("adjustment-input-day_status").click()
+  await page.getByRole("option", { name: "正常", exact: true }).click()
+  await dialog.getByTestId("adjustment-input-late_minutes").fill("0")
+  await dialog.getByTestId("adjustment-reason").fill("核实后不计迟到")
+  await dialog.getByTestId("adjustment-submit").click()
+
+  await expect(page.getByText("人工调整已保存")).toBeVisible()
+  await expect(dialog).toHaveCount(0)
+  const history = drawer.getByTestId("adjustment-history")
+  await expect(history).toContainText("版本 1 · 生效")
+  await expect(history).toContainText("核实后不计迟到")
+  await expect(drawer.getByTestId("day-result-status")).toHaveText("正常")
+  await expect(dayRow(page, setup, LATE_DAY)).toContainText("已调整")
+
+  await page.keyboard.press("Escape")
+  await expect(drawer).toHaveCount(0)
+  await page.getByTestId("recalculate-button").click()
+  await expect(page.getByText(/重新计算完成/)).toBeVisible()
+  await expect(dayRow(page, setup, LATE_DAY)).toContainText("已调整")
+
+  await dayRow(page, setup, LATE_DAY).click()
+  await expect(drawer).toBeVisible()
+  await expect(drawer.getByTestId("day-result-status")).toHaveText("正常")
+  await expect(drawer.getByTestId("adjustment-history")).toContainText(
+    "版本 1 · 生效",
+  )
+
+  await drawer.getByTestId("undo-adjustment-1").click()
+  await page.getByRole("button", { name: "确认撤销" }).click()
+  await expect(page.getByText("已撤销调整", { exact: false })).toBeVisible()
+  const restored = drawer.getByTestId("adjustment-history")
+  await expect(restored).toContainText("版本 2 · 生效")
+  await expect(restored).toContainText("版本 1 · 已替代")
+  await expect(drawer.getByTestId("day-result-status")).toHaveText("迟到")
+})
+
+test("surfaces a conflict when another version was submitted first", async ({
+  page,
+}) => {
+  const setup = await setupResults(page)
+  await openResults(page)
+  await openAdjustmentDialog(page, setup)
+
+  const dialog = page.getByTestId("adjustment-dialog")
+  const drawer = page.getByTestId("day-detail-drawer")
+  await dialog.getByTestId("adjustment-input-late_minutes").fill("0")
+  await dialog.getByTestId("adjustment-reason").fill("并发提交")
+
+  await createAdjustment({
+    company_id: setup.companyId,
+    employee_id: setup.employeeId,
+    work_date: LATE_DAY,
+    base_version: 0,
+    adjusted_values: { day_status: "normal" },
+    reason: "他人先提交",
+  })
+
+  await dialog.getByTestId("adjustment-submit").click()
+  await expect(dialog.getByTestId("adjustment-conflict")).toBeVisible()
+  await expect(dialog.getByTestId("adjustment-conflict")).toContainText(
+    "调整版本已变化",
+  )
+
+  await dialog.getByTestId("adjustment-refresh").click()
+  await expect(dialog).toHaveCount(0)
+  await expect(drawer.getByTestId("adjustment-history")).toContainText(
+    "版本 1 · 生效",
+  )
+  await expect(drawer.getByTestId("adjustment-history")).toContainText(
+    "他人先提交",
+  )
+  await expect(drawer.getByTestId("day-result-status")).toHaveText("正常")
 })

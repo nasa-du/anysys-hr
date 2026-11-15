@@ -3831,6 +3831,244 @@
         }
       }
     },
+    "/api/v1/attendance/results/adjustments/": {
+      "get": {
+        "tags": ["attendance-adjustments"],
+        "summary": "Read Adjustments",
+        "description": "List adjustment versions; there is no DELETE endpoint.",
+        "operationId": "attendance-adjustments-read_adjustments",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "examples": ["2026-09"] },
+                { "type": "null" }
+              ],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "employee_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Employee Id"
+            }
+          },
+          {
+            "name": "work_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date" },
+                { "type": "null" }
+              ],
+              "title": "Work Date"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/AdjustmentStatus" },
+                { "type": "null" }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceAdjustmentsPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      },
+      "post": {
+        "tags": ["attendance-adjustments"],
+        "summary": "Create Adjustment",
+        "description": "Create a new version; undo is another POST restoring original values.",
+        "operationId": "attendance-adjustments-create_adjustment",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceAdjustmentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceAdjustmentPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/results/adjustments/{adjustment_id}": {
+      "get": {
+        "tags": ["attendance-adjustments"],
+        "summary": "Read Adjustment",
+        "description": "Get one adjustment version by id.",
+        "operationId": "attendance-adjustments-read_adjustment",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "adjustment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Adjustment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceAdjustmentPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/v1/attendance/schedule-plans/": {
       "get": {
         "tags": ["attendance-schedule-plans"],
@@ -6419,6 +6657,50 @@
         "enum": ["active", "superseded", "orphaned"],
         "title": "AdjustmentStatus"
       },
+      "AttendanceAdjustmentCreate": {
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "base_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Base Version"
+          },
+          "adjusted_values": {
+            "$ref": "#/components/schemas/AttendanceAdjustmentValues"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "company_id",
+          "employee_id",
+          "work_date",
+          "base_version",
+          "adjusted_values",
+          "reason"
+        ],
+        "title": "AttendanceAdjustmentCreate"
+      },
       "AttendanceAdjustmentPublic": {
         "properties": {
           "id": { "type": "string", "format": "uuid", "title": "Id" },
@@ -6492,6 +6774,113 @@
           "calc_run_id"
         ],
         "title": "AttendanceAdjustmentPublic"
+      },
+      "AttendanceAdjustmentValues": {
+        "properties": {
+          "day_status": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/DayStatus" },
+              { "type": "null" }
+            ]
+          },
+          "attendance_fraction": {
+            "anyOf": [
+              { "type": "number", "maximum": 1.0, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Attendance Fraction"
+          },
+          "worked_minutes": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Worked Minutes"
+          },
+          "ot_weekday_minutes": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Ot Weekday Minutes"
+          },
+          "ot_weekend_minutes": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Ot Weekend Minutes"
+          },
+          "ot_holiday_minutes": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Ot Holiday Minutes"
+          },
+          "late_minutes": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Late Minutes"
+          },
+          "early_minutes": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Early Minutes"
+          },
+          "missing_punch_count": {
+            "anyOf": [
+              { "type": "integer", "minimum": 0.0 },
+              { "type": "null" }
+            ],
+            "title": "Missing Punch Count"
+          },
+          "leave_days": {
+            "anyOf": [
+              { "type": "number", "maximum": 1.0, "minimum": 0.0 },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Leave Days"
+          },
+          "note": {
+            "anyOf": [
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AttendanceAdjustmentValues",
+        "description": "The only fields a manual adjustment may override (spec section 7.11)."
+      },
+      "AttendanceAdjustmentsPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceAdjustmentPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "AttendanceAdjustmentsPublic"
       },
       "AttendanceDayDetailPublic": {
         "properties": {

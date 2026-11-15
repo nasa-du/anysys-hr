@@ -14,6 +14,7 @@ import json
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import UTC, date, datetime
+from decimal import Decimal
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -37,6 +38,7 @@ from app.models import (
     AttendanceMonth,
     AttendanceMonthSummary,
     AttendanceResultAdjustment,
+    CalcRun,
     Department,
     Employee,
     Holiday,
@@ -106,6 +108,7 @@ from app.services.attendance.calc import (
 from app.services.attendance.calc import (
     RosterEntry as CalcRosterEntry,
 )
+from app.services.attendance.calc._common import amount_value, day_value, hours_value
 from app.services.attendance.errors import AttendanceErrorCode
 from app.services.attendance.expansion import month_bounds
 from app.services.attendance.month_state import existing_month
@@ -767,6 +770,199 @@ def replace_month_results(
     session.add_all(shift_rows)
     session.add_all(summary_rows)
     session.flush()
+
+
+_DEDUCTION_RULE_FIELDS = (
+    "absent_deduct_per_day",
+    "late_deduct_per_occurrence",
+    "early_deduct_per_occurrence",
+    "missing_punch_deduct_per_occurrence",
+)
+
+
+def _as_decimal(value: Any) -> Decimal:
+    return value if isinstance(value, Decimal) else Decimal(str(value))
+
+
+def _deduction_rule_values(
+    session: Session, day: AttendanceDayResult
+) -> dict[str, Any] | None:
+    """Effective rule values for one day, resolved from the calculation snapshot."""
+    calc_run = session.get(CalcRun, day.calc_run_id)
+    if calc_run is None:
+        return None
+    snapshot = RulesSnapshot.model_validate(calc_run.rules_snapshot)
+    values: dict[str, Any] = snapshot.company_rule.model_dump()
+
+    roster_entry = session.exec(
+        select(RosterEntry).where(
+            col(RosterEntry.company_id) == day.company_id,
+            col(RosterEntry.employee_id) == day.employee_id,
+            col(RosterEntry.work_date) == day.work_date,
+        )
+    ).first()
+    if roster_entry is not None and roster_entry.plan_id is not None:
+        override = next(
+            (
+                item
+                for item in snapshot.plan_overrides
+                if item.plan_id == roster_entry.plan_id
+            ),
+            None,
+        )
+        if override is not None:
+            patch = override.overrides.model_dump()
+            values = {
+                field: (patch[field] if patch.get(field) is not None else values[field])
+                for field in RULE_FIELDS
+            }
+
+    return {
+        field: (
+            _as_decimal(values[field])
+            if field in _DEDUCTION_RULE_FIELDS
+            else values[field]
+        )
+        for field in RULE_FIELDS
+    }
+
+
+def recompute_day_deductions(session: Session, day: AttendanceDayResult) -> None:
+    """Re-derive one day's deduction suggestions from its effective facts.
+
+    The section 7.10 formula reads the day's effective status and counts, so
+    an adjustment to ``day_status`` or ``missing_punch_count`` must move the
+    itemized amounts and total, not just the raw fields. Rule values come from
+    the calculation the result belongs to. Callers own the transaction.
+    """
+    rules = _deduction_rule_values(session, day)
+    if rules is None:
+        return
+    absent = day.day_status is DayStatus.ABSENT
+    absent_days = 1 if absent else 0
+    late_count = 0 if absent else day.late_count
+    early_count = 0 if absent else day.early_count
+    missing_count = 0 if absent else day.missing_punch_count
+    absent_amount = -rules["absent_deduct_per_day"] * absent_days
+    late_amount = -rules["late_deduct_per_occurrence"] * late_count
+    early_amount = -rules["early_deduct_per_occurrence"] * early_count
+    missing_amount = -rules["missing_punch_deduct_per_occurrence"] * missing_count
+    day.absent_deduct_amount = amount_value(absent_amount)
+    day.late_deduct_amount = amount_value(late_amount)
+    day.early_deduct_amount = amount_value(early_amount)
+    day.missing_punch_deduct_amount = amount_value(missing_amount)
+    day.deduction_total = amount_value(
+        absent_amount + late_amount + early_amount + missing_amount
+    )
+
+
+def recompute_month_summary_from_days(
+    session: Session, *, month_id: uuid.UUID, employee_id: uuid.UUID
+) -> None:
+    """Re-derive one employee's summary from the persisted, adjusted day rows.
+
+    Adjustments change day fields after calculation; the month summary must
+    follow for the fields that aggregate day values (spec section 7.9).
+    Deduction amounts are not adjustable, so they keep the calculated day
+    totals. Callers own the transaction.
+    """
+    summary = session.exec(
+        select(AttendanceMonthSummary).where(
+            col(AttendanceMonthSummary.attendance_month_id) == month_id,
+            col(AttendanceMonthSummary.employee_id) == employee_id,
+        )
+    ).first()
+    if summary is None:
+        return
+    days = list(
+        session.exec(
+            select(AttendanceDayResult).where(
+                col(AttendanceDayResult.attendance_month_id) == month_id,
+                col(AttendanceDayResult.employee_id) == employee_id,
+            )
+        ).all()
+    )
+    work_days = [day for day in days if day.roster_state is ResultRosterState.WORK]
+    ot_weekday = sum(day.ot_weekday_minutes for day in days)
+    ot_weekend = sum(day.ot_weekend_minutes for day in days)
+    ot_holiday = sum(day.ot_holiday_minutes for day in days)
+
+    summary.weekday_full = day_value(
+        sum(
+            1
+            for day in days
+            if day.day_type is DayType.WORKDAY
+            and day.roster_state is ResultRosterState.WORK
+        )
+    )
+    summary.weekend_full = day_value(
+        sum(
+            1
+            for day in days
+            if day.day_type is DayType.WEEKEND
+            and day.roster_state is ResultRosterState.WORK
+        )
+    )
+    summary.weekday_attended = day_value(
+        sum(
+            (
+                day.attendance_fraction
+                for day in days
+                if day.day_type is DayType.WORKDAY
+            ),
+            Decimal(0),
+        )
+    )
+    summary.weekend_attended = day_value(
+        sum(
+            (
+                day.attendance_fraction
+                for day in days
+                if day.day_type is DayType.WEEKEND
+            ),
+            Decimal(0),
+        )
+    )
+    summary.paid_leave_days = day_value(
+        sum((day.paid_leave_days for day in work_days), Decimal(0))
+    )
+    summary.unpaid_leave_days = day_value(
+        sum((day.unpaid_leave_days for day in work_days), Decimal(0))
+    )
+    summary.comp_leave_days = day_value(
+        sum((day.comp_leave_days for day in work_days), Decimal(0))
+    )
+    summary.trip_days = day_value(
+        sum((day.trip_fraction for day in work_days), Decimal(0))
+    )
+    summary.ot_weekday_minutes = ot_weekday
+    summary.ot_weekend_minutes = ot_weekend
+    summary.ot_holiday_minutes = ot_holiday
+    summary.ot_weekday_hours = hours_value(ot_weekday)
+    summary.ot_weekend_hours = hours_value(ot_weekend)
+    summary.ot_holiday_hours = hours_value(ot_holiday)
+    summary.comp_leave_used_hours = hours_value(
+        sum(day.comp_offset_minutes for day in days)
+    )
+    summary.comp_offset_unused_minutes = sum(
+        day.comp_offset_unused_minutes for day in days
+    )
+    summary.late_count = sum(day.late_count for day in days)
+    summary.late_minutes = sum(day.late_minutes for day in days)
+    summary.early_count = sum(day.early_count for day in days)
+    summary.early_minutes = sum(day.early_minutes for day in days)
+    summary.missing_punch_count = sum(day.missing_punch_count for day in days)
+    summary.absent_days = sum(
+        1
+        for day in days
+        if day.day_status is DayStatus.ABSENT and day.attendance_fraction == 0
+    )
+    summary.worked_minutes = sum(day.worked_minutes for day in days)
+    summary.attendance_deduct = amount_value(
+        sum((day.deduction_total for day in days), Decimal(0))
+    )
+    summary.is_adjusted = any(day.is_adjusted for day in days)
+    session.add(summary)
 
 
 def default_rules_snapshot() -> dict[str, Any]:

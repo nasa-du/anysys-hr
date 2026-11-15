@@ -40,7 +40,7 @@ from app.schemas_attendance.core import (
     InputBatchInfo,
     MonthCounts,
 )
-from app.services.attendance import results
+from app.services.attendance import adjustments, results
 from app.services.attendance.calc import CALC_VERSION, run_month
 from app.services.attendance.errors import AttendanceErrorCode
 from app.services.attendance.month_state import (
@@ -386,6 +386,7 @@ def calculate_month(
             data=calculation_data,
             outputs=outputs,
         )
+        adjustments.reapply_active_adjustments(session, month_id=month_row.id)
 
         month_row.status = AttendanceMonthStatus.CALCULATED
         month_row.is_stale = False

@@ -1,5 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
+  type AttendanceAdjustmentCreate,
+  type AttendanceAdjustmentPublic,
+  AttendanceAdjustmentsService,
   type AttendanceDayDetailPublic,
   type AttendanceDayResultsPublic,
   type AttendanceMonthPublic,
@@ -336,5 +339,27 @@ export function useRecalculateMonth(companyId: string, month: string) {
       invalidateResultQueries(queryClient)
     },
     onError: (error) => showErrorToast(getErrorMessage(error)),
+  })
+}
+
+/** Creating a version refreshes results, adjustment history, and month state. */
+export function useCreateAdjustment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (
+      body: AttendanceAdjustmentCreate,
+    ): Promise<AttendanceAdjustmentPublic> => {
+      const response = await AttendanceAdjustmentsService.createAdjustment({
+        body,
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["attendance", "results", "adjustments"],
+      })
+      invalidateResultQueries(queryClient)
+    },
   })
 }

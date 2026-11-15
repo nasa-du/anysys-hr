@@ -90,6 +90,9 @@ function ResultsWorkspace({ companyId }: { companyId: string }) {
   )
 
   const monthStateQuery = useMonthState(companyId, month)
+  const monthState = monthStateQuery.data
+  const readOnly =
+    monthState?.status === "confirmed" || monthState?.status === "locked"
   const departmentsQuery = useResultDepartments(companyId)
   const employeesQuery = useResultEmployees(companyId)
 
@@ -167,6 +170,7 @@ function ResultsWorkspace({ companyId }: { companyId: string }) {
         companyId={companyId}
         employeeId={selectedDay?.employeeId ?? null}
         workDate={selectedDay?.workDate ?? null}
+        readOnly={readOnly}
         onClose={() => setSelectedDay(null)}
       />
       <EmployeeResultCalendarDialog

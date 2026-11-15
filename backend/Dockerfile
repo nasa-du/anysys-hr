@@ -51,6 +51,9 @@ COPY ./backend/pyproject.toml ./backend/alembic.ini /app/backend/
 
 COPY ./backend/app /app/backend/app
 
+# The development seed commits these fixtures through the real import path.
+COPY ./docs/specs/attendance-fixtures /app/docs/specs/attendance-fixtures
+
 COPY --from=frontend-build /app/backend/app/frontend /app/backend/app/frontend
 
 # Sync the project

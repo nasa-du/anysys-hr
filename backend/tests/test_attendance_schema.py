@@ -1262,6 +1262,14 @@ def test_all_attendance_tables_exist(inspector: sa.Inspector) -> None:
     assert set(ATTENDANCE_TABLES) <= tables
 
 
+def test_this_effort_adds_no_payroll_table(inspector: sa.Inspector) -> None:
+    # Payroll reads attendance through the query/export contract only and may
+    # own snapshot tables in a future effort; this effort must add none.
+    tables = inspector.get_table_names()
+
+    assert [table for table in tables if "payroll" in table.lower()] == []
+
+
 @pytest.mark.parametrize("table_name", ATTENDANCE_TABLES)
 def test_table_has_the_contract_columns(
     inspector: sa.Inspector, table_name: str

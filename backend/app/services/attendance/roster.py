@@ -933,7 +933,7 @@ def _shift_snapshot_rows(
 def _replace_shifts(
     session: Session, entry: RosterEntry, shifts: list[tuple[int, Shift]]
 ) -> None:
-    session.execute(
+    session.exec(
         delete(RosterEntryShift).where(
             col(RosterEntryShift.roster_entry_id) == entry.id
         )
@@ -962,7 +962,7 @@ def _winner_plan_id(
 
 
 def _remove_entry_and_shifts(session: Session, entry: RosterEntry) -> None:
-    session.execute(
+    session.exec(
         delete(RosterEntryShift).where(
             col(RosterEntryShift.roster_entry_id) == entry.id
         )

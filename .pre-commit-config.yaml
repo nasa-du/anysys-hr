@@ -48,7 +48,9 @@ repos:
 
       - id: local-mypy
         name: mypy check
-        entry: uv run mypy backend/app
+        # The backend pyproject owns the strict mypy config and the openpyxl
+        # stub override; mypy does not discover it from the target path.
+        entry: uv run mypy --config-file backend/pyproject.toml backend/app
         require_serial: true
         language: unsupported
         pass_filenames: false

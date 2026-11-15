@@ -9,6 +9,7 @@ import calendar
 import logging
 from datetime import date, time
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 
 from sqlmodel import Session, col, select
@@ -20,6 +21,8 @@ from app.enums import (
     EmployeeStatus,
     Gender,
     HolidayDayType,
+    ImportBatchStatus,
+    ImportDataType,
     RosterSource,
     RosterState,
     ScheduleScopeType,
@@ -32,6 +35,8 @@ from app.models import (
     Department,
     Employee,
     Holiday,
+    ImportBatch,
+    ImportMappingTemplate,
     PlanDay,
     PlanRuleOverride,
     PlanScope,
@@ -40,10 +45,20 @@ from app.models import (
     RosterEntryShift,
     SchedulePlan,
     Shift,
+    User,
 )
-from app.services.attendance import expansion
+from app.services.attendance import expansion, imports
 
 logger = logging.getLogger(__name__)
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FIXTURE_DIR = REPO_ROOT / "docs" / "specs" / "attendance-fixtures"
+IMPORT_FIXTURES: dict[ImportDataType, str] = {
+    ImportDataType.PUNCH: "punch-2026-09.csv",
+    ImportDataType.TRIP: "oa-trip-2026-09.csv",
+    ImportDataType.OT: "oa-overtime-2026-09.csv",
+    ImportDataType.LEAVE: "oa-leave-2026-09.csv",
+}
 
 COMPANIES: list[dict[str, Any]] = [
     {"company_code": "C1", "company_name": "荣新建设", "note": "完整组织示例"},
@@ -797,8 +812,8 @@ EMPLOYEES: list[dict[str, Any]] = [
 ]
 
 
-# Attendance reference data for the C4 demo company. Plans, roster entries,
-# and import batches are added by later slices through the real service paths.
+# Attendance reference data for the C4 demo company. Plans expand through the
+# real expansion service, and the four fixtures commit through preview/commit.
 SHIFTS: list[dict[str, Any]] = [
     {
         "company_code": "C4",
@@ -1334,21 +1349,28 @@ def _seed_attendance_plans(
     companies: dict[str, Company],
     departments: dict[tuple[Any, str], Department],
 ) -> None:
-    """Insert the four 2026-09 plans and expand them once.
+    """Insert any missing 2026-09 plan and expand the month once.
 
     Expansion goes through the real service path so the demo roster matches
-    what the API would produce. Existing plans are never overwritten, and a
-    second run does not re-expand the month.
+    what the API would produce. Each plan is keyed by ``plan_name``: existing
+    rows are never overwritten or re-expanded, and a user-created plan with a
+    different name never blocks the four documented plans.
     """
     company = companies["C4"]
     month = date(2026, 9, 1)
-    existing = session.exec(
-        select(SchedulePlan).where(
-            col(SchedulePlan.company_id) == company.id,
-            col(SchedulePlan.month) == month,
-        )
-    ).all()
-    if existing:
+    existing_names = {
+        plan.plan_name
+        for plan in session.exec(
+            select(SchedulePlan).where(
+                col(SchedulePlan.company_id) == company.id,
+                col(SchedulePlan.month) == month,
+            )
+        ).all()
+    }
+    missing = [
+        data for data in ATTENDANCE_PLANS if data["plan_name"] not in existing_names
+    ]
+    if not missing:
         return
 
     shifts = {
@@ -1367,7 +1389,7 @@ def _seed_attendance_plans(
         employee.employee_no: employee
         for employee in session.exec(select(Employee)).all()
     }
-    for data in ATTENDANCE_PLANS:
+    for data in missing:
         plan = SchedulePlan(
             company_id=company.id,
             month=data["month"],
@@ -1504,6 +1526,63 @@ def _seed_attendance_manual_entries(
     session.flush()
 
 
+def _seed_import_batches(session: Session, companies: dict[str, Company]) -> None:
+    """Commit the four 2026-09 fixture batches through the real import path.
+
+    A scope that already has a committed batch is skipped, so re-running the
+    seed never supersedes or rewrites a user's import. Preview and commit are
+    the same service functions the API uses; no calculation is triggered.
+    """
+    company = companies["C4"]
+    month = date(2026, 9, 1)
+    operator: User | None = None
+    for data_type, file_name in IMPORT_FIXTURES.items():
+        committed = session.exec(
+            select(ImportBatch).where(
+                col(ImportBatch.company_id) == company.id,
+                col(ImportBatch.data_type) == data_type,
+                col(ImportBatch.month) == month,
+                col(ImportBatch.status) == ImportBatchStatus.COMMITTED,
+            )
+        ).first()
+        if committed is not None:
+            continue
+        if operator is None:
+            operator = session.exec(
+                select(User).where(col(User.email) == settings.FIRST_SUPERUSER)
+            ).first()
+            if operator is None:
+                raise SystemExit(
+                    "Refusing to seed import batches: the first superuser is "
+                    "missing. Run backend/scripts/prestart.sh or "
+                    "app/initial_data.py first."
+                )
+        template = session.exec(
+            select(ImportMappingTemplate).where(
+                col(ImportMappingTemplate.company_id) == company.id,
+                col(ImportMappingTemplate.data_type) == data_type,
+            )
+        ).first()
+        fixture_path = FIXTURE_DIR / file_name
+        preview = imports.preview_import(
+            session,
+            company_id=company.id,
+            data_type=data_type,
+            month=month,
+            operator=operator,
+            content=fixture_path.read_bytes(),
+            file_name=file_name,
+        )
+        imports.commit_batch(
+            session,
+            preview.batch.id,
+            operator=operator,
+            # A template the user already maintains wins over the fixture's
+            # mapping; the batch still records its own mapping snapshot.
+            save_mapping_template=template is None,
+        )
+
+
 def seed(session: Session) -> None:
     companies = _seed_companies(session)
     departments = _seed_departments(session, companies)
@@ -1515,6 +1594,7 @@ def seed(session: Session) -> None:
     _seed_holidays(session, companies)
     _seed_attendance_plans(session, companies, departments)
     _seed_attendance_manual_entries(session, companies)
+    _seed_import_batches(session, companies)
     session.commit()
 
 

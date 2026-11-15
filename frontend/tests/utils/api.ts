@@ -4,6 +4,7 @@ import {
   type AttendanceAdjustmentValues,
   AttendanceHolidaysService,
   AttendanceImportsService,
+  type AttendanceMonthPublic,
   AttendanceMonthsService,
   AttendanceRosterService,
   AttendanceRulesService,
@@ -35,6 +36,16 @@ import {
 import { client } from "../../src/client/client.gen"
 import { firstSuperuser, firstSuperuserPassword } from "../config"
 import { todayShanghai } from "./date"
+import {
+  randomCompanyCode,
+  randomCompanyName,
+  randomDepartmentCode,
+  randomEmployeeName,
+  randomEmployeeNo,
+  randomPositionCode,
+  randomShiftCode,
+  randomShiftName,
+} from "./random"
 
 const API_URL = process.env.VITE_API_URL ?? "http://localhost:8000"
 
@@ -324,6 +335,44 @@ export async function calculateMonth(
   return response.data
 }
 
+export async function confirmMonth(
+  companyId: string,
+  month: string,
+): Promise<AttendanceMonthPublic> {
+  await ensureAuthenticated()
+  const response = await AttendanceMonthsService.confirmMonth({
+    path: { month },
+    query: { company_id: companyId },
+  })
+  return response.data
+}
+
+export async function lockMonth(
+  companyId: string,
+  month: string,
+): Promise<AttendanceMonthPublic> {
+  await ensureAuthenticated()
+  const response = await AttendanceMonthsService.lockMonth({
+    path: { month },
+    query: { company_id: companyId },
+  })
+  return response.data
+}
+
+export async function unlockMonth(
+  companyId: string,
+  month: string,
+  reason: string,
+): Promise<AttendanceMonthPublic> {
+  await ensureAuthenticated()
+  const response = await AttendanceMonthsService.unlockMonth({
+    path: { month },
+    query: { company_id: companyId },
+    body: { reason },
+  })
+  return response.data
+}
+
 /** Change one rule field so calculated months become stale. */
 export async function updateAttendanceRule(
   companyId: string,
@@ -350,4 +399,87 @@ export async function createAdjustment(input: {
     body: input,
   })
   return response.data
+}
+
+export type AttendanceBootstrap = {
+  company: ApiCompany
+  department: ApiDepartment
+  position: ApiPosition
+  employee: ApiEmployee
+  employeeNo: string
+  shift: ApiShift
+}
+
+export type AttendanceBootstrapOptions = {
+  employeeName?: string
+  employeeNo?: string
+  shiftName?: string
+  /** When present, creates `work` roster rows and punches and calculates. */
+  workDates?: string[]
+  month?: string
+}
+
+/**
+ * Create a minimal isolated attendance company used by one test.
+ *
+ * Every data-driven Playwright attendance test owns its company so shards
+ * never share filters, states, or counts, and no test depends on the
+ * development seed. Specs that need the full E101–E113 fixture roster build it
+ * themselves (see attendance-imports.spec.ts).
+ */
+export async function bootstrapAttendanceCompany(
+  options: AttendanceBootstrapOptions = {},
+): Promise<AttendanceBootstrap> {
+  const company = await createCompany({
+    company_code: randomCompanyCode(),
+    company_name: randomCompanyName(),
+  })
+  const department = await createDepartment({
+    company_id: company.id,
+    dept_code: randomDepartmentCode(),
+    dept_name: "生产部",
+  })
+  const position = await createPosition({
+    company_id: company.id,
+    position_code: randomPositionCode(),
+    position_name: "操作工",
+    dept_id: department.id,
+  })
+  const employeeNo = options.employeeNo ?? randomEmployeeNo()
+  const employee = await createEmployee({
+    employee_no: employeeNo,
+    name: options.employeeName ?? randomEmployeeName(),
+    dept_id: department.id,
+    position_id: position.id,
+    hire_date: "2026-01-01",
+  })
+  const shift = await createShift({
+    company_id: company.id,
+    shift_code: randomShiftCode(),
+    shift_name: options.shiftName ?? randomShiftName(),
+  })
+  if (options.workDates && options.workDates.length > 0) {
+    for (const workDate of options.workDates) {
+      await createManualRosterEntry({
+        employee_id: employee.id,
+        work_date: workDate,
+        state: "work",
+        shifts: [{ seq: 0, shift_id: shift.id }],
+      })
+    }
+    const month = options.month ?? options.workDates[0].slice(0, 7)
+    await importPunchText({
+      company_id: company.id,
+      month,
+      text: [
+        "工号,考勤日期,打卡时间,打卡结果",
+        ...options.workDates.flatMap((workDate) => [
+          `${employeeNo},${workDate},${workDate} 08:20,正常`,
+          `${employeeNo},${workDate},${workDate} 17:35,正常`,
+        ]),
+      ].join("\n"),
+    })
+    await calculateMonth(company.id, month)
+  }
+  return { company, department, position, employee, employeeNo, shift }
 }

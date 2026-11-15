@@ -1,7 +1,8 @@
 """Development seed script: guard and idempotency."""
 
-from datetime import date
+from datetime import date, time
 from decimal import Decimal
+from typing import NamedTuple
 
 import pytest
 from sqlmodel import Session, select
@@ -9,29 +10,45 @@ from sqlmodel import Session, select
 from app import seed_dev
 from app.core.db import engine
 from app.enums import (
+    AttendanceMonthStatus,
     ContractType,
     EmployeeStatus,
     HolidayDayType,
+    ImportBatchStatus,
+    ImportDataType,
+    ImportSource,
     RosterSource,
     ScheduleScopeType,
 )
 from app.models import (
+    AttendanceDayResult,
+    AttendanceDayShiftResult,
     AttendanceMonth,
+    AttendanceMonthSnapshot,
+    AttendanceMonthSummary,
+    AttendanceResultAdjustment,
     AttendanceRule,
+    CalcRun,
     Company,
     CostCenter,
     Department,
     Employee,
     Holiday,
     ImportBatch,
+    ImportMappingTemplate,
+    OaLeave,
+    OaOvertime,
+    OaTrip,
     PlanDay,
     PlanRuleOverride,
     Position,
+    PunchRecord,
     RosterEntry,
     RosterEntryShift,
     SchedulePlan,
     Shift,
 )
+from app.services.attendance import imports as import_service
 
 SEEDED_CODES = ["C1", "C2", "C3", "C4"]
 SEEDED_NAMES = ["荣新建设", "荣新科技", "荣新物流", "荣新考勤演示"]
@@ -580,6 +597,27 @@ def test_seed_inserts_attendance_reference_data_once() -> None:
         "YL",
     ]
     assert all(shift.is_active for shift in shifts)
+    by_code = {shift.shift_code: shift for shift in shifts}
+    # The seven golden-case shifts keep their exact times and fixed colors.
+    assert by_code["ADM"].start_time == time(8, 30)
+    assert by_code["ADM"].end_time == time(17, 30)
+    assert by_code["TEC"].start_time == time(8, 0)
+    assert by_code["TEC"].end_time == time(18, 0)
+    assert by_code["YL"].break_start == time(11, 30)
+    assert by_code["YL"].break_end == time(13, 30)
+    assert by_code["YL"].rest_minutes == 120
+    assert by_code["NIGHT"].cross_day is True
+    assert by_code["NIGHT"].break_start == time(2, 0)
+    assert by_code["NIGHT"].break_end == time(3, 0)
+    assert [by_code[code].color for code in sorted(by_code)] == [
+        "#2563EB",
+        "#DC2626",
+        "#F59E0B",
+        "#0EA5E9",
+        "#1E293B",
+        "#7C3AED",
+        "#16A34A",
+    ]
     assert len(rules) == 1
     rule = rules[0]
     assert rule.punch_window_min == 120
@@ -848,14 +886,338 @@ def test_seed_inserts_four_plans_and_expands_september_once() -> None:
         ] == ["EARLY", "MID"]
 
 
-def test_seed_does_not_create_import_batches() -> None:
+# The four fixtures in spec section 15.4, with the row-level counts asserted
+# by the import fixture regression. ``warnings`` and ``errors`` are issues,
+# while ``skipped`` includes business filters such as non-approved OA rows.
+class FixtureStats(NamedTuple):
+    file_name: str
+    source_rows: int
+    valid: int
+    skipped: int
+    errors: int
+    warnings: int
+
+
+IMPORT_FIXTURE_STATS: dict[ImportDataType, FixtureStats] = {
+    ImportDataType.PUNCH: FixtureStats("punch-2026-09.csv", 37, 27, 10, 4, 5),
+    ImportDataType.TRIP: FixtureStats("oa-trip-2026-09.csv", 15, 8, 9, 5, 0),
+    ImportDataType.OT: FixtureStats("oa-overtime-2026-09.csv", 15, 8, 7, 3, 1),
+    ImportDataType.LEAVE: FixtureStats("oa-leave-2026-09.csv", 19, 8, 11, 8, 1),
+}
+IMPORT_RECORD_MODELS = (PunchRecord, OaTrip, OaOvertime, OaLeave)
+
+
+class SeedBatchState(NamedTuple):
+    batch_count: int
+    records: dict[str, int]
+    other_company_batches: int
+    template_count: int
+
+
+def _seed_batch_state() -> SeedBatchState:
+    """Stable fingerprint of the C4 import payload for idempotency checks."""
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        batch_count = len(
+            session.exec(
+                select(ImportBatch).where(ImportBatch.company_id == c4.id)
+            ).all()
+        )
+        records = {
+            model.__tablename__: len(
+                session.exec(select(model).where(model.company_id == c4.id)).all()
+            )
+            for model in IMPORT_RECORD_MODELS
+        }
+        other_company_batches = len(
+            session.exec(
+                select(ImportBatch).where(ImportBatch.company_id != c4.id)
+            ).all()
+        )
+        template_count = len(
+            session.exec(
+                select(ImportMappingTemplate).where(
+                    ImportMappingTemplate.company_id == c4.id
+                )
+            ).all()
+        )
+        return SeedBatchState(
+            batch_count, records, other_company_batches, template_count
+        )
+
+
+def _c4_batches() -> dict[ImportDataType, ImportBatch]:
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        return {
+            batch.data_type: batch
+            for batch in session.exec(
+                select(ImportBatch).where(ImportBatch.company_id == c4.id)
+            ).all()
+        }
+
+
+def test_seed_commits_the_four_fixture_batches_once() -> None:
     seed_dev.main()
+
+    batches = _c4_batches()
+    assert set(batches) == set(IMPORT_FIXTURE_STATS)
+    for data_type, stats in IMPORT_FIXTURE_STATS.items():
+        batch = batches[data_type]
+        assert batch.status == ImportBatchStatus.COMMITTED
+        assert batch.month == date(2026, 9, 1)
+        assert batch.file_name == stats.file_name
+        assert batch.source == ImportSource.UPLOAD
+        assert batch.source_rows == stats.source_rows
+        assert batch.valid_records == stats.valid
+        assert batch.skipped_records == stats.skipped
+        assert batch.error_records == stats.errors
+        assert batch.warning_records == stats.warnings
+        assert batch.file_size is not None and batch.file_size > 0
+        assert batch.file_sha256 is not None and len(batch.file_sha256) == 64
+        assert batch.column_mapping
+        assert batch.header_columns
+        assert batch.operator_id is not None
+        assert batch.committed_at is not None
+        assert batch.expires_at is None
 
     with Session(engine) as session:
         c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
         assert (
             session.exec(
-                select(ImportBatch).where(ImportBatch.company_id == c4.id)
+                select(ImportBatch).where(
+                    ImportBatch.company_id == c4.id,
+                    ImportBatch.status != ImportBatchStatus.COMMITTED,
+                )
             ).all()
             == []
+        )
+        records = {
+            model.__tablename__: session.exec(
+                select(model).where(model.company_id == c4.id)
+            ).all()
+            for model in IMPORT_RECORD_MODELS
+        }
+        assert {name: len(rows) for name, rows in records.items()} == {
+            "punch_record": IMPORT_FIXTURE_STATS[ImportDataType.PUNCH].valid,
+            "oa_trip": IMPORT_FIXTURE_STATS[ImportDataType.TRIP].valid,
+            "oa_overtime": IMPORT_FIXTURE_STATS[ImportDataType.OT].valid,
+            "oa_leave": IMPORT_FIXTURE_STATS[ImportDataType.LEAVE].valid,
+        }
+        assert all(row.raw_row for row in records["punch_record"])
+        assert (
+            len(
+                session.exec(
+                    select(ImportMappingTemplate).where(
+                        ImportMappingTemplate.company_id == c4.id
+                    )
+                ).all()
+            )
+            == 4
+        )
+
+
+def test_seed_runs_twice_with_stable_import_counts() -> None:
+    seed_dev.main()
+    first = _seed_batch_state()
+    seed_dev.main()
+    second = _seed_batch_state()
+
+    assert first == second
+    assert first.batch_count == 4
+    assert first.records == {
+        "punch_record": 27,
+        "oa_trip": 8,
+        "oa_overtime": 8,
+        "oa_leave": 8,
+    }
+    assert first.other_company_batches == 0
+    assert first.template_count == 4
+
+
+def test_seed_does_not_overwrite_committed_import_batches() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        batch = session.exec(
+            select(ImportBatch).where(
+                ImportBatch.company_id == c4.id,
+                ImportBatch.data_type == ImportDataType.PUNCH,
+            )
+        ).one()
+        batch.file_name = "用户替换后的文件.csv"
+        batch.valid_records = 1
+        session.add(batch)
+        session.commit()
+
+    seed_dev.main()
+
+    batch = _c4_batches()[ImportDataType.PUNCH]
+    assert batch.file_name == "用户替换后的文件.csv"
+    assert batch.valid_records == 1
+
+
+def test_seed_does_not_create_calculation_outputs() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        month = session.exec(
+            select(AttendanceMonth).where(AttendanceMonth.company_id == c4.id)
+        ).one()
+        assert month.status == AttendanceMonthStatus.DRAFT
+        assert (
+            session.exec(
+                select(CalcRun).where(CalcRun.attendance_month_id == month.id)
+            ).all()
+            == []
+        )
+        assert (
+            session.exec(
+                select(AttendanceMonthSnapshot).where(
+                    AttendanceMonthSnapshot.attendance_month_id == month.id
+                )
+            ).all()
+            == []
+        )
+        for model in (
+            AttendanceDayResult,
+            AttendanceDayShiftResult,
+            AttendanceMonthSummary,
+            AttendanceResultAdjustment,
+        ):
+            assert (
+                session.exec(select(model).where(model.company_id == c4.id)).all() == []
+            ), model.__tablename__
+
+
+TOP_LEVEL_COMPANY_MODELS = (
+    Shift,
+    AttendanceRule,
+    Holiday,
+    SchedulePlan,
+    RosterEntry,
+    AttendanceMonth,
+    ImportBatch,
+    ImportMappingTemplate,
+    PunchRecord,
+    OaTrip,
+    OaOvertime,
+    OaLeave,
+    AttendanceDayResult,
+    AttendanceDayShiftResult,
+    AttendanceMonthSummary,
+    AttendanceResultAdjustment,
+)
+
+
+def test_seed_never_writes_attendance_rows_for_other_companies() -> None:
+    seed_dev.main()
+    seed_dev.main()
+
+    with Session(engine) as session:
+        other_company_ids = [
+            company.id
+            for company in session.exec(
+                select(Company).where(Company.company_code.in_(["C1", "C2", "C3"]))
+            ).all()
+        ]
+        assert len(other_company_ids) == 3
+        for model in TOP_LEVEL_COMPANY_MODELS:
+            rows = session.exec(
+                select(model).where(model.company_id.in_(other_company_ids))
+            ).all()
+            assert rows == [], model.__tablename__
+
+
+def test_seed_recreates_a_missing_named_plan_without_touching_others() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        plans = {
+            plan.plan_name: plan
+            for plan in session.exec(
+                select(SchedulePlan).where(SchedulePlan.company_id == c4.id)
+            ).all()
+        }
+        removed = plans.pop("行政班")
+        removed_id = removed.id
+        other_ids = {name: plan.id for name, plan in plans.items()}
+        session.delete(removed)
+        session.commit()
+
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        plans = {
+            plan.plan_name: plan
+            for plan in session.exec(
+                select(SchedulePlan).where(SchedulePlan.company_id == c4.id)
+            ).all()
+        }
+        assert set(plans) == {"行政班", "财务技术班", "园林班", "李金辉夜班"}
+        assert plans["行政班"].id != removed_id
+        assert {name: plan.id for name, plan in plans.items() if name != "行政班"} == (
+            other_ids
+        )
+
+
+def test_seed_preserves_an_existing_mapping_template() -> None:
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        template = session.exec(
+            select(ImportMappingTemplate).where(
+                ImportMappingTemplate.company_id == c4.id,
+                ImportMappingTemplate.data_type == ImportDataType.PUNCH,
+            )
+        ).one()
+        template.mapping = {
+            "employee_no": {"column": "用户自定义列", "index": 0},
+        }
+        session.add(template)
+        batch_id = session.exec(
+            select(ImportBatch.id).where(
+                ImportBatch.company_id == c4.id,
+                ImportBatch.data_type == ImportDataType.PUNCH,
+                ImportBatch.status == ImportBatchStatus.COMMITTED,
+            )
+        ).one()
+        session.commit()
+
+    with Session(engine) as session:
+        import_service.revoke_batch(session, batch_id)
+
+    seed_dev.main()
+
+    with Session(engine) as session:
+        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        template = session.exec(
+            select(ImportMappingTemplate).where(
+                ImportMappingTemplate.company_id == c4.id,
+                ImportMappingTemplate.data_type == ImportDataType.PUNCH,
+            )
+        ).one()
+        assert template.mapping == {
+            "employee_no": {"column": "用户自定义列", "index": 0},
+        }
+        assert (
+            session.exec(
+                select(ImportBatch).where(
+                    ImportBatch.company_id == c4.id,
+                    ImportBatch.data_type == ImportDataType.PUNCH,
+                    ImportBatch.status == ImportBatchStatus.COMMITTED,
+                )
+            ).one()
+            is not None
+        )
+        assert (
+            session.exec(
+                select(PunchRecord).where(PunchRecord.company_id == c4.id)
+            ).all()
+            != []
         )

@@ -229,13 +229,19 @@ def preview_import(
 
 
 def commit_batch(
-    session: Session, batch_id: uuid.UUID, *, operator: User
+    session: Session,
+    batch_id: uuid.UUID,
+    *,
+    operator: User,
+    save_mapping_template: bool = True,
 ) -> ImportCommitPublic:
     """Commit a preview, superseding the scope's current committed batch.
 
     One transaction flips the old batch to ``superseded``, flips this batch to
     ``committed``, saves the mapping template, and marks the attendance month
-    stale (spec 6.7.2); the caller route owns the response.
+    stale (spec 6.7.2); the caller route owns the response. The development
+    seed passes ``save_mapping_template=False`` when the company already has a
+    user-maintained template, so re-seeding never overwrites that edit.
     """
     now = get_datetime_utc()
     _cleanup_import_staging(session, now)
@@ -299,7 +305,8 @@ def commit_batch(
         target_batch.committed_at = now
         target_batch.expires_at = None
         session.add(target_batch)
-        _save_mapping_template(session, target_batch, operator=operator)
+        if save_mapping_template:
+            _save_mapping_template(session, target_batch, operator=operator)
         mark_month_stale(month_row)
         session.commit()
     except IntegrityError:

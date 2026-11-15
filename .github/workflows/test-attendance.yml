@@ -32,8 +32,13 @@ jobs:
       - name: Create test database
         run: uv run bash scripts/create-test-db.sh
         working-directory: backend
-      - name: Run golden-case schema and attendance unit tests
-        run: uv run pytest tests/attendance -m "not performance"
+      - name: Run golden-case schema and attendance tests with coverage
+        run: uv run coverage run -m pytest tests/attendance -m "not performance"
+        working-directory: backend
+      - name: Enforce calculation-kernel coverage
+        run: >-
+          uv run coverage report --fail-under=95
+          --include="*/app/services/attendance/calc/*"
         working-directory: backend
       - run: docker compose down -v --remove-orphans
 

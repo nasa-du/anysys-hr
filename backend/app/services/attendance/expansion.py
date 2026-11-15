@@ -407,7 +407,7 @@ def plan_expansion(
 def _apply_shift_snapshots(
     session: Session, entry: RosterEntry, shifts: tuple[Shift, ...]
 ) -> None:
-    session.execute(
+    session.exec(
         delete(RosterEntryShift).where(
             col(RosterEntryShift.roster_entry_id) == entry.id
         )

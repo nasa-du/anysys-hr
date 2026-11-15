@@ -35,6 +35,7 @@ from app.schemas_attendance.core import (
     AttendanceMonthPublic,
     AttendanceMonthsPublic,
     CalcRunPublic,
+    CalcRunsPublic,
     InputBatches,
     InputBatchInfo,
     MonthCounts,
@@ -47,6 +48,7 @@ from app.services.attendance.month_state import (
     existing_month,
     lock_month_for_calculation,
 )
+from app.services.common import paginate
 from app.services.companies import get_company_or_404
 
 CALCULATION_FAILED_MESSAGE = "考勤计算失败，请查看计算记录"
@@ -189,6 +191,56 @@ def list_months(
     return AttendanceMonthsPublic(
         data=[_month_public(session, month) for month in months],
         count=len(months),
+    )
+
+
+def read_month(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+) -> AttendanceMonthPublic:
+    """Return one month's state; an absent row is a synthetic draft, not a write."""
+    get_company_or_404(session, company_id)
+    month_start = month.replace(day=1)
+    month_row = existing_month(session, company_id, month_start)
+    if month_row is None:
+        return AttendanceMonthPublic(
+            id=None,
+            exists=False,
+            company_id=company_id,
+            month=month_start.strftime("%Y-%m"),
+            status=AttendanceMonthStatus.DRAFT,
+            is_stale=True,
+            active_batches=InputBatches(),
+            counts=MonthCounts(),
+        )
+    return _month_public(session, month_row)
+
+
+def list_calc_runs(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+    skip: int,
+    limit: int,
+) -> CalcRunsPublic:
+    """List calculation runs newest first; an uncalculated month has no runs."""
+    get_company_or_404(session, company_id)
+    month_row = existing_month(session, company_id, month.replace(day=1))
+    if month_row is None:
+        return CalcRunsPublic(data=[], count=0)
+    filters = [col(CalcRun.attendance_month_id) == month_row.id]
+    statement = (
+        select(CalcRun)
+        .where(*filters)
+        .order_by(col(CalcRun.started_at).desc(), col(CalcRun.id).desc())
+    )
+    count_statement = select(func.count()).select_from(CalcRun).where(*filters)
+    runs, count = paginate(session, statement, count_statement, skip=skip, limit=limit)
+    return CalcRunsPublic(
+        data=[CalcRunPublic.model_validate(run) for run in runs], count=count
     )
 
 

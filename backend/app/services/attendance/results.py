@@ -17,10 +17,13 @@ from datetime import UTC, date, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import delete, or_
+from sqlalchemy import ColumnElement, delete, func, not_, or_
 from sqlmodel import Session, col, select
 
+from app.core.errors import DomainError
 from app.enums import (
+    DayStatus,
+    DayType,
     ImportBatchStatus,
     ImportDataType,
     PlanStatus,
@@ -33,6 +36,7 @@ from app.models import (
     AttendanceDayShiftResult,
     AttendanceMonth,
     AttendanceMonthSummary,
+    AttendanceResultAdjustment,
     Department,
     Employee,
     Holiday,
@@ -46,7 +50,9 @@ from app.models import (
     RosterEntry,
     RosterEntryShift,
     SchedulePlan,
+    User,
 )
+from app.schemas_attendance.common import EmployeeDisplay
 from app.schemas_attendance.core import (
     CalcRunSummary,
     HolidaySnapshot,
@@ -56,6 +62,28 @@ from app.schemas_attendance.core import (
     RuleSnapshotPatch,
     RulesSnapshot,
     RuleValues,
+)
+from app.schemas_attendance.imports import (
+    OaLeavePublic,
+    OaOvertimeDayPublic,
+    OaTripPublic,
+    PunchRecordPublic,
+)
+from app.schemas_attendance.results import (
+    ABNORMAL_DAY_FLAGS,
+    ABNORMAL_DAY_STATUSES,
+    AttendanceAdjustmentPublic,
+    AttendanceDayDetailPublic,
+    AttendanceDayResultPublic,
+    AttendanceDayResultsPublic,
+    AttendanceDayShiftResultPublic,
+    AttendanceMonthSummariesPublic,
+    AttendanceMonthSummaryPublic,
+    EmployeeResultCalendarPublic,
+)
+from app.schemas_attendance.scheduling import (
+    RosterEntryPublic,
+    RosterEntryShiftPublic,
 )
 from app.services.attendance.calc import (
     DayResult,
@@ -78,14 +106,22 @@ from app.services.attendance.calc import (
 from app.services.attendance.calc import (
     RosterEntry as CalcRosterEntry,
 )
+from app.services.attendance.errors import AttendanceErrorCode
 from app.services.attendance.expansion import month_bounds
+from app.services.attendance.month_state import existing_month
 from app.services.attendance.rules import (
     RULE_FIELDS,
     SYSTEM_DEFAULT_RULE_VALUES,
     company_default_values,
 )
+from app.services.common import paginate
+from app.services.companies import get_company_or_404
 
 SHANGHAI = ZoneInfo("Asia/Shanghai")
+
+DAY_RESULT_NOT_FOUND_MESSAGE = "日结果不存在"
+EMPLOYEE_NOT_FOUND_MESSAGE = "员工不存在"
+DEPARTMENT_NOT_FOUND_MESSAGE = "部门不存在"
 
 
 @dataclass(frozen=True, slots=True)
@@ -751,12 +787,623 @@ def summary_payload(summary: RunSummary) -> dict[str, Any]:
     return CalcRunSummary.model_validate(asdict(summary)).model_dump(mode="json")
 
 
+# ---------------------------------------------------------------------------
+# Result queries (spec sections 8.3.5 and 9.2)
+# ---------------------------------------------------------------------------
+
+
+def _month_start_from_string(month: str) -> date:
+    return date(int(month[:4]), int(month[5:7]), 1)
+
+
+def _employee_department(session: Session, employee: Employee) -> Department:
+    department = session.get(Department, employee.dept_id)
+    if department is None:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, DEPARTMENT_NOT_FOUND_MESSAGE)
+    return department
+
+
+def _company_employee_or_404(
+    session: Session, company_id: uuid.UUID, employee_id: uuid.UUID
+) -> tuple[Employee, Department]:
+    """Resolve an employee only when the current department is in the company."""
+    employee = session.get(Employee, employee_id)
+    if employee is None:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, EMPLOYEE_NOT_FOUND_MESSAGE)
+    department = _employee_department(session, employee)
+    if department.company_id != company_id:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, EMPLOYEE_NOT_FOUND_MESSAGE)
+    return employee, department
+
+
+def _company_department_or_404(
+    session: Session, company_id: uuid.UUID, dept_id: uuid.UUID
+) -> Department:
+    department = session.get(Department, dept_id)
+    if department is None or department.company_id != company_id:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, DEPARTMENT_NOT_FOUND_MESSAGE)
+    return department
+
+
+def _employee_displays(
+    session: Session, employee_ids: set[uuid.UUID]
+) -> dict[uuid.UUID, tuple[Employee, Department]]:
+    if not employee_ids:
+        return {}
+    employees = {
+        employee.id: employee
+        for employee in session.exec(
+            select(Employee).where(col(Employee.id).in_(employee_ids))
+        ).all()
+    }
+    departments = {
+        department.id: department
+        for department in session.exec(
+            select(Department).where(
+                col(Department.id).in_(
+                    {employee.dept_id for employee in employees.values()}
+                )
+            )
+        ).all()
+    }
+    return {
+        employee.id: (employee, departments[employee.dept_id])
+        for employee in employees.values()
+        if employee.dept_id in departments
+    }
+
+
+def _employee_display(employee: Employee, department: Department) -> EmployeeDisplay:
+    return EmployeeDisplay(
+        employee_id=employee.id,
+        employee_no=employee.employee_no,
+        employee_name=employee.name,
+        department_id=department.id,
+        department_name=department.dept_name,
+    )
+
+
+def _day_result_public(
+    result: AttendanceDayResult,
+    displays: dict[uuid.UUID, tuple[Employee, Department]],
+) -> AttendanceDayResultPublic:
+    public = AttendanceDayResultPublic.model_validate(result)
+    display = displays.get(result.employee_id)
+    if display is not None:
+        employee, department = display
+        public.employee_no = employee.employee_no
+        public.employee_name = employee.name
+        public.department_name = department.dept_name
+    return public
+
+
+def _summary_public(
+    summary: AttendanceMonthSummary,
+    displays: dict[uuid.UUID, tuple[Employee, Department]],
+) -> AttendanceMonthSummaryPublic:
+    public = AttendanceMonthSummaryPublic.model_validate(summary)
+    display = displays.get(summary.employee_id)
+    if display is not None:
+        employee, department = display
+        public.employee_no = employee.employee_no
+        public.employee_name = employee.name
+        public.department_name = department.dept_name
+    return public
+
+
+def _abnormal_condition() -> ColumnElement[bool]:
+    """The derived anomaly view from section 8.3.5; never a stored column."""
+    return or_(
+        col(AttendanceDayResult.day_status).in_(tuple(ABNORMAL_DAY_STATUSES)),
+        *[
+            col(AttendanceDayResult.day_flags).contains([flag])
+            for flag in sorted(ABNORMAL_DAY_FLAGS)
+        ],
+    )
+
+
+def _apply_day_result_filters(
+    filters: list[ColumnElement[bool]],
+    *,
+    company_id: uuid.UUID,
+    start: date,
+    end: date,
+    employee_id: uuid.UUID | None,
+    dept_id: uuid.UUID | None,
+    date_from: date | None,
+    date_to: date | None,
+    day_type: DayType | None,
+    roster_state: ResultRosterState | None,
+    day_statuses: list[DayStatus] | None,
+    flags: list[str] | None,
+    is_abnormal: bool | None,
+    has_adjustment: bool | None,
+    keyword: str | None,
+) -> None:
+    filters.extend(
+        [
+            col(AttendanceDayResult.company_id) == company_id,
+            col(AttendanceDayResult.work_date) >= start,
+            col(AttendanceDayResult.work_date) <= end,
+        ]
+    )
+    if employee_id is not None:
+        filters.append(col(AttendanceDayResult.employee_id) == employee_id)
+    if dept_id is not None:
+        filters.append(col(Employee.dept_id) == dept_id)
+    if date_from is not None:
+        filters.append(col(AttendanceDayResult.work_date) >= date_from)
+    if date_to is not None:
+        filters.append(col(AttendanceDayResult.work_date) <= date_to)
+    if day_type is not None:
+        filters.append(col(AttendanceDayResult.day_type) == day_type)
+    if roster_state is not None:
+        filters.append(col(AttendanceDayResult.roster_state) == roster_state)
+    statuses = list(dict.fromkeys(day_statuses or []))
+    if statuses:
+        filters.append(col(AttendanceDayResult.day_status).in_(statuses))
+    selected_flags = list(dict.fromkeys(flag for flag in flags or [] if flag))
+    if selected_flags:
+        filters.append(
+            or_(
+                *[
+                    col(AttendanceDayResult.day_flags).contains([flag])
+                    for flag in selected_flags
+                ]
+            )
+        )
+    if is_abnormal is True:
+        filters.append(_abnormal_condition())
+    elif is_abnormal is False:
+        filters.append(not_(_abnormal_condition()))
+    if has_adjustment is not None:
+        filters.append(col(AttendanceDayResult.is_adjusted) == has_adjustment)
+    normalized_keyword = keyword.strip() if keyword else ""
+    if normalized_keyword:
+        filters.append(
+            or_(
+                col(Employee.employee_no).ilike(f"%{normalized_keyword}%"),
+                col(Employee.name).ilike(f"%{normalized_keyword}%"),
+            )
+        )
+
+
+def list_day_results(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: str,
+    employee_id: uuid.UUID | None,
+    dept_id: uuid.UUID | None,
+    date_from: date | None,
+    date_to: date | None,
+    day_type: DayType | None,
+    roster_state: ResultRosterState | None,
+    day_statuses: list[DayStatus] | None,
+    flags: list[str] | None,
+    is_abnormal: bool | None,
+    has_adjustment: bool | None,
+    keyword: str | None,
+    skip: int,
+    limit: int,
+) -> AttendanceDayResultsPublic:
+    """List day results with the full filter set; anomaly is derived on read."""
+    get_company_or_404(session, company_id)
+    if dept_id is not None:
+        _company_department_or_404(session, company_id, dept_id)
+    start, end = month_bounds(_month_start_from_string(month))
+
+    filters: list[ColumnElement[bool]] = []
+    _apply_day_result_filters(
+        filters,
+        company_id=company_id,
+        start=start,
+        end=end,
+        employee_id=employee_id,
+        dept_id=dept_id,
+        date_from=date_from,
+        date_to=date_to,
+        day_type=day_type,
+        roster_state=roster_state,
+        day_statuses=day_statuses,
+        flags=flags,
+        is_abnormal=is_abnormal,
+        has_adjustment=has_adjustment,
+        keyword=keyword,
+    )
+    statement = (
+        select(AttendanceDayResult)
+        .join(Employee, col(AttendanceDayResult.employee_id) == col(Employee.id))
+        .where(*filters)
+        .order_by(
+            col(AttendanceDayResult.work_date).asc(),
+            col(Employee.employee_no).asc(),
+            col(AttendanceDayResult.id).asc(),
+        )
+    )
+    count_statement = (
+        select(func.count())
+        .select_from(AttendanceDayResult)
+        .join(Employee, col(AttendanceDayResult.employee_id) == col(Employee.id))
+        .where(*filters)
+    )
+    results, count = paginate(
+        session, statement, count_statement, skip=skip, limit=limit
+    )
+    displays = _employee_displays(session, {result.employee_id for result in results})
+    return AttendanceDayResultsPublic(
+        data=[_day_result_public(result, displays) for result in results],
+        count=count,
+    )
+
+
+def _roster_entry_public(
+    session: Session,
+    entry: RosterEntry,
+    employee: Employee,
+    department: Department,
+) -> RosterEntryPublic:
+    shifts = session.exec(
+        select(RosterEntryShift)
+        .where(col(RosterEntryShift.roster_entry_id) == entry.id)
+        .order_by(col(RosterEntryShift.seq).asc())
+    ).all()
+    return RosterEntryPublic(
+        id=entry.id,
+        company_id=entry.company_id,
+        employee_id=entry.employee_id,
+        employee_no=employee.employee_no,
+        employee_name=employee.name,
+        department_name=department.dept_name,
+        work_date=entry.work_date,
+        state=entry.state,
+        source=entry.source,
+        plan_id=entry.plan_id,
+        note=entry.note,
+        shifts=[RosterEntryShiftPublic.model_validate(shift) for shift in shifts],
+        created_at=entry.created_at,
+        updated_at=entry.updated_at,
+    )
+
+
+def _detail_punches(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+    employee_id: uuid.UUID,
+    work_date: date,
+) -> list[PunchRecordPublic]:
+    rows = session.exec(
+        select(PunchRecord)
+        .join(ImportBatch, col(PunchRecord.batch_id) == col(ImportBatch.id))
+        .where(
+            col(ImportBatch.company_id) == company_id,
+            col(ImportBatch.month) == month,
+            col(ImportBatch.status) == ImportBatchStatus.COMMITTED,
+            col(ImportBatch.data_type) == ImportDataType.PUNCH,
+            col(PunchRecord.employee_id) == employee_id,
+            col(PunchRecord.attendance_date) == work_date,
+        )
+        .order_by(col(PunchRecord.punch_time).asc(), col(PunchRecord.id).asc())
+    ).all()
+    return [PunchRecordPublic.model_validate(row) for row in rows]
+
+
+def _detail_trips(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+    employee_id: uuid.UUID,
+    work_date: date,
+) -> list[OaTripPublic]:
+    rows = session.exec(
+        select(OaTrip)
+        .join(ImportBatch, col(OaTrip.batch_id) == col(ImportBatch.id))
+        .where(
+            col(ImportBatch.company_id) == company_id,
+            col(ImportBatch.month) == month,
+            col(ImportBatch.status) == ImportBatchStatus.COMMITTED,
+            col(ImportBatch.data_type) == ImportDataType.TRIP,
+            col(OaTrip.employee_id) == employee_id,
+            col(OaTrip.start_date) <= work_date,
+            col(OaTrip.end_date) >= work_date,
+        )
+        .order_by(col(OaTrip.start_at).asc(), col(OaTrip.id).asc())
+    ).all()
+    return [OaTripPublic.model_validate(row) for row in rows]
+
+
+def _detail_overtime_days(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+    employee_id: uuid.UUID,
+    work_date: date,
+) -> list[OaOvertimeDayPublic]:
+    rows = session.exec(
+        select(OaOvertimeDay)
+        .join(OaOvertime, col(OaOvertimeDay.overtime_id) == col(OaOvertime.id))
+        .join(ImportBatch, col(OaOvertime.batch_id) == col(ImportBatch.id))
+        .where(
+            col(ImportBatch.company_id) == company_id,
+            col(ImportBatch.month) == month,
+            col(ImportBatch.status) == ImportBatchStatus.COMMITTED,
+            col(ImportBatch.data_type) == ImportDataType.OT,
+            col(OaOvertime.employee_id) == employee_id,
+            col(OaOvertimeDay.work_date) == work_date,
+        )
+        .order_by(col(OaOvertimeDay.id).asc())
+    ).all()
+    return [OaOvertimeDayPublic.model_validate(row) for row in rows]
+
+
+def _detail_leaves(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+    employee_id: uuid.UUID,
+    work_date: date,
+) -> list[OaLeavePublic]:
+    rows = session.exec(
+        select(OaLeave)
+        .join(ImportBatch, col(OaLeave.batch_id) == col(ImportBatch.id))
+        .where(
+            col(ImportBatch.company_id) == company_id,
+            col(ImportBatch.month) == month,
+            col(ImportBatch.status) == ImportBatchStatus.COMMITTED,
+            col(ImportBatch.data_type) == ImportDataType.LEAVE,
+            col(OaLeave.employee_id) == employee_id,
+            col(OaLeave.rest_start_date) <= work_date,
+            col(OaLeave.rest_end_date) >= work_date,
+        )
+        .order_by(col(OaLeave.rest_start_at).asc(), col(OaLeave.id).asc())
+    ).all()
+    return [OaLeavePublic.model_validate(row) for row in rows]
+
+
+def _detail_adjustments(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    employee_id: uuid.UUID,
+    work_date: date,
+) -> list[AttendanceAdjustmentPublic]:
+    rows = list(
+        session.exec(
+            select(AttendanceResultAdjustment)
+            .where(
+                col(AttendanceResultAdjustment.company_id) == company_id,
+                col(AttendanceResultAdjustment.employee_id) == employee_id,
+                col(AttendanceResultAdjustment.work_date) == work_date,
+            )
+            .order_by(col(AttendanceResultAdjustment.version).desc())
+        ).all()
+    )
+    user_ids = {row.adjusted_by for row in rows}
+    names = {
+        user.id: (user.full_name or user.email)
+        for user in (
+            session.exec(select(User).where(col(User.id).in_(user_ids))).all()
+            if user_ids
+            else []
+        )
+    }
+    data: list[AttendanceAdjustmentPublic] = []
+    for row in rows:
+        public = AttendanceAdjustmentPublic.model_validate(row)
+        public.adjusted_by_name = names.get(row.adjusted_by)
+        data.append(public)
+    return data
+
+
+def read_day_detail(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    employee_id: uuid.UUID,
+    work_date: date,
+) -> AttendanceDayDetailPublic:
+    """Compose one day's result with roster, punches, OA rows, and adjustments."""
+    get_company_or_404(session, company_id)
+    employee, department = _company_employee_or_404(session, company_id, employee_id)
+    month = work_date.replace(day=1)
+
+    day_result = session.exec(
+        select(AttendanceDayResult).where(
+            col(AttendanceDayResult.company_id) == company_id,
+            col(AttendanceDayResult.employee_id) == employee_id,
+            col(AttendanceDayResult.work_date) == work_date,
+        )
+    ).first()
+    if day_result is None:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, DAY_RESULT_NOT_FOUND_MESSAGE)
+
+    shift_results = session.exec(
+        select(AttendanceDayShiftResult)
+        .where(col(AttendanceDayShiftResult.day_result_id) == day_result.id)
+        .order_by(col(AttendanceDayShiftResult.seq).asc())
+    ).all()
+    roster_entry = session.exec(
+        select(RosterEntry).where(
+            col(RosterEntry.company_id) == company_id,
+            col(RosterEntry.employee_id) == employee_id,
+            col(RosterEntry.work_date) == work_date,
+        )
+    ).first()
+
+    displays = {employee.id: (employee, department)}
+    return AttendanceDayDetailPublic(
+        day_result=_day_result_public(day_result, displays),
+        shift_results=[
+            AttendanceDayShiftResultPublic.model_validate(row) for row in shift_results
+        ],
+        roster_entry=(
+            _roster_entry_public(session, roster_entry, employee, department)
+            if roster_entry is not None
+            else None
+        ),
+        punches=_detail_punches(
+            session,
+            company_id=company_id,
+            month=month,
+            employee_id=employee_id,
+            work_date=work_date,
+        ),
+        oa_trips=_detail_trips(
+            session,
+            company_id=company_id,
+            month=month,
+            employee_id=employee_id,
+            work_date=work_date,
+        ),
+        oa_overtime_days=_detail_overtime_days(
+            session,
+            company_id=company_id,
+            month=month,
+            employee_id=employee_id,
+            work_date=work_date,
+        ),
+        oa_leaves=_detail_leaves(
+            session,
+            company_id=company_id,
+            month=month,
+            employee_id=employee_id,
+            work_date=work_date,
+        ),
+        adjustments=_detail_adjustments(
+            session,
+            company_id=company_id,
+            employee_id=employee_id,
+            work_date=work_date,
+        ),
+    )
+
+
+def list_month_summaries(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: str,
+    employee_id: uuid.UUID | None,
+    dept_id: uuid.UUID | None,
+    keyword: str | None,
+    skip: int,
+    limit: int,
+) -> AttendanceMonthSummariesPublic:
+    """List persisted month summaries; a month without results is empty, not 404."""
+    get_company_or_404(session, company_id)
+    if dept_id is not None:
+        _company_department_or_404(session, company_id, dept_id)
+    month_start = _month_start_from_string(month)
+    month_row = existing_month(session, company_id, month_start)
+    if month_row is None:
+        return AttendanceMonthSummariesPublic(data=[], count=0)
+
+    filters: list[ColumnElement[bool]] = [
+        col(AttendanceMonthSummary.company_id) == company_id,
+        col(AttendanceMonthSummary.attendance_month_id) == month_row.id,
+    ]
+    if employee_id is not None:
+        filters.append(col(AttendanceMonthSummary.employee_id) == employee_id)
+    if dept_id is not None:
+        filters.append(col(Employee.dept_id) == dept_id)
+    normalized_keyword = keyword.strip() if keyword else ""
+    if normalized_keyword:
+        filters.append(
+            or_(
+                col(Employee.employee_no).ilike(f"%{normalized_keyword}%"),
+                col(Employee.name).ilike(f"%{normalized_keyword}%"),
+            )
+        )
+
+    statement = (
+        select(AttendanceMonthSummary)
+        .join(Employee, col(AttendanceMonthSummary.employee_id) == col(Employee.id))
+        .where(*filters)
+        .order_by(
+            col(Employee.employee_no).asc(),
+            col(AttendanceMonthSummary.id).asc(),
+        )
+    )
+    count_statement = (
+        select(func.count())
+        .select_from(AttendanceMonthSummary)
+        .join(Employee, col(AttendanceMonthSummary.employee_id) == col(Employee.id))
+        .where(*filters)
+    )
+    summaries, count = paginate(
+        session, statement, count_statement, skip=skip, limit=limit
+    )
+    displays = _employee_displays(
+        session, {summary.employee_id for summary in summaries}
+    )
+    return AttendanceMonthSummariesPublic(
+        data=[_summary_public(summary, displays) for summary in summaries],
+        count=count,
+    )
+
+
+def read_result_calendar(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: str,
+    employee_id: uuid.UUID,
+) -> EmployeeResultCalendarPublic:
+    """Return one employee's month summary and day results; empty when uncalculated."""
+    get_company_or_404(session, company_id)
+    employee, department = _company_employee_or_404(session, company_id, employee_id)
+    month_start = _month_start_from_string(month)
+    start, end = month_bounds(month_start)
+    displays = {employee.id: (employee, department)}
+
+    summary: AttendanceMonthSummaryPublic | None = None
+    month_row = existing_month(session, company_id, month_start)
+    if month_row is not None:
+        summary_row = session.exec(
+            select(AttendanceMonthSummary).where(
+                col(AttendanceMonthSummary.attendance_month_id) == month_row.id,
+                col(AttendanceMonthSummary.employee_id) == employee_id,
+            )
+        ).first()
+        if summary_row is not None:
+            summary = _summary_public(summary_row, displays)
+
+    day_rows = session.exec(
+        select(AttendanceDayResult)
+        .where(
+            col(AttendanceDayResult.company_id) == company_id,
+            col(AttendanceDayResult.employee_id) == employee_id,
+            col(AttendanceDayResult.work_date) >= start,
+            col(AttendanceDayResult.work_date) <= end,
+        )
+        .order_by(
+            col(AttendanceDayResult.work_date).asc(),
+            col(AttendanceDayResult.id).asc(),
+        )
+    ).all()
+    return EmployeeResultCalendarPublic(
+        employee=_employee_display(employee, department),
+        month=month,
+        summary=summary,
+        days=[_day_result_public(row, displays) for row in day_rows],
+    )
+
+
 __all__ = [
     "MonthCalculationData",
     "build_month_inputs",
     "canonical_hash",
     "default_rules_snapshot",
     "empty_input_batches",
+    "list_day_results",
+    "list_month_summaries",
+    "read_day_detail",
+    "read_result_calendar",
     "replace_month_results",
     "roster_fingerprint",
     "summary_payload",

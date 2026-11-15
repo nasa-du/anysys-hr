@@ -3108,6 +3108,161 @@
         }
       }
     },
+    "/api/v1/attendance/months/{month}": {
+      "get": {
+        "tags": ["attendance-months"],
+        "summary": "Read Month",
+        "description": "Return one month's state; an absent row is a synthetic draft.",
+        "operationId": "attendance-months-read_month",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/months/{month}/calc-runs/": {
+      "get": {
+        "tags": ["attendance-months"],
+        "summary": "Read Calc Runs",
+        "description": "List calculation runs for one company-month, newest first.",
+        "operationId": "attendance-months-read_calc_runs",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CalcRunsPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/attendance/months/{month}/calculate": {
       "post": {
         "tags": ["attendance-months"],
@@ -3169,6 +3324,509 @@
                 "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/results/days/": {
+      "get": {
+        "tags": ["attendance-results"],
+        "summary": "Read Day Results",
+        "description": "List day results; ``is_abnormal`` is derived, never stored.",
+        "operationId": "attendance-results-read_day_results",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "employee_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Employee Id"
+            }
+          },
+          {
+            "name": "dept_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Dept Id"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date" },
+                { "type": "null" }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date" },
+                { "type": "null" }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "name": "day_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/DayType" },
+                { "type": "null" }
+              ],
+              "title": "Day Type"
+            }
+          },
+          {
+            "name": "roster_state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/ResultRosterState" },
+                { "type": "null" }
+              ],
+              "title": "Roster State"
+            }
+          },
+          {
+            "name": "day_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/DayStatus" }
+                },
+                { "type": "null" }
+              ],
+              "title": "Day Status"
+            }
+          },
+          {
+            "name": "flag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "maxItems": 50
+                },
+                { "type": "null" }
+              ],
+              "title": "Flag"
+            }
+          },
+          {
+            "name": "is_abnormal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Is Abnormal"
+            }
+          },
+          {
+            "name": "has_adjustment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+              "title": "Has Adjustment"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "maxLength": 100 },
+                { "type": "null" }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceDayResultsPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/results/summary/": {
+      "get": {
+        "tags": ["attendance-results"],
+        "summary": "Read Month Summaries",
+        "description": "List persisted employee month summaries for one company-month.",
+        "operationId": "attendance-results-read_month_summaries",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "employee_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Employee Id"
+            }
+          },
+          {
+            "name": "dept_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "uuid" },
+                { "type": "null" }
+              ],
+              "title": "Dept Id"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "maxLength": 100 },
+                { "type": "null" }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthSummariesPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/results/calendar": {
+      "get": {
+        "tags": ["attendance-results"],
+        "summary": "Read Result Calendar",
+        "description": "Return one employee's summary and day results; uncalculated months are empty.",
+        "operationId": "attendance-results-read_result_calendar",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "employee_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Employee Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeResultCalendarPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/results/days/{employee_id}/{work_date}": {
+      "get": {
+        "tags": ["attendance-results"],
+        "summary": "Read Day Detail",
+        "description": "Compose roster, punches, OA rows, adjustment history, and the day result.",
+        "operationId": "attendance-results-read_day_detail",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "employee_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Employee Id"
+            }
+          },
+          {
+            "name": "work_date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Work Date"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceDayDetailPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
           }
         }
       }
@@ -5756,6 +6414,493 @@
   },
   "components": {
     "schemas": {
+      "AdjustmentStatus": {
+        "type": "string",
+        "enum": ["active", "superseded", "orphaned"],
+        "title": "AdjustmentStatus"
+      },
+      "AttendanceAdjustmentPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "attendance_month_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Attendance Month Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "version": { "type": "integer", "title": "Version" },
+          "status": { "$ref": "#/components/schemas/AdjustmentStatus" },
+          "original_values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Original Values"
+          },
+          "adjusted_values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Adjusted Values"
+          },
+          "reason": { "type": "string", "title": "Reason" },
+          "adjusted_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Adjusted By"
+          },
+          "adjusted_by_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Adjusted By Name"
+          },
+          "adjusted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Adjusted At"
+          },
+          "calc_run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Calc Run Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "attendance_month_id",
+          "employee_id",
+          "work_date",
+          "version",
+          "status",
+          "original_values",
+          "adjusted_values",
+          "reason",
+          "adjusted_by",
+          "adjusted_at",
+          "calc_run_id"
+        ],
+        "title": "AttendanceAdjustmentPublic"
+      },
+      "AttendanceDayDetailPublic": {
+        "properties": {
+          "day_result": {
+            "$ref": "#/components/schemas/AttendanceDayResultPublic"
+          },
+          "shift_results": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceDayShiftResultPublic"
+            },
+            "type": "array",
+            "title": "Shift Results"
+          },
+          "roster_entry": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/RosterEntryPublic" },
+              { "type": "null" }
+            ]
+          },
+          "punches": {
+            "items": { "$ref": "#/components/schemas/PunchRecordPublic" },
+            "type": "array",
+            "title": "Punches",
+            "default": []
+          },
+          "oa_trips": {
+            "items": { "$ref": "#/components/schemas/OaTripPublic" },
+            "type": "array",
+            "title": "Oa Trips",
+            "default": []
+          },
+          "oa_overtime_days": {
+            "items": { "$ref": "#/components/schemas/OaOvertimeDayPublic" },
+            "type": "array",
+            "title": "Oa Overtime Days",
+            "default": []
+          },
+          "oa_leaves": {
+            "items": { "$ref": "#/components/schemas/OaLeavePublic" },
+            "type": "array",
+            "title": "Oa Leaves",
+            "default": []
+          },
+          "adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceAdjustmentPublic"
+            },
+            "type": "array",
+            "title": "Adjustments",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": ["day_result", "shift_results"],
+        "title": "AttendanceDayDetailPublic"
+      },
+      "AttendanceDayResultPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "attendance_month_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Attendance Month Id"
+          },
+          "calc_run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Calc Run Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "employee_no": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Employee No"
+          },
+          "employee_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Employee Name"
+          },
+          "department_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Department Name"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "day_type": { "$ref": "#/components/schemas/DayType" },
+          "roster_state": { "$ref": "#/components/schemas/ResultRosterState" },
+          "day_status": { "$ref": "#/components/schemas/DayStatus" },
+          "day_flags": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Day Flags",
+            "default": []
+          },
+          "is_abnormal": {
+            "type": "boolean",
+            "title": "Is Abnormal",
+            "default": false
+          },
+          "attendance_fraction": {
+            "type": "string",
+            "title": "Attendance Fraction"
+          },
+          "scheduled_minutes": {
+            "type": "integer",
+            "title": "Scheduled Minutes"
+          },
+          "worked_minutes": { "type": "integer", "title": "Worked Minutes" },
+          "late_minutes": { "type": "integer", "title": "Late Minutes" },
+          "early_minutes": { "type": "integer", "title": "Early Minutes" },
+          "late_count": { "type": "integer", "title": "Late Count" },
+          "early_count": { "type": "integer", "title": "Early Count" },
+          "missing_punch_count": {
+            "type": "integer",
+            "title": "Missing Punch Count"
+          },
+          "leave_kind": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/LeaveKind" },
+              { "type": "null" }
+            ]
+          },
+          "leave_days": { "type": "string", "title": "Leave Days" },
+          "paid_leave_days": { "type": "string", "title": "Paid Leave Days" },
+          "unpaid_leave_days": {
+            "type": "string",
+            "title": "Unpaid Leave Days"
+          },
+          "comp_leave_days": { "type": "string", "title": "Comp Leave Days" },
+          "trip_kind": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/TripKind" },
+              { "type": "null" }
+            ]
+          },
+          "trip_fraction": { "type": "string", "title": "Trip Fraction" },
+          "ot_weekday_minutes": {
+            "type": "integer",
+            "title": "Ot Weekday Minutes"
+          },
+          "ot_weekend_minutes": {
+            "type": "integer",
+            "title": "Ot Weekend Minutes"
+          },
+          "ot_holiday_minutes": {
+            "type": "integer",
+            "title": "Ot Holiday Minutes"
+          },
+          "comp_offset_minutes": {
+            "type": "integer",
+            "title": "Comp Offset Minutes"
+          },
+          "comp_offset_unused_minutes": {
+            "type": "integer",
+            "title": "Comp Offset Unused Minutes"
+          },
+          "absent_deduct_amount": {
+            "type": "string",
+            "title": "Absent Deduct Amount"
+          },
+          "late_deduct_amount": {
+            "type": "string",
+            "title": "Late Deduct Amount"
+          },
+          "early_deduct_amount": {
+            "type": "string",
+            "title": "Early Deduct Amount"
+          },
+          "missing_punch_deduct_amount": {
+            "type": "string",
+            "title": "Missing Punch Deduct Amount"
+          },
+          "deduction_total": { "type": "string", "title": "Deduction Total" },
+          "is_adjusted": { "type": "boolean", "title": "Is Adjusted" },
+          "adjustment_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Adjustment Id"
+          },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "attendance_month_id",
+          "calc_run_id",
+          "employee_id",
+          "work_date",
+          "day_type",
+          "roster_state",
+          "day_status",
+          "attendance_fraction",
+          "scheduled_minutes",
+          "worked_minutes",
+          "late_minutes",
+          "early_minutes",
+          "late_count",
+          "early_count",
+          "missing_punch_count",
+          "leave_days",
+          "paid_leave_days",
+          "unpaid_leave_days",
+          "comp_leave_days",
+          "trip_fraction",
+          "ot_weekday_minutes",
+          "ot_weekend_minutes",
+          "ot_holiday_minutes",
+          "comp_offset_minutes",
+          "comp_offset_unused_minutes",
+          "absent_deduct_amount",
+          "late_deduct_amount",
+          "early_deduct_amount",
+          "missing_punch_deduct_amount",
+          "deduction_total",
+          "is_adjusted",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AttendanceDayResultPublic"
+      },
+      "AttendanceDayResultsPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceDayResultPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "AttendanceDayResultsPublic"
+      },
+      "AttendanceDayShiftResultPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "day_result_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Day Result Id"
+          },
+          "calc_run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Calc Run Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "seq": { "type": "integer", "title": "Seq" },
+          "shift_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Shift Id"
+          },
+          "shift_code": { "type": "string", "title": "Shift Code" },
+          "shift_name": { "type": "string", "title": "Shift Name" },
+          "start_time": {
+            "type": "string",
+            "format": "time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "time",
+            "title": "End Time"
+          },
+          "cross_day": { "type": "boolean", "title": "Cross Day" },
+          "break_start": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break Start"
+          },
+          "break_end": {
+            "anyOf": [
+              { "type": "string", "format": "time" },
+              { "type": "null" }
+            ],
+            "title": "Break End"
+          },
+          "rest_minutes": { "type": "integer", "title": "Rest Minutes" },
+          "shift_status": { "$ref": "#/components/schemas/DayStatus" },
+          "shift_flags": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Shift Flags",
+            "default": []
+          },
+          "punch_in_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Punch In At"
+          },
+          "punch_out_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Punch Out At"
+          },
+          "break_out_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Break Out At"
+          },
+          "break_in_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Break In At"
+          },
+          "scheduled_minutes": {
+            "type": "integer",
+            "title": "Scheduled Minutes"
+          },
+          "worked_minutes": { "type": "integer", "title": "Worked Minutes" },
+          "late_minutes": { "type": "integer", "title": "Late Minutes" },
+          "early_minutes": { "type": "integer", "title": "Early Minutes" },
+          "missing_punch_count": {
+            "type": "integer",
+            "title": "Missing Punch Count"
+          },
+          "ot_minutes": { "type": "integer", "title": "Ot Minutes" },
+          "comp_offset_minutes": {
+            "type": "integer",
+            "title": "Comp Offset Minutes"
+          },
+          "leave_days": { "type": "string", "title": "Leave Days" },
+          "note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "day_result_id",
+          "calc_run_id",
+          "employee_id",
+          "work_date",
+          "seq",
+          "shift_id",
+          "shift_code",
+          "shift_name",
+          "start_time",
+          "end_time",
+          "cross_day",
+          "rest_minutes",
+          "shift_status",
+          "scheduled_minutes",
+          "worked_minutes",
+          "late_minutes",
+          "early_minutes",
+          "missing_punch_count",
+          "ot_minutes",
+          "comp_offset_minutes",
+          "leave_days"
+        ],
+        "title": "AttendanceDayShiftResultPublic"
+      },
       "AttendanceMonthPublic": {
         "properties": {
           "id": {
@@ -5843,6 +6988,151 @@
         "type": "string",
         "enum": ["draft", "calculated", "confirmed", "locked"],
         "title": "AttendanceMonthStatus"
+      },
+      "AttendanceMonthSummariesPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceMonthSummaryPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "AttendanceMonthSummariesPublic"
+      },
+      "AttendanceMonthSummaryPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "attendance_month_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Attendance Month Id"
+          },
+          "calc_run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Calc Run Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "employee_no": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Employee No"
+          },
+          "employee_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Employee Name"
+          },
+          "department_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Department Name"
+          },
+          "weekday_full": { "type": "string", "title": "Weekday Full" },
+          "weekend_full": { "type": "string", "title": "Weekend Full" },
+          "weekday_attended": { "type": "string", "title": "Weekday Attended" },
+          "weekend_attended": { "type": "string", "title": "Weekend Attended" },
+          "paid_leave_days": { "type": "string", "title": "Paid Leave Days" },
+          "unpaid_leave_days": {
+            "type": "string",
+            "title": "Unpaid Leave Days"
+          },
+          "comp_leave_days": { "type": "string", "title": "Comp Leave Days" },
+          "trip_days": { "type": "string", "title": "Trip Days" },
+          "ot_weekday_minutes": {
+            "type": "integer",
+            "title": "Ot Weekday Minutes"
+          },
+          "ot_weekend_minutes": {
+            "type": "integer",
+            "title": "Ot Weekend Minutes"
+          },
+          "ot_holiday_minutes": {
+            "type": "integer",
+            "title": "Ot Holiday Minutes"
+          },
+          "ot_weekday_hours": { "type": "string", "title": "Ot Weekday Hours" },
+          "ot_weekend_hours": { "type": "string", "title": "Ot Weekend Hours" },
+          "ot_holiday_hours": { "type": "string", "title": "Ot Holiday Hours" },
+          "comp_leave_used_hours": {
+            "type": "string",
+            "title": "Comp Leave Used Hours"
+          },
+          "comp_offset_unused_minutes": {
+            "type": "integer",
+            "title": "Comp Offset Unused Minutes"
+          },
+          "late_count": { "type": "integer", "title": "Late Count" },
+          "late_minutes": { "type": "integer", "title": "Late Minutes" },
+          "early_count": { "type": "integer", "title": "Early Count" },
+          "early_minutes": { "type": "integer", "title": "Early Minutes" },
+          "missing_punch_count": {
+            "type": "integer",
+            "title": "Missing Punch Count"
+          },
+          "absent_days": { "type": "integer", "title": "Absent Days" },
+          "worked_minutes": { "type": "integer", "title": "Worked Minutes" },
+          "attendance_deduct": {
+            "type": "string",
+            "title": "Attendance Deduct"
+          },
+          "is_adjusted": { "type": "boolean", "title": "Is Adjusted" },
+          "calc_version": { "type": "string", "title": "Calc Version" },
+          "rules_version": { "type": "string", "title": "Rules Version" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "attendance_month_id",
+          "calc_run_id",
+          "employee_id",
+          "weekday_full",
+          "weekend_full",
+          "weekday_attended",
+          "weekend_attended",
+          "paid_leave_days",
+          "unpaid_leave_days",
+          "comp_leave_days",
+          "trip_days",
+          "ot_weekday_minutes",
+          "ot_weekend_minutes",
+          "ot_holiday_minutes",
+          "ot_weekday_hours",
+          "ot_weekend_hours",
+          "ot_holiday_hours",
+          "comp_leave_used_hours",
+          "comp_offset_unused_minutes",
+          "late_count",
+          "late_minutes",
+          "early_count",
+          "early_minutes",
+          "missing_punch_count",
+          "absent_days",
+          "worked_minutes",
+          "attendance_deduct",
+          "is_adjusted",
+          "calc_version",
+          "rules_version",
+          "created_at"
+        ],
+        "title": "AttendanceMonthSummaryPublic"
       },
       "AttendanceMonthsPublic": {
         "properties": {
@@ -6316,6 +7606,19 @@
         ],
         "title": "CalcRunTrigger"
       },
+      "CalcRunsPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/CalcRunPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "CalcRunsPublic"
+      },
       "CompaniesPublic": {
         "properties": {
           "data": {
@@ -6733,6 +8036,25 @@
         "type": "object",
         "required": ["data", "count"],
         "title": "CostCentersPublic"
+      },
+      "DayStatus": {
+        "type": "string",
+        "enum": [
+          "normal",
+          "late",
+          "early",
+          "missing_punch",
+          "absent",
+          "overtime",
+          "trip_out",
+          "trip_business",
+          "personal_leave",
+          "paid_leave",
+          "comp_leave",
+          "rest",
+          "unscheduled_attendance"
+        ],
+        "title": "DayStatus"
       },
       "DayType": {
         "type": "string",
@@ -7238,6 +8560,34 @@
           "position_name"
         ],
         "title": "EmployeePublic"
+      },
+      "EmployeeResultCalendarPublic": {
+        "properties": {
+          "employee": { "$ref": "#/components/schemas/EmployeeDisplay" },
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "summary": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/AttendanceMonthSummaryPublic" },
+              { "type": "null" }
+            ]
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceDayResultPublic"
+            },
+            "type": "array",
+            "title": "Days",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": ["employee", "month"],
+        "title": "EmployeeResultCalendarPublic"
       },
       "EmployeeRosterCalendarPublic": {
         "properties": {
@@ -9026,6 +10376,12 @@
         ],
         "title": "PunchRecordPublic"
       },
+      "ResultRosterState": {
+        "type": "string",
+        "enum": ["work", "rest", "unscheduled"],
+        "title": "ResultRosterState",
+        "description": "Roster state stored on calculated day results."
+      },
       "RosterCalendarDay": {
         "properties": {
           "work_date": {
@@ -10486,6 +11842,11 @@
         "type": "object",
         "required": ["access_token"],
         "title": "Token"
+      },
+      "TripKind": {
+        "type": "string",
+        "enum": ["out", "business"],
+        "title": "TripKind"
       },
       "UpdatePassword": {
         "properties": {

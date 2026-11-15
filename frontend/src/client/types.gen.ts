@@ -5,6 +5,414 @@ export type ClientOptions = {
 };
 
 /**
+ * AdjustmentStatus
+ */
+export type AdjustmentStatus = 'active' | 'superseded' | 'orphaned';
+
+/**
+ * AttendanceAdjustmentPublic
+ */
+export type AttendanceAdjustmentPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Attendance Month Id
+     */
+    attendance_month_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Work Date
+     */
+    work_date: string;
+    /**
+     * Version
+     */
+    version: number;
+    status: AdjustmentStatus;
+    /**
+     * Original Values
+     */
+    original_values: {
+        [key: string]: unknown;
+    };
+    /**
+     * Adjusted Values
+     */
+    adjusted_values: {
+        [key: string]: unknown;
+    };
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Adjusted By
+     */
+    adjusted_by: string;
+    /**
+     * Adjusted By Name
+     */
+    adjusted_by_name?: string | null;
+    /**
+     * Adjusted At
+     */
+    adjusted_at: string;
+    /**
+     * Calc Run Id
+     */
+    calc_run_id: string;
+};
+
+/**
+ * AttendanceDayDetailPublic
+ */
+export type AttendanceDayDetailPublic = {
+    day_result: AttendanceDayResultPublic;
+    /**
+     * Shift Results
+     */
+    shift_results: Array<AttendanceDayShiftResultPublic>;
+    roster_entry?: RosterEntryPublic | null;
+    /**
+     * Punches
+     */
+    punches?: Array<PunchRecordPublic>;
+    /**
+     * Oa Trips
+     */
+    oa_trips?: Array<OaTripPublic>;
+    /**
+     * Oa Overtime Days
+     */
+    oa_overtime_days?: Array<OaOvertimeDayPublic>;
+    /**
+     * Oa Leaves
+     */
+    oa_leaves?: Array<OaLeavePublic>;
+    /**
+     * Adjustments
+     */
+    adjustments?: Array<AttendanceAdjustmentPublic>;
+};
+
+/**
+ * AttendanceDayResultPublic
+ */
+export type AttendanceDayResultPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Attendance Month Id
+     */
+    attendance_month_id: string;
+    /**
+     * Calc Run Id
+     */
+    calc_run_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Employee No
+     */
+    employee_no?: string | null;
+    /**
+     * Employee Name
+     */
+    employee_name?: string | null;
+    /**
+     * Department Name
+     */
+    department_name?: string | null;
+    /**
+     * Work Date
+     */
+    work_date: string;
+    day_type: DayType;
+    roster_state: ResultRosterState;
+    day_status: DayStatus;
+    /**
+     * Day Flags
+     */
+    day_flags?: Array<string>;
+    /**
+     * Is Abnormal
+     */
+    is_abnormal?: boolean;
+    /**
+     * Attendance Fraction
+     */
+    attendance_fraction: string;
+    /**
+     * Scheduled Minutes
+     */
+    scheduled_minutes: number;
+    /**
+     * Worked Minutes
+     */
+    worked_minutes: number;
+    /**
+     * Late Minutes
+     */
+    late_minutes: number;
+    /**
+     * Early Minutes
+     */
+    early_minutes: number;
+    /**
+     * Late Count
+     */
+    late_count: number;
+    /**
+     * Early Count
+     */
+    early_count: number;
+    /**
+     * Missing Punch Count
+     */
+    missing_punch_count: number;
+    leave_kind?: LeaveKind | null;
+    /**
+     * Leave Days
+     */
+    leave_days: string;
+    /**
+     * Paid Leave Days
+     */
+    paid_leave_days: string;
+    /**
+     * Unpaid Leave Days
+     */
+    unpaid_leave_days: string;
+    /**
+     * Comp Leave Days
+     */
+    comp_leave_days: string;
+    trip_kind?: TripKind | null;
+    /**
+     * Trip Fraction
+     */
+    trip_fraction: string;
+    /**
+     * Ot Weekday Minutes
+     */
+    ot_weekday_minutes: number;
+    /**
+     * Ot Weekend Minutes
+     */
+    ot_weekend_minutes: number;
+    /**
+     * Ot Holiday Minutes
+     */
+    ot_holiday_minutes: number;
+    /**
+     * Comp Offset Minutes
+     */
+    comp_offset_minutes: number;
+    /**
+     * Comp Offset Unused Minutes
+     */
+    comp_offset_unused_minutes: number;
+    /**
+     * Absent Deduct Amount
+     */
+    absent_deduct_amount: string;
+    /**
+     * Late Deduct Amount
+     */
+    late_deduct_amount: string;
+    /**
+     * Early Deduct Amount
+     */
+    early_deduct_amount: string;
+    /**
+     * Missing Punch Deduct Amount
+     */
+    missing_punch_deduct_amount: string;
+    /**
+     * Deduction Total
+     */
+    deduction_total: string;
+    /**
+     * Is Adjusted
+     */
+    is_adjusted: boolean;
+    /**
+     * Adjustment Id
+     */
+    adjustment_id?: string | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * AttendanceDayResultsPublic
+ */
+export type AttendanceDayResultsPublic = {
+    /**
+     * Data
+     */
+    data: Array<AttendanceDayResultPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * AttendanceDayShiftResultPublic
+ */
+export type AttendanceDayShiftResultPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Day Result Id
+     */
+    day_result_id: string;
+    /**
+     * Calc Run Id
+     */
+    calc_run_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Work Date
+     */
+    work_date: string;
+    /**
+     * Seq
+     */
+    seq: number;
+    /**
+     * Shift Id
+     */
+    shift_id: string;
+    /**
+     * Shift Code
+     */
+    shift_code: string;
+    /**
+     * Shift Name
+     */
+    shift_name: string;
+    /**
+     * Start Time
+     */
+    start_time: string;
+    /**
+     * End Time
+     */
+    end_time: string;
+    /**
+     * Cross Day
+     */
+    cross_day: boolean;
+    /**
+     * Break Start
+     */
+    break_start?: string | null;
+    /**
+     * Break End
+     */
+    break_end?: string | null;
+    /**
+     * Rest Minutes
+     */
+    rest_minutes: number;
+    shift_status: DayStatus;
+    /**
+     * Shift Flags
+     */
+    shift_flags?: Array<string>;
+    /**
+     * Punch In At
+     */
+    punch_in_at?: string | null;
+    /**
+     * Punch Out At
+     */
+    punch_out_at?: string | null;
+    /**
+     * Break Out At
+     */
+    break_out_at?: string | null;
+    /**
+     * Break In At
+     */
+    break_in_at?: string | null;
+    /**
+     * Scheduled Minutes
+     */
+    scheduled_minutes: number;
+    /**
+     * Worked Minutes
+     */
+    worked_minutes: number;
+    /**
+     * Late Minutes
+     */
+    late_minutes: number;
+    /**
+     * Early Minutes
+     */
+    early_minutes: number;
+    /**
+     * Missing Punch Count
+     */
+    missing_punch_count: number;
+    /**
+     * Ot Minutes
+     */
+    ot_minutes: number;
+    /**
+     * Comp Offset Minutes
+     */
+    comp_offset_minutes: number;
+    /**
+     * Leave Days
+     */
+    leave_days: string;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
  * AttendanceMonthPublic
  */
 export type AttendanceMonthPublic = {
@@ -62,6 +470,170 @@ export type AttendanceMonthPublic = {
  * AttendanceMonthStatus
  */
 export type AttendanceMonthStatus = 'draft' | 'calculated' | 'confirmed' | 'locked';
+
+/**
+ * AttendanceMonthSummariesPublic
+ */
+export type AttendanceMonthSummariesPublic = {
+    /**
+     * Data
+     */
+    data: Array<AttendanceMonthSummaryPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * AttendanceMonthSummaryPublic
+ */
+export type AttendanceMonthSummaryPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Attendance Month Id
+     */
+    attendance_month_id: string;
+    /**
+     * Calc Run Id
+     */
+    calc_run_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Employee No
+     */
+    employee_no?: string | null;
+    /**
+     * Employee Name
+     */
+    employee_name?: string | null;
+    /**
+     * Department Name
+     */
+    department_name?: string | null;
+    /**
+     * Weekday Full
+     */
+    weekday_full: string;
+    /**
+     * Weekend Full
+     */
+    weekend_full: string;
+    /**
+     * Weekday Attended
+     */
+    weekday_attended: string;
+    /**
+     * Weekend Attended
+     */
+    weekend_attended: string;
+    /**
+     * Paid Leave Days
+     */
+    paid_leave_days: string;
+    /**
+     * Unpaid Leave Days
+     */
+    unpaid_leave_days: string;
+    /**
+     * Comp Leave Days
+     */
+    comp_leave_days: string;
+    /**
+     * Trip Days
+     */
+    trip_days: string;
+    /**
+     * Ot Weekday Minutes
+     */
+    ot_weekday_minutes: number;
+    /**
+     * Ot Weekend Minutes
+     */
+    ot_weekend_minutes: number;
+    /**
+     * Ot Holiday Minutes
+     */
+    ot_holiday_minutes: number;
+    /**
+     * Ot Weekday Hours
+     */
+    ot_weekday_hours: string;
+    /**
+     * Ot Weekend Hours
+     */
+    ot_weekend_hours: string;
+    /**
+     * Ot Holiday Hours
+     */
+    ot_holiday_hours: string;
+    /**
+     * Comp Leave Used Hours
+     */
+    comp_leave_used_hours: string;
+    /**
+     * Comp Offset Unused Minutes
+     */
+    comp_offset_unused_minutes: number;
+    /**
+     * Late Count
+     */
+    late_count: number;
+    /**
+     * Late Minutes
+     */
+    late_minutes: number;
+    /**
+     * Early Count
+     */
+    early_count: number;
+    /**
+     * Early Minutes
+     */
+    early_minutes: number;
+    /**
+     * Missing Punch Count
+     */
+    missing_punch_count: number;
+    /**
+     * Absent Days
+     */
+    absent_days: number;
+    /**
+     * Worked Minutes
+     */
+    worked_minutes: number;
+    /**
+     * Attendance Deduct
+     */
+    attendance_deduct: string;
+    /**
+     * Is Adjusted
+     */
+    is_adjusted: boolean;
+    /**
+     * Calc Version
+     */
+    calc_version: string;
+    /**
+     * Rules Version
+     */
+    rules_version: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
 
 /**
  * AttendanceMonthsPublic
@@ -450,6 +1022,20 @@ export type CalcRunSummary = {
 export type CalcRunTrigger = 'initial' | 'manual' | 'reimport' | 'roster_change' | 'rule_change' | 'holiday_change';
 
 /**
+ * CalcRunsPublic
+ */
+export type CalcRunsPublic = {
+    /**
+     * Data
+     */
+    data: Array<CalcRunPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * CompaniesPublic
  */
 export type CompaniesPublic = {
@@ -795,6 +1381,11 @@ export type CostCentersPublic = {
      */
     count: number;
 };
+
+/**
+ * DayStatus
+ */
+export type DayStatus = 'normal' | 'late' | 'early' | 'missing_punch' | 'absent' | 'overtime' | 'trip_out' | 'trip_business' | 'personal_leave' | 'paid_leave' | 'comp_leave' | 'rest' | 'unscheduled_attendance';
 
 /**
  * DayType
@@ -1194,6 +1785,22 @@ export type EmployeePublic = {
      */
     manager_name?: string | null;
     manager_status?: EmployeeStatus | null;
+};
+
+/**
+ * EmployeeResultCalendarPublic
+ */
+export type EmployeeResultCalendarPublic = {
+    employee: EmployeeDisplay;
+    /**
+     * Month
+     */
+    month: string;
+    summary?: AttendanceMonthSummaryPublic | null;
+    /**
+     * Days
+     */
+    days?: Array<AttendanceDayResultPublic>;
 };
 
 /**
@@ -2814,6 +3421,13 @@ export type PunchRecordPublic = {
 };
 
 /**
+ * ResultRosterState
+ *
+ * Roster state stored on calculated day results.
+ */
+export type ResultRosterState = 'work' | 'rest' | 'unscheduled';
+
+/**
  * RosterCalendarDay
  */
 export type RosterCalendarDay = {
@@ -3987,6 +4601,11 @@ export type Token = {
      */
     token_type?: string;
 };
+
+/**
+ * TripKind
+ */
+export type TripKind = 'out' | 'business';
 
 /**
  * UpdatePassword
@@ -6169,6 +6788,100 @@ export type attendanceMonthsReadMonthsResponses = {
 
 export type attendanceMonthsReadMonthsResponse = attendanceMonthsReadMonthsResponses[keyof attendanceMonthsReadMonthsResponses];
 
+export type attendanceMonthsReadMonthData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/months/{month}';
+};
+
+export type attendanceMonthsReadMonthErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsReadMonthError = attendanceMonthsReadMonthErrors[keyof attendanceMonthsReadMonthErrors];
+
+export type attendanceMonthsReadMonthResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthPublic;
+};
+
+export type attendanceMonthsReadMonthResponse = attendanceMonthsReadMonthResponses[keyof attendanceMonthsReadMonthResponses];
+
+export type attendanceMonthsReadCalcRunsData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/months/{month}/calc-runs/';
+};
+
+export type attendanceMonthsReadCalcRunsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsReadCalcRunsError = attendanceMonthsReadCalcRunsErrors[keyof attendanceMonthsReadCalcRunsErrors];
+
+export type attendanceMonthsReadCalcRunsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CalcRunsPublic;
+};
+
+export type attendanceMonthsReadCalcRunsResponse = attendanceMonthsReadCalcRunsResponses[keyof attendanceMonthsReadCalcRunsResponses];
+
 export type attendanceMonthsCalculateMonthData = {
     body?: never;
     path: {
@@ -6211,6 +6924,255 @@ export type attendanceMonthsCalculateMonthResponses = {
 };
 
 export type attendanceMonthsCalculateMonthResponse = attendanceMonthsCalculateMonthResponses[keyof attendanceMonthsCalculateMonthResponses];
+
+export type attendanceResultsReadDayResultsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month: string;
+        /**
+         * Employee Id
+         */
+        employee_id?: string | null;
+        /**
+         * Dept Id
+         */
+        dept_id?: string | null;
+        /**
+         * Date From
+         */
+        date_from?: string | null;
+        /**
+         * Date To
+         */
+        date_to?: string | null;
+        /**
+         * Day Type
+         */
+        day_type?: DayType | null;
+        /**
+         * Roster State
+         */
+        roster_state?: ResultRosterState | null;
+        /**
+         * Day Status
+         */
+        day_status?: Array<DayStatus> | null;
+        /**
+         * Flag
+         */
+        flag?: Array<string> | null;
+        /**
+         * Is Abnormal
+         */
+        is_abnormal?: boolean | null;
+        /**
+         * Has Adjustment
+         */
+        has_adjustment?: boolean | null;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/results/days/';
+};
+
+export type attendanceResultsReadDayResultsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceResultsReadDayResultsError = attendanceResultsReadDayResultsErrors[keyof attendanceResultsReadDayResultsErrors];
+
+export type attendanceResultsReadDayResultsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceDayResultsPublic;
+};
+
+export type attendanceResultsReadDayResultsResponse = attendanceResultsReadDayResultsResponses[keyof attendanceResultsReadDayResultsResponses];
+
+export type attendanceResultsReadMonthSummariesData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month: string;
+        /**
+         * Employee Id
+         */
+        employee_id?: string | null;
+        /**
+         * Dept Id
+         */
+        dept_id?: string | null;
+        /**
+         * Keyword
+         */
+        keyword?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/results/summary/';
+};
+
+export type attendanceResultsReadMonthSummariesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceResultsReadMonthSummariesError = attendanceResultsReadMonthSummariesErrors[keyof attendanceResultsReadMonthSummariesErrors];
+
+export type attendanceResultsReadMonthSummariesResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthSummariesPublic;
+};
+
+export type attendanceResultsReadMonthSummariesResponse = attendanceResultsReadMonthSummariesResponses[keyof attendanceResultsReadMonthSummariesResponses];
+
+export type attendanceResultsReadResultCalendarData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Month
+         */
+        month: string;
+        /**
+         * Employee Id
+         */
+        employee_id: string;
+    };
+    url: '/api/v1/attendance/results/calendar';
+};
+
+export type attendanceResultsReadResultCalendarErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceResultsReadResultCalendarError = attendanceResultsReadResultCalendarErrors[keyof attendanceResultsReadResultCalendarErrors];
+
+export type attendanceResultsReadResultCalendarResponses = {
+    /**
+     * Successful Response
+     */
+    200: EmployeeResultCalendarPublic;
+};
+
+export type attendanceResultsReadResultCalendarResponse = attendanceResultsReadResultCalendarResponses[keyof attendanceResultsReadResultCalendarResponses];
+
+export type attendanceResultsReadDayDetailData = {
+    body?: never;
+    path: {
+        /**
+         * Employee Id
+         */
+        employee_id: string;
+        /**
+         * Work Date
+         */
+        work_date: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/results/days/{employee_id}/{work_date}';
+};
+
+export type attendanceResultsReadDayDetailErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceResultsReadDayDetailError = attendanceResultsReadDayDetailErrors[keyof attendanceResultsReadDayDetailErrors];
+
+export type attendanceResultsReadDayDetailResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceDayDetailPublic;
+};
+
+export type attendanceResultsReadDayDetailResponse = attendanceResultsReadDayDetailResponses[keyof attendanceResultsReadDayDetailResponses];
 
 export type attendanceSchedulePlansReadSchedulePlansData = {
     body?: never;

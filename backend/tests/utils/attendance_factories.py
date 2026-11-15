@@ -639,6 +639,7 @@ def create_attendance_day_result(
     day_type: DayType = DayType.WORKDAY,
     roster_state: ResultRosterState = ResultRosterState.WORK,
     day_status: DayStatus = DayStatus.NORMAL,
+    day_flags: list[str] | None = None,
     **overrides: Any,
 ) -> AttendanceDayResult:
     result = AttendanceDayResult(
@@ -650,7 +651,7 @@ def create_attendance_day_result(
         day_type=day_type,
         roster_state=roster_state,
         day_status=day_status,
-        day_flags=[],
+        day_flags=day_flags or [],
         **overrides,
     )
     return _persist(db, result)

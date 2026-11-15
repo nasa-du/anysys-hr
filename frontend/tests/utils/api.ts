@@ -1,8 +1,12 @@
 import {
   AttendanceHolidaysService,
+  AttendanceImportsService,
+  AttendanceMonthsService,
   AttendanceRosterService,
+  AttendanceRulesService,
   AttendanceSchedulePlansService,
   AttendanceShiftsService,
+  type CalcRunPublic,
   CompaniesService,
   type CompanyPublic,
   type ContractType,
@@ -283,4 +287,48 @@ export async function readRosterEntries(
     },
   })
   return response.data.data
+}
+
+/** Upload one punch text through preview + commit; returns the committed batch id. */
+export async function importPunchText(input: {
+  company_id: string
+  month: string
+  text: string
+}): Promise<string> {
+  await ensureAuthenticated()
+  const preview = await AttendanceImportsService.previewImports({
+    body: {
+      company_id: input.company_id,
+      data_type: "punch",
+      month: input.month,
+      text: input.text,
+    },
+  })
+  const batchId = preview.data.batch.id
+  await AttendanceImportsService.commitImport({ path: { batch_id: batchId } })
+  return batchId
+}
+
+export async function calculateMonth(
+  companyId: string,
+  month: string,
+): Promise<CalcRunPublic> {
+  await ensureAuthenticated()
+  const response = await AttendanceMonthsService.calculateMonth({
+    path: { month },
+    query: { company_id: companyId },
+  })
+  return response.data
+}
+
+/** Change one rule field so calculated months become stale. */
+export async function updateAttendanceRule(
+  companyId: string,
+  input: { late_grace_min?: number },
+): Promise<void> {
+  await ensureAuthenticated()
+  await AttendanceRulesService.updateCompanyRule({
+    query: { company_id: companyId },
+    body: input,
+  })
 }

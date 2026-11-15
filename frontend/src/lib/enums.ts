@@ -270,6 +270,22 @@ export const DAY_STATUS_OPTIONS: Array<{
   Object.entries(DAY_STATUS_LABELS) as Array<[AttendanceDayStatus, string]>
 ).map(([value, label]) => ({ value, label }))
 
+/** Spec §8.3.5: statuses and flags that make a day result abnormal. */
+export const ABNORMAL_DAY_STATUSES: ReadonlySet<AttendanceDayStatus> = new Set([
+  "late",
+  "early",
+  "missing_punch",
+  "absent",
+  "unscheduled_attendance",
+])
+
+export const ABNORMAL_DAY_FLAGS: ReadonlySet<string> = new Set([
+  "leave_trip_conflict",
+  "leave_ot_conflict",
+  "punch_during_leave",
+  "out_of_window_punch",
+])
+
 export type AttendanceLeaveKind = "paid" | "unpaid" | "comp"
 
 export const LEAVE_KIND_LABELS: Record<AttendanceLeaveKind, string> = {

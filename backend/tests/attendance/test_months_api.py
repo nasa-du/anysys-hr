@@ -1,7 +1,7 @@
 """Read-only attendance-month list used by the rules impact hint."""
 
 import uuid
-from datetime import date
+from datetime import UTC, date, datetime
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -9,6 +9,7 @@ from sqlmodel import Session
 from app.core.config import settings
 from app.enums import (
     AttendanceMonthStatus,
+    CalcRunStatus,
     DayStatus,
     ImportBatchStatus,
     ImportDataType,
@@ -191,3 +192,76 @@ def test_month_list_returns_only_existing_months_with_counts_and_inputs(
     ).json()
     assert [month["month"] for month in other["data"]] == ["2026-09"]
     assert other["data"][0]["status"] == "locked"
+
+
+def test_month_state_and_calc_run_history_queries(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    company = create_company(db)
+    september = create_attendance_month(
+        db,
+        company_id=company.id,
+        month=date(2026, 9, 1),
+        status=AttendanceMonthStatus.CALCULATED,
+        is_stale=False,
+    )
+    calc_run = create_calc_run(
+        db,
+        attendance_month_id=september.id,
+        started_at=datetime(2026, 9, 28, tzinfo=UTC),
+        finished_at=datetime(2026, 9, 28, tzinfo=UTC),
+    )
+
+    synthetic = client.get(
+        f"{MONTHS_URL}2026-10",
+        headers=superuser_token_headers,
+        params={"company_id": str(company.id)},
+    )
+    assert synthetic.status_code == 200, synthetic.text
+    assert synthetic.json()["exists"] is False
+    assert synthetic.json()["id"] is None
+    assert synthetic.json()["status"] == "draft"
+    assert synthetic.json()["is_stale"] is True
+    assert synthetic.json()["counts"]["day_result_count"] == 0
+
+    detail = client.get(
+        f"{MONTHS_URL}2026-09",
+        headers=superuser_token_headers,
+        params={"company_id": str(company.id)},
+    )
+    assert detail.status_code == 200
+    assert detail.json()["exists"] is True
+    assert detail.json()["status"] == "calculated"
+    assert detail.json()["latest_calc_run"]["id"] == str(calc_run.id)
+
+    create_calc_run(
+        db,
+        attendance_month_id=september.id,
+        status=CalcRunStatus.FAILED,
+        error_code="calc_run_failed",
+        error_message="模拟失败",
+        started_at=datetime(2026, 9, 29, tzinfo=UTC),
+        finished_at=datetime(2026, 9, 29, tzinfo=UTC),
+    )
+    runs = client.get(
+        f"{MONTHS_URL}2026-09/calc-runs/",
+        headers=superuser_token_headers,
+        params={"company_id": str(company.id)},
+    )
+    assert runs.status_code == 200, runs.text
+    assert runs.json()["count"] == 2
+    assert runs.json()["data"][0]["status"] == "failed"
+    assert runs.json()["data"][1]["id"] == str(calc_run.id)
+
+    empty_runs = client.get(
+        f"{MONTHS_URL}2026-10/calc-runs/",
+        headers=superuser_token_headers,
+        params={"company_id": str(company.id)},
+    )
+    assert empty_runs.status_code == 200
+    assert empty_runs.json() == {"data": [], "count": 0}
+
+    unauthenticated = client.get(
+        f"{MONTHS_URL}2026-09", params={"company_id": str(company.id)}
+    )
+    assert unauthenticated.status_code == 401

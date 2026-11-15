@@ -1,8 +1,7 @@
 """Every golden case must validate against the approved JSON Schema.
 
-The calculation kernel lands in a later slice; this Phase 0 gate keeps the
-26 case files and their schema in lockstep so the kernel cannot start from
-invalid fixtures.
+This Phase 0 gate keeps the 26 case files and their schema in lockstep. The
+calculation runner validates each case again before executing it.
 """
 
 import json

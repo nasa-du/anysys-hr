@@ -113,7 +113,7 @@ docker compose exec backend python -m app.seed_dev
 The script needs the first superuser as the import operator; run
 `backend/scripts/prestart.sh` (which runs `app/initial_data.py`) first.
 
-What it creates for `C4` 「荣新考勤演示」:
+What it creates for `C3` 「明德考勤演示」:
 
 - Departments `D1 生产部`, `D2 财务部`, `D3 技术部`, `D4 行政部`; positions
   `P1 生产操作工`, `P2 园林工`, `P3 会计`, `P4 技术员`, `P5 行政专员`.
@@ -183,7 +183,7 @@ with a new migration in the owning slice; never rewrite a merged migration.
 1. Start Compose; run migrations and the seed
    (`docker compose run --rm backend bash scripts/prestart.sh`, then
    `docker compose exec backend python -m app.seed_dev`).
-2. Log in and switch to `C4` 「荣新考勤演示」.
+2. Log in and switch to `C3` 「明德考勤演示」.
 3. 班次: create/edit a shift; show deactivation blocked by an enabled plan and
    deletion blocked by references.
 4. 规则与节假日: edit company default rules and a plan override; show the stale

@@ -187,7 +187,7 @@ class _Fixture:
         self.employee_ids: dict[str, uuid.UUID] = {}
 
         self.company = create_company(
-            db, company_code="C4", company_name="荣新考勤演示"
+            db, company_code="C4", company_name="明德考勤演示"
         )
         self.operator = create_random_user(db)
         self._departments: dict[str, Any] = {}

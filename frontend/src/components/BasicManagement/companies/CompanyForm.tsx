@@ -188,7 +188,7 @@ export function CompanyForm({ open, onOpenChange, company }: CompanyFormProps) {
                     公司名称 <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="如 荣新建设" required {...field} />
+                    <Input placeholder="如 华信建设" required {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

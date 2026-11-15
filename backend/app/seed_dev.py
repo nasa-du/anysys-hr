@@ -61,13 +61,12 @@ IMPORT_FIXTURES: dict[ImportDataType, str] = {
 }
 
 COMPANIES: list[dict[str, Any]] = [
-    {"company_code": "C1", "company_name": "荣新建设", "note": "完整组织示例"},
-    {"company_code": "C2", "company_name": "荣新科技", "note": "小型组织示例"},
-    {"company_code": "C3", "company_name": "荣新物流", "note": "空公司示例"},
+    {"company_code": "C1", "company_name": "华信建设", "note": "完整组织示例"},
+    {"company_code": "C2", "company_name": "云启科技", "note": "小型组织示例"},
     {
-        "company_code": "C4",
-        "company_name": "荣新考勤演示",
-        "note": "考勤演示公司；C1-C3 不包含考勤数据",
+        "company_code": "C3",
+        "company_name": "明德考勤演示",
+        "note": "考勤演示公司；C1-C2 不包含考勤数据",
     },
 ]
 
@@ -147,30 +146,30 @@ DEPARTMENTS: list[dict[str, Any]] = [
         "parent_code": "K1",
         "order_no": 1,
     },
-    # Attendance demo company. Attendance seed rows never touch C1-C3.
+    # Attendance demo company. Attendance seed rows never touch C1-C2.
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "dept_name": "生产部",
         "parent_code": None,
         "order_no": 0,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D2",
         "dept_name": "财务部",
         "parent_code": None,
         "order_no": 1,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D3",
         "dept_name": "技术部",
         "parent_code": None,
         "order_no": 2,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D4",
         "dept_name": "行政部",
         "parent_code": None,
@@ -240,35 +239,35 @@ POSITIONS: list[dict[str, Any]] = [
         "order_no": 0,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "position_code": "P1",
         "position_name": "生产操作工",
         "dept_code": "D1",
         "order_no": 0,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "position_code": "P2",
         "position_name": "园林工",
         "dept_code": "D1",
         "order_no": 1,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "position_code": "P3",
         "position_name": "会计",
         "dept_code": "D2",
         "order_no": 0,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "position_code": "P4",
         "position_name": "技术员",
         "dept_code": "D3",
         "order_no": 0,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "position_code": "P5",
         "position_name": "行政专员",
         "dept_code": "D4",
@@ -694,7 +693,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E101",
         "name": "冯芷茵",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "position_code": "P1",
         "status": EmployeeStatus.ACTIVE,
@@ -703,7 +702,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E102",
         "name": "刘衍英",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D2",
         "position_code": "P3",
         "status": EmployeeStatus.ACTIVE,
@@ -712,7 +711,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E103",
         "name": "周玉琼",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "position_code": "P1",
         "status": EmployeeStatus.ACTIVE,
@@ -721,7 +720,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E104",
         "name": "胡国邵",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "position_code": "P1",
         "status": EmployeeStatus.ACTIVE,
@@ -730,7 +729,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E105",
         "name": "李金辉",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "position_code": "P1",
         "status": EmployeeStatus.ACTIVE,
@@ -739,7 +738,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E106",
         "name": "黄佳誉",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D3",
         "position_code": "P4",
         "status": EmployeeStatus.ACTIVE,
@@ -748,7 +747,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E107",
         "name": "梁林高",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D4",
         "position_code": "P5",
         "status": EmployeeStatus.ACTIVE,
@@ -757,7 +756,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E108",
         "name": "黄国锋",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "position_code": "P2",
         "status": EmployeeStatus.ACTIVE,
@@ -766,7 +765,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E109",
         "name": "申佳林",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D4",
         "position_code": "P5",
         "status": EmployeeStatus.ACTIVE,
@@ -775,7 +774,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E110",
         "name": "张伟",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "position_code": "P1",
         "status": EmployeeStatus.ACTIVE,
@@ -784,7 +783,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E111",
         "name": "张伟",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D2",
         "position_code": "P3",
         "status": EmployeeStatus.ACTIVE,
@@ -793,7 +792,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E112",
         "name": "王强",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "position_code": "P1",
         "status": EmployeeStatus.RESIGNED,
@@ -803,7 +802,7 @@ EMPLOYEES: list[dict[str, Any]] = [
     {
         "employee_no": "E113",
         "name": "李娜",
-        "company_code": "C4",
+        "company_code": "C3",
         "dept_code": "D1",
         "position_code": "P1",
         "status": EmployeeStatus.ACTIVE,
@@ -812,11 +811,11 @@ EMPLOYEES: list[dict[str, Any]] = [
 ]
 
 
-# Attendance reference data for the C4 demo company. Plans expand through the
+# Attendance reference data for the C3 demo company. Plans expand through the
 # real expansion service, and the four fixtures commit through preview/commit.
 SHIFTS: list[dict[str, Any]] = [
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "shift_code": "ADM",
         "shift_name": "行政班",
         "start_time": time(8, 30),
@@ -828,7 +827,7 @@ SHIFTS: list[dict[str, Any]] = [
         "color": "#2563EB",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "shift_code": "TEC",
         "shift_name": "技术员班",
         "start_time": time(8, 0),
@@ -840,7 +839,7 @@ SHIFTS: list[dict[str, Any]] = [
         "color": "#7C3AED",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "shift_code": "YL",
         "shift_name": "园林班",
         "start_time": time(7, 30),
@@ -852,7 +851,7 @@ SHIFTS: list[dict[str, Any]] = [
         "color": "#16A34A",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "shift_code": "EARLY",
         "shift_name": "早班",
         "start_time": time(6, 0),
@@ -864,7 +863,7 @@ SHIFTS: list[dict[str, Any]] = [
         "color": "#F59E0B",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "shift_code": "MID",
         "shift_name": "中班",
         "start_time": time(14, 0),
@@ -876,7 +875,7 @@ SHIFTS: list[dict[str, Any]] = [
         "color": "#0EA5E9",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "shift_code": "NIGHT",
         "shift_name": "夜班",
         "start_time": time(22, 0),
@@ -888,7 +887,7 @@ SHIFTS: list[dict[str, Any]] = [
         "color": "#1E293B",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "shift_code": "DAWN",
         "shift_name": "凌晨班",
         "start_time": time(2, 0),
@@ -904,7 +903,7 @@ SHIFTS: list[dict[str, Any]] = [
 
 ATTENDANCE_RULES: list[dict[str, Any]] = [
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "punch_window_min": 120,
         "late_cap_min": 240,
         "early_cap_min": 240,
@@ -925,20 +924,20 @@ ATTENDANCE_RULES: list[dict[str, Any]] = [
 
 HOLIDAYS: list[dict[str, Any]] = [
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "date": date(2026, 9, 25),
         "name": "中秋节",
         "day_type": HolidayDayType.HOLIDAY,
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "date": date(2026, 9, 27),
         "name": "调休上班",
         "day_type": HolidayDayType.ADJUSTED_WORKDAY,
     },
     *[
         {
-            "company_code": "C4",
+            "company_code": "C3",
             "date": date(2026, 10, day),
             "name": "国庆节",
             "day_type": HolidayDayType.HOLIDAY,
@@ -980,7 +979,7 @@ WEEKDAY_YL: dict[int, list[str]] = {
 }
 ATTENDANCE_PLANS: list[dict[str, Any]] = [
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "month": date(2026, 9, 1),
         "plan_name": "行政班",
         "scope_type": ScheduleScopeType.ALL,
@@ -993,7 +992,7 @@ ATTENDANCE_PLANS: list[dict[str, Any]] = [
         "note": "全公司兜底方案；09-27 调休上班",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "month": date(2026, 9, 1),
         "plan_name": "财务技术班",
         "scope_type": ScheduleScopeType.DEPT,
@@ -1006,7 +1005,7 @@ ATTENDANCE_PLANS: list[dict[str, Any]] = [
         "note": "财务部固定技术员班；09-27 调休上班",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "month": date(2026, 9, 1),
         "plan_name": "园林班",
         "scope_type": ScheduleScopeType.POSITION,
@@ -1019,7 +1018,7 @@ ATTENDANCE_PLANS: list[dict[str, Any]] = [
         "note": "园林工岗位方案；加班起算门槛覆盖为 15 分钟",
     },
     {
-        "company_code": "C4",
+        "company_code": "C3",
         "month": date(2026, 9, 1),
         "plan_name": "李金辉夜班",
         "scope_type": ScheduleScopeType.EMPLOYEE,
@@ -1356,7 +1355,7 @@ def _seed_attendance_plans(
     rows are never overwritten or re-expanded, and a user-created plan with a
     different name never blocks the four documented plans.
     """
-    company = companies["C4"]
+    company = companies["C3"]
     month = date(2026, 9, 1)
     existing_names = {
         plan.plan_name
@@ -1447,7 +1446,7 @@ def _seed_attendance_manual_entries(
     The rows go in after plan expansion so ``plan_id`` records the overridden
     plan. A second run never overwrites a user-edited exception.
     """
-    company = companies["C4"]
+    company = companies["C3"]
     month = date(2026, 9, 1)
     employees = {
         employee.employee_no: employee
@@ -1533,7 +1532,7 @@ def _seed_import_batches(session: Session, companies: dict[str, Company]) -> Non
     seed never supersedes or rewrites a user's import. Preview and commit are
     the same service functions the API uses; no calculation is triggered.
     """
-    company = companies["C4"]
+    company = companies["C3"]
     month = date(2026, 9, 1)
     operator: User | None = None
     for data_type, file_name in IMPORT_FIXTURES.items():

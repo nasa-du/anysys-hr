@@ -50,25 +50,22 @@ from app.models import (
 )
 from app.services.attendance import imports as import_service
 
-SEEDED_CODES = ["C1", "C2", "C3", "C4"]
-SEEDED_NAMES = ["荣新建设", "荣新科技", "荣新物流", "荣新考勤演示"]
+SEEDED_CODES = ["C1", "C2", "C3"]
+SEEDED_NAMES = ["华信建设", "云启科技", "明德考勤演示"]
 SEEDED_DEPARTMENTS = {
     "C1": ["D1", "D2", "D3", "D4", "D5", "D6", "D7"],
     "C2": ["K1", "K2", "K3"],
-    "C3": [],
-    "C4": ["D1", "D2", "D3", "D4"],
+    "C3": ["D1", "D2", "D3", "D4"],
 }
 SEEDED_POSITIONS = {
     "C1": ["P1", "P2", "P3", "P4", "P5", "P6"],
     "C2": ["K1", "K2"],
-    "C3": [],
-    "C4": ["P1", "P2", "P3", "P4", "P5"],
+    "C3": ["P1", "P2", "P3", "P4", "P5"],
 }
 SEEDED_COST_CENTERS = {
     "C1": ["K1", "K2", "K3", "K4", "K5", "K6"],
     "C2": ["K1", "K2"],
     "C3": [],
-    "C4": [],
 }
 # Kept independent of seed_dev.EMPLOYEES so accidental data changes fail the test.
 SEEDED_EMPLOYEES = {
@@ -91,8 +88,7 @@ SEEDED_EMPLOYEES = {
         "E1016",
     ],
     "C2": ["E2001", "E2002", "E2003", "E2004"],
-    "C3": [],
-    "C4": [
+    "C3": [
         "E101",
         "E102",
         "E103",
@@ -159,7 +155,7 @@ def test_seed_refuses_outside_development(
     assert _companies() == []
 
 
-def test_seed_inserts_four_companies_once() -> None:
+def test_seed_inserts_three_companies_once() -> None:
     seed_dev.main()
     seed_dev.main()
 
@@ -467,8 +463,7 @@ def test_seed_inserts_employees_once() -> None:
 
     assert 15 <= len(employees["C1"]) <= 20
     assert 3 <= len(employees["C2"]) <= 5
-    assert employees["C3"] == []
-    assert len(employees["C4"]) == 13
+    assert len(employees["C3"]) == 13
 
 
 def test_seed_employee_statuses_contracts_and_unassigned_are_varied() -> None:
@@ -557,7 +552,7 @@ def _attendance_company_rows() -> tuple[
 ]:
     with Session(engine) as session:
         company = session.exec(
-            select(Company).where(Company.company_code == "C4")
+            select(Company).where(Company.company_code == "C3")
         ).one()
         shifts = list(
             session.exec(
@@ -660,7 +655,7 @@ def test_attendance_reference_data_never_touches_other_companies() -> None:
         other_company_ids = [
             company.id
             for company in session.exec(
-                select(Company).where(Company.company_code.in_(["C1", "C2", "C3"]))
+                select(Company).where(Company.company_code.in_(["C1", "C2"]))
             ).all()
         ]
         assert (
@@ -690,7 +685,7 @@ def test_seed_does_not_overwrite_existing_attendance_edits() -> None:
 
     with Session(engine) as session:
         company = session.exec(
-            select(Company).where(Company.company_code == "C4")
+            select(Company).where(Company.company_code == "C3")
         ).one()
         shift = session.exec(
             select(Shift).where(
@@ -729,17 +724,17 @@ def test_seed_attendance_employees_match_the_fixture_contract() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         departments = {
             department.dept_code: department
             for department in session.exec(
-                select(Department).where(Department.company_id == c4.id)
+                select(Department).where(Department.company_id == c3.id)
             ).all()
         }
         positions = {
             position.position_code: position
             for position in session.exec(
-                select(Position).where(Position.company_id == c4.id)
+                select(Position).where(Position.company_id == c3.id)
             ).all()
         }
         employees = {
@@ -763,11 +758,11 @@ def test_seed_inserts_four_plans_and_expands_september_once() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         plans = {
             plan.plan_name: plan
             for plan in session.exec(
-                select(SchedulePlan).where(SchedulePlan.company_id == c4.id)
+                select(SchedulePlan).where(SchedulePlan.company_id == c3.id)
             ).all()
         }
         assert set(plans) == {"行政班", "财务技术班", "园林班", "李金辉夜班"}
@@ -787,7 +782,7 @@ def test_seed_inserts_four_plans_and_expands_september_once() -> None:
 
         month = session.exec(
             select(AttendanceMonth).where(
-                AttendanceMonth.company_id == c4.id,
+                AttendanceMonth.company_id == c3.id,
                 AttendanceMonth.month == date(2026, 9, 1),
             )
         ).one()
@@ -798,14 +793,14 @@ def test_seed_inserts_four_plans_and_expands_september_once() -> None:
             for employee in session.exec(
                 select(Employee).where(
                     Employee.dept_id.in_(
-                        select(Department.id).where(Department.company_id == c4.id)
+                        select(Department.id).where(Department.company_id == c3.id)
                     )
                 )
             ).all()
         }
         roster = list(
             session.exec(
-                select(RosterEntry).where(RosterEntry.company_id == c4.id)
+                select(RosterEntry).where(RosterEntry.company_id == c3.id)
             ).all()
         )
         assert roster
@@ -915,29 +910,29 @@ class SeedBatchState(NamedTuple):
 
 
 def _seed_batch_state() -> SeedBatchState:
-    """Stable fingerprint of the C4 import payload for idempotency checks."""
+    """Stable fingerprint of the C3 import payload for idempotency checks."""
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         batch_count = len(
             session.exec(
-                select(ImportBatch).where(ImportBatch.company_id == c4.id)
+                select(ImportBatch).where(ImportBatch.company_id == c3.id)
             ).all()
         )
         records = {
             model.__tablename__: len(
-                session.exec(select(model).where(model.company_id == c4.id)).all()
+                session.exec(select(model).where(model.company_id == c3.id)).all()
             )
             for model in IMPORT_RECORD_MODELS
         }
         other_company_batches = len(
             session.exec(
-                select(ImportBatch).where(ImportBatch.company_id != c4.id)
+                select(ImportBatch).where(ImportBatch.company_id != c3.id)
             ).all()
         )
         template_count = len(
             session.exec(
                 select(ImportMappingTemplate).where(
-                    ImportMappingTemplate.company_id == c4.id
+                    ImportMappingTemplate.company_id == c3.id
                 )
             ).all()
         )
@@ -946,13 +941,13 @@ def _seed_batch_state() -> SeedBatchState:
         )
 
 
-def _c4_batches() -> dict[ImportDataType, ImportBatch]:
+def _c3_batches() -> dict[ImportDataType, ImportBatch]:
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         return {
             batch.data_type: batch
             for batch in session.exec(
-                select(ImportBatch).where(ImportBatch.company_id == c4.id)
+                select(ImportBatch).where(ImportBatch.company_id == c3.id)
             ).all()
         }
 
@@ -960,7 +955,7 @@ def _c4_batches() -> dict[ImportDataType, ImportBatch]:
 def test_seed_commits_the_four_fixture_batches_once() -> None:
     seed_dev.main()
 
-    batches = _c4_batches()
+    batches = _c3_batches()
     assert set(batches) == set(IMPORT_FIXTURE_STATS)
     for data_type, stats in IMPORT_FIXTURE_STATS.items():
         batch = batches[data_type]
@@ -982,11 +977,11 @@ def test_seed_commits_the_four_fixture_batches_once() -> None:
         assert batch.expires_at is None
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         assert (
             session.exec(
                 select(ImportBatch).where(
-                    ImportBatch.company_id == c4.id,
+                    ImportBatch.company_id == c3.id,
                     ImportBatch.status != ImportBatchStatus.COMMITTED,
                 )
             ).all()
@@ -994,7 +989,7 @@ def test_seed_commits_the_four_fixture_batches_once() -> None:
         )
         records = {
             model.__tablename__: session.exec(
-                select(model).where(model.company_id == c4.id)
+                select(model).where(model.company_id == c3.id)
             ).all()
             for model in IMPORT_RECORD_MODELS
         }
@@ -1009,7 +1004,7 @@ def test_seed_commits_the_four_fixture_batches_once() -> None:
             len(
                 session.exec(
                     select(ImportMappingTemplate).where(
-                        ImportMappingTemplate.company_id == c4.id
+                        ImportMappingTemplate.company_id == c3.id
                     )
                 ).all()
             )
@@ -1039,10 +1034,10 @@ def test_seed_does_not_overwrite_committed_import_batches() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         batch = session.exec(
             select(ImportBatch).where(
-                ImportBatch.company_id == c4.id,
+                ImportBatch.company_id == c3.id,
                 ImportBatch.data_type == ImportDataType.PUNCH,
             )
         ).one()
@@ -1053,7 +1048,7 @@ def test_seed_does_not_overwrite_committed_import_batches() -> None:
 
     seed_dev.main()
 
-    batch = _c4_batches()[ImportDataType.PUNCH]
+    batch = _c3_batches()[ImportDataType.PUNCH]
     assert batch.file_name == "用户替换后的文件.csv"
     assert batch.valid_records == 1
 
@@ -1062,9 +1057,9 @@ def test_seed_does_not_create_calculation_outputs() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         month = session.exec(
-            select(AttendanceMonth).where(AttendanceMonth.company_id == c4.id)
+            select(AttendanceMonth).where(AttendanceMonth.company_id == c3.id)
         ).one()
         assert month.status == AttendanceMonthStatus.DRAFT
         assert (
@@ -1088,7 +1083,7 @@ def test_seed_does_not_create_calculation_outputs() -> None:
             AttendanceResultAdjustment,
         ):
             assert (
-                session.exec(select(model).where(model.company_id == c4.id)).all() == []
+                session.exec(select(model).where(model.company_id == c3.id)).all() == []
             ), model.__tablename__
 
 
@@ -1120,10 +1115,10 @@ def test_seed_never_writes_attendance_rows_for_other_companies() -> None:
         other_company_ids = [
             company.id
             for company in session.exec(
-                select(Company).where(Company.company_code.in_(["C1", "C2", "C3"]))
+                select(Company).where(Company.company_code.in_(["C1", "C2"]))
             ).all()
         ]
-        assert len(other_company_ids) == 3
+        assert len(other_company_ids) == 2
         for model in TOP_LEVEL_COMPANY_MODELS:
             rows = session.exec(
                 select(model).where(model.company_id.in_(other_company_ids))
@@ -1135,11 +1130,11 @@ def test_seed_recreates_a_missing_named_plan_without_touching_others() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         plans = {
             plan.plan_name: plan
             for plan in session.exec(
-                select(SchedulePlan).where(SchedulePlan.company_id == c4.id)
+                select(SchedulePlan).where(SchedulePlan.company_id == c3.id)
             ).all()
         }
         removed = plans.pop("行政班")
@@ -1151,11 +1146,11 @@ def test_seed_recreates_a_missing_named_plan_without_touching_others() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         plans = {
             plan.plan_name: plan
             for plan in session.exec(
-                select(SchedulePlan).where(SchedulePlan.company_id == c4.id)
+                select(SchedulePlan).where(SchedulePlan.company_id == c3.id)
             ).all()
         }
         assert set(plans) == {"行政班", "财务技术班", "园林班", "李金辉夜班"}
@@ -1169,10 +1164,10 @@ def test_seed_preserves_an_existing_mapping_template() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         template = session.exec(
             select(ImportMappingTemplate).where(
-                ImportMappingTemplate.company_id == c4.id,
+                ImportMappingTemplate.company_id == c3.id,
                 ImportMappingTemplate.data_type == ImportDataType.PUNCH,
             )
         ).one()
@@ -1182,7 +1177,7 @@ def test_seed_preserves_an_existing_mapping_template() -> None:
         session.add(template)
         batch_id = session.exec(
             select(ImportBatch.id).where(
-                ImportBatch.company_id == c4.id,
+                ImportBatch.company_id == c3.id,
                 ImportBatch.data_type == ImportDataType.PUNCH,
                 ImportBatch.status == ImportBatchStatus.COMMITTED,
             )
@@ -1195,10 +1190,10 @@ def test_seed_preserves_an_existing_mapping_template() -> None:
     seed_dev.main()
 
     with Session(engine) as session:
-        c4 = session.exec(select(Company).where(Company.company_code == "C4")).one()
+        c3 = session.exec(select(Company).where(Company.company_code == "C3")).one()
         template = session.exec(
             select(ImportMappingTemplate).where(
-                ImportMappingTemplate.company_id == c4.id,
+                ImportMappingTemplate.company_id == c3.id,
                 ImportMappingTemplate.data_type == ImportDataType.PUNCH,
             )
         ).one()
@@ -1208,7 +1203,7 @@ def test_seed_preserves_an_existing_mapping_template() -> None:
         assert (
             session.exec(
                 select(ImportBatch).where(
-                    ImportBatch.company_id == c4.id,
+                    ImportBatch.company_id == c3.id,
                     ImportBatch.data_type == ImportDataType.PUNCH,
                     ImportBatch.status == ImportBatchStatus.COMMITTED,
                 )
@@ -1217,7 +1212,7 @@ def test_seed_preserves_an_existing_mapping_template() -> None:
         )
         assert (
             session.exec(
-                select(PunchRecord).where(PunchRecord.company_id == c4.id)
+                select(PunchRecord).where(PunchRecord.company_id == c3.id)
             ).all()
             != []
         )

@@ -557,6 +557,52 @@ export type AttendanceMonthPublic = {
 };
 
 /**
+ * AttendanceMonthSnapshotPublic
+ */
+export type AttendanceMonthSnapshotPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Locked At
+     */
+    locked_at: string;
+    /**
+     * Locked By
+     */
+    locked_by: string;
+    /**
+     * Locked By Name
+     */
+    locked_by_name?: string | null;
+    /**
+     * Calc Run Id
+     */
+    calc_run_id: string;
+    summary?: CalcRunSummary | null;
+    payload?: SnapshotPayload | null;
+};
+
+/**
+ * AttendanceMonthSnapshotsPublic
+ */
+export type AttendanceMonthSnapshotsPublic = {
+    /**
+     * Data
+     */
+    data: Array<AttendanceMonthSnapshotPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * AttendanceMonthStatus
  */
 export type AttendanceMonthStatus = 'draft' | 'calculated' | 'confirmed' | 'locked';
@@ -723,6 +769,18 @@ export type AttendanceMonthSummaryPublic = {
      * Created At
      */
     created_at: string;
+};
+
+/**
+ * AttendanceMonthUnlock
+ *
+ * Unlock requires a non-blank reason; snapshots are retained.
+ */
+export type AttendanceMonthUnlock = {
+    /**
+     * Reason
+     */
+    reason: string;
 };
 
 /**
@@ -4679,6 +4737,74 @@ export type ShiftsPublic = {
 };
 
 /**
+ * SnapshotPayload
+ */
+export type SnapshotPayload = {
+    /**
+     * Schema Version
+     */
+    schema_version?: number;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Locked At
+     */
+    locked_at: string;
+    /**
+     * Locked By
+     */
+    locked_by: string;
+    /**
+     * Attendance Month
+     */
+    attendance_month: {
+        [key: string]: unknown;
+    };
+    /**
+     * Calc Run
+     */
+    calc_run: {
+        [key: string]: unknown;
+    };
+    /**
+     * Day Results
+     */
+    day_results?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Shift Results
+     */
+    shift_results?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Month Summaries
+     */
+    month_summaries?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Adjustments
+     */
+    adjustments?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Export
+     */
+    export: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * Token
  */
 export type Token = {
@@ -6921,6 +7047,178 @@ export type attendanceMonthsReadMonthResponses = {
 
 export type attendanceMonthsReadMonthResponse = attendanceMonthsReadMonthResponses[keyof attendanceMonthsReadMonthResponses];
 
+export type attendanceMonthsConfirmMonthData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/months/{month}/confirm';
+};
+
+export type attendanceMonthsConfirmMonthErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsConfirmMonthError = attendanceMonthsConfirmMonthErrors[keyof attendanceMonthsConfirmMonthErrors];
+
+export type attendanceMonthsConfirmMonthResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthPublic;
+};
+
+export type attendanceMonthsConfirmMonthResponse = attendanceMonthsConfirmMonthResponses[keyof attendanceMonthsConfirmMonthResponses];
+
+export type attendanceMonthsUnconfirmMonthData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/months/{month}/unconfirm';
+};
+
+export type attendanceMonthsUnconfirmMonthErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsUnconfirmMonthError = attendanceMonthsUnconfirmMonthErrors[keyof attendanceMonthsUnconfirmMonthErrors];
+
+export type attendanceMonthsUnconfirmMonthResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthPublic;
+};
+
+export type attendanceMonthsUnconfirmMonthResponse = attendanceMonthsUnconfirmMonthResponses[keyof attendanceMonthsUnconfirmMonthResponses];
+
+export type attendanceMonthsLockMonthData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/months/{month}/lock';
+};
+
+export type attendanceMonthsLockMonthErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsLockMonthError = attendanceMonthsLockMonthErrors[keyof attendanceMonthsLockMonthErrors];
+
+export type attendanceMonthsLockMonthResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthPublic;
+};
+
+export type attendanceMonthsLockMonthResponse = attendanceMonthsLockMonthResponses[keyof attendanceMonthsLockMonthResponses];
+
+export type attendanceMonthsUnlockMonthData = {
+    body: AttendanceMonthUnlock;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/months/{month}/unlock';
+};
+
+export type attendanceMonthsUnlockMonthErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsUnlockMonthError = attendanceMonthsUnlockMonthErrors[keyof attendanceMonthsUnlockMonthErrors];
+
+export type attendanceMonthsUnlockMonthResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthPublic;
+};
+
+export type attendanceMonthsUnlockMonthResponse = attendanceMonthsUnlockMonthResponses[keyof attendanceMonthsUnlockMonthResponses];
+
 export type attendanceMonthsReadCalcRunsData = {
     body?: never;
     path: {
@@ -6972,6 +7270,57 @@ export type attendanceMonthsReadCalcRunsResponses = {
 
 export type attendanceMonthsReadCalcRunsResponse = attendanceMonthsReadCalcRunsResponses[keyof attendanceMonthsReadCalcRunsResponses];
 
+export type attendanceMonthsReadSnapshotsData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/months/{month}/snapshots/';
+};
+
+export type attendanceMonthsReadSnapshotsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsReadSnapshotsError = attendanceMonthsReadSnapshotsErrors[keyof attendanceMonthsReadSnapshotsErrors];
+
+export type attendanceMonthsReadSnapshotsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthSnapshotsPublic;
+};
+
+export type attendanceMonthsReadSnapshotsResponse = attendanceMonthsReadSnapshotsResponses[keyof attendanceMonthsReadSnapshotsResponses];
+
 export type attendanceMonthsCalculateMonthData = {
     body?: never;
     path: {
@@ -7014,6 +7363,96 @@ export type attendanceMonthsCalculateMonthResponses = {
 };
 
 export type attendanceMonthsCalculateMonthResponse = attendanceMonthsCalculateMonthResponses[keyof attendanceMonthsCalculateMonthResponses];
+
+export type attendanceMonthsReadCalcRunData = {
+    body?: never;
+    path: {
+        /**
+         * Calc Run Id
+         */
+        calc_run_id: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/calc-runs/{calc_run_id}';
+};
+
+export type attendanceMonthsReadCalcRunErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsReadCalcRunError = attendanceMonthsReadCalcRunErrors[keyof attendanceMonthsReadCalcRunErrors];
+
+export type attendanceMonthsReadCalcRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: CalcRunPublic;
+};
+
+export type attendanceMonthsReadCalcRunResponse = attendanceMonthsReadCalcRunResponses[keyof attendanceMonthsReadCalcRunResponses];
+
+export type attendanceMonthsReadSnapshotData = {
+    body?: never;
+    path: {
+        /**
+         * Snapshot Id
+         */
+        snapshot_id: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Include Payload
+         */
+        include_payload?: boolean;
+    };
+    url: '/api/v1/attendance/snapshots/{snapshot_id}';
+};
+
+export type attendanceMonthsReadSnapshotErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsReadSnapshotError = attendanceMonthsReadSnapshotErrors[keyof attendanceMonthsReadSnapshotErrors];
+
+export type attendanceMonthsReadSnapshotResponses = {
+    /**
+     * Successful Response
+     */
+    200: AttendanceMonthSnapshotPublic;
+};
+
+export type attendanceMonthsReadSnapshotResponse = attendanceMonthsReadSnapshotResponses[keyof attendanceMonthsReadSnapshotResponses];
 
 export type attendanceResultsReadDayResultsData = {
     body?: never;
@@ -8919,6 +9358,92 @@ export type attendanceImportsRevokeImportResponses = {
 };
 
 export type attendanceImportsRevokeImportResponse = attendanceImportsRevokeImportResponses[keyof attendanceImportsRevokeImportResponses];
+
+export type attendanceExportsExportPayrollCsvData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/months/{month}/exports/payroll.csv';
+};
+
+export type attendanceExportsExportPayrollCsvErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceExportsExportPayrollCsvError = attendanceExportsExportPayrollCsvErrors[keyof attendanceExportsExportPayrollCsvErrors];
+
+export type attendanceExportsExportPayrollCsvResponses = {
+    /**
+     * UTF-8 BOM prefixed CSV stream
+     */
+    200: string;
+};
+
+export type attendanceExportsExportPayrollCsvResponse = attendanceExportsExportPayrollCsvResponses[keyof attendanceExportsExportPayrollCsvResponses];
+
+export type attendanceExportsExportDetailCsvData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/months/{month}/exports/detail.csv';
+};
+
+export type attendanceExportsExportDetailCsvErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceExportsExportDetailCsvError = attendanceExportsExportDetailCsvErrors[keyof attendanceExportsExportDetailCsvErrors];
+
+export type attendanceExportsExportDetailCsvResponses = {
+    /**
+     * UTF-8 BOM prefixed CSV stream
+     */
+    200: string;
+};
+
+export type attendanceExportsExportDetailCsvResponse = attendanceExportsExportDetailCsvResponses[keyof attendanceExportsExportDetailCsvResponses];
 
 export type utilsTestEmailData = {
     body?: never;

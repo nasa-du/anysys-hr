@@ -3175,6 +3175,282 @@
         }
       }
     },
+    "/api/v1/attendance/months/{month}/confirm": {
+      "post": {
+        "tags": ["attendance-months"],
+        "summary": "Confirm Month",
+        "description": "Confirm calculated results that are not stale.",
+        "operationId": "attendance-months-confirm_month",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/months/{month}/unconfirm": {
+      "post": {
+        "tags": ["attendance-months"],
+        "summary": "Unconfirm Month",
+        "description": "Return a confirmed month to calculated; no reason required.",
+        "operationId": "attendance-months-unconfirm_month",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/months/{month}/lock": {
+      "post": {
+        "tags": ["attendance-months"],
+        "summary": "Lock Month",
+        "description": "Lock a confirmed month and append an immutable snapshot.",
+        "operationId": "attendance-months-lock_month",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/months/{month}/unlock": {
+      "post": {
+        "tags": ["attendance-months"],
+        "summary": "Unlock Month",
+        "description": "Unlock a locked month with a reason; snapshots are retained.",
+        "operationId": "attendance-months-unlock_month",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AttendanceMonthUnlock" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/attendance/months/{month}/calc-runs/": {
       "get": {
         "tags": ["attendance-months"],
@@ -3263,6 +3539,96 @@
         }
       }
     },
+    "/api/v1/attendance/months/{month}/snapshots/": {
+      "get": {
+        "tags": ["attendance-months"],
+        "summary": "Read Snapshots",
+        "description": "List lock snapshots newest first; payloads are omitted.",
+        "operationId": "attendance-months-read_snapshots",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthSnapshotsPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/attendance/months/{month}/calculate": {
       "post": {
         "tags": ["attendance-months"],
@@ -3298,6 +3664,148 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/CalcRunPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/calc-runs/{calc_run_id}": {
+      "get": {
+        "tags": ["attendance-months"],
+        "summary": "Read Calc Run",
+        "description": "Return one calculation run; cross-company access is a 404.",
+        "operationId": "attendance-months-read_calc_run",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "calc_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Calc Run Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CalcRunPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/snapshots/{snapshot_id}": {
+      "get": {
+        "tags": ["attendance-months"],
+        "summary": "Read Snapshot",
+        "description": "Return one lock snapshot; the payload is opt-in.",
+        "operationId": "attendance-months-read_snapshot",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "snapshot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Snapshot Id"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "include_payload",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Payload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceMonthSnapshotPublic"
+                }
               }
             }
           },
@@ -6556,6 +7064,128 @@
         }
       }
     },
+    "/api/v1/attendance/months/{month}/exports/payroll.csv": {
+      "get": {
+        "tags": ["attendance-exports"],
+        "summary": "Export Payroll Csv",
+        "description": "Stream the fixed 14-column payroll CSV; header-only when empty.",
+        "operationId": "attendance-exports-export_payroll_csv",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "UTF-8 BOM prefixed CSV stream",
+            "content": { "text/csv": { "schema": { "type": "string" } } }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/months/{month}/exports/detail.csv": {
+      "get": {
+        "tags": ["attendance-exports"],
+        "summary": "Export Detail Csv",
+        "description": "Stream the union detail CSV; header-only when empty.",
+        "operationId": "attendance-exports-export_detail_csv",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "UTF-8 BOM prefixed CSV stream",
+            "content": { "text/csv": { "schema": { "type": "string" } } }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/utils/test-email/": {
       "post": {
         "tags": ["utils"],
@@ -7373,6 +8003,61 @@
         ],
         "title": "AttendanceMonthPublic"
       },
+      "AttendanceMonthSnapshotPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "version": { "type": "integer", "title": "Version" },
+          "locked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Locked At"
+          },
+          "locked_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Locked By"
+          },
+          "locked_by_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Locked By Name"
+          },
+          "calc_run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Calc Run Id"
+          },
+          "summary": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CalcRunSummary" },
+              { "type": "null" }
+            ]
+          },
+          "payload": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/SnapshotPayload" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["id", "version", "locked_at", "locked_by", "calc_run_id"],
+        "title": "AttendanceMonthSnapshotPublic"
+      },
+      "AttendanceMonthSnapshotsPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceMonthSnapshotPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "AttendanceMonthSnapshotsPublic"
+      },
       "AttendanceMonthStatus": {
         "type": "string",
         "enum": ["draft", "calculated", "confirmed", "locked"],
@@ -7522,6 +8207,21 @@
           "created_at"
         ],
         "title": "AttendanceMonthSummaryPublic"
+      },
+      "AttendanceMonthUnlock": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["reason"],
+        "title": "AttendanceMonthUnlock",
+        "description": "Unlock requires a non-blank reason; snapshots are retained."
       },
       "AttendanceMonthsPublic": {
         "properties": {
@@ -12218,6 +12918,86 @@
         "type": "object",
         "required": ["data", "count"],
         "title": "ShiftsPublic"
+      },
+      "SnapshotPayload": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "title": "Schema Version",
+            "default": 1
+          },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "locked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Locked At"
+          },
+          "locked_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Locked By"
+          },
+          "attendance_month": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Attendance Month"
+          },
+          "calc_run": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Calc Run"
+          },
+          "day_results": {
+            "items": { "additionalProperties": true, "type": "object" },
+            "type": "array",
+            "title": "Day Results",
+            "default": []
+          },
+          "shift_results": {
+            "items": { "additionalProperties": true, "type": "object" },
+            "type": "array",
+            "title": "Shift Results",
+            "default": []
+          },
+          "month_summaries": {
+            "items": { "additionalProperties": true, "type": "object" },
+            "type": "array",
+            "title": "Month Summaries",
+            "default": []
+          },
+          "adjustments": {
+            "items": { "additionalProperties": true, "type": "object" },
+            "type": "array",
+            "title": "Adjustments",
+            "default": []
+          },
+          "export": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Export"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "month",
+          "locked_at",
+          "locked_by",
+          "attendance_month",
+          "calc_run",
+          "export"
+        ],
+        "title": "SnapshotPayload"
       },
       "Token": {
         "properties": {

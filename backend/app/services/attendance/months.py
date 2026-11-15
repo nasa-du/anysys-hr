@@ -9,6 +9,7 @@ transaction, and writes a new ``calc_run`` (spec sections 7.1, 7.12, 8.7).
 
 import uuid
 from datetime import date, datetime
+from typing import Any
 
 from sqlalchemy import ColumnElement, func, or_
 from sqlalchemy.exc import IntegrityError
@@ -25,23 +26,39 @@ from app.enums import (
 )
 from app.models import (
     AttendanceDayResult,
+    AttendanceDayShiftResult,
     AttendanceMonth,
+    AttendanceMonthSnapshot,
     AttendanceMonthSummary,
+    AttendanceResultAdjustment,
     CalcRun,
     ImportBatch,
+    User,
     get_datetime_utc,
 )
 from app.schemas_attendance.core import (
     AttendanceMonthPublic,
+    AttendanceMonthSnapshotPublic,
+    AttendanceMonthSnapshotsPublic,
     AttendanceMonthsPublic,
     CalcRunPublic,
     CalcRunsPublic,
+    CalcRunSummary,
     InputBatches,
     InputBatchInfo,
     MonthCounts,
+    SnapshotPayload,
 )
-from app.services.attendance import adjustments, results
+from app.schemas_attendance.exports import PAYROLL_COLUMNS
+from app.schemas_attendance.results import (
+    AttendanceAdjustmentPublic,
+    AttendanceDayResultPublic,
+    AttendanceDayShiftResultPublic,
+    AttendanceMonthSummaryPublic,
+)
+from app.services.attendance import adjustments, exports, results
 from app.services.attendance.calc import CALC_VERSION, run_month
+from app.services.attendance.displays import user_display_map, user_display_name
 from app.services.attendance.errors import AttendanceErrorCode
 from app.services.attendance.month_state import (
     ensure_month_editable,
@@ -53,6 +70,14 @@ from app.services.companies import get_company_or_404
 
 CALCULATION_FAILED_MESSAGE = "考勤计算失败，请查看计算记录"
 CALCULATION_ERROR_CODE = AttendanceErrorCode.CALC_RUN_FAILED.value
+MONTH_NOT_CALCULATED_MESSAGE = "考勤月份尚未计算，无法执行该操作"
+MONTH_STALE_MESSAGE = "考勤结果已过期，请先重新计算"
+MONTH_ALREADY_CONFIRMED_MESSAGE = "考勤月份已确认，不能重复确认"
+MONTH_NOT_CONFIRMED_MESSAGE = "考勤月份尚未确认，无法执行该操作"
+MONTH_ALREADY_LOCKED_MESSAGE = "考勤月份已锁定，请先解锁"
+MONTH_NOT_LOCKED_MESSAGE = "考勤月份未锁定，无法解锁"
+CALC_RUN_NOT_FOUND_MESSAGE = "计算记录不存在"
+SNAPSHOT_NOT_FOUND_MESSAGE = "快照不存在"
 
 ABNORMAL_DAY_STATUSES = (
     DayStatus.LATE,
@@ -218,6 +243,266 @@ def read_month(
     return _month_public(session, month_row)
 
 
+def _month_for_update(
+    session: Session, company_id: uuid.UUID, month: date
+) -> AttendanceMonth | None:
+    return existing_month(session, company_id, month.replace(day=1), for_update=True)
+
+
+def _save_month(session: Session, month_row: AttendanceMonth) -> AttendanceMonthPublic:
+    session.commit()
+    session.refresh(month_row)
+    return _month_public(session, month_row)
+
+
+def confirm_month(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+) -> AttendanceMonthPublic:
+    """Confirm calculated, non-stale results (spec section 5.6)."""
+    get_company_or_404(session, company_id)
+    month_row = _month_for_update(session, company_id, month)
+    if month_row is None or month_row.status == AttendanceMonthStatus.DRAFT:
+        raise DomainError(
+            AttendanceErrorCode.MONTH_NOT_CALCULATED, MONTH_NOT_CALCULATED_MESSAGE
+        )
+    if month_row.status == AttendanceMonthStatus.LOCKED:
+        raise DomainError(
+            AttendanceErrorCode.MONTH_LOCKED, MONTH_ALREADY_LOCKED_MESSAGE
+        )
+    if month_row.status == AttendanceMonthStatus.CONFIRMED:
+        raise DomainError(
+            AttendanceErrorCode.INVALID_MONTH_TRANSITION,
+            MONTH_ALREADY_CONFIRMED_MESSAGE,
+        )
+    if month_row.is_stale:
+        raise DomainError(AttendanceErrorCode.MONTH_STALE, MONTH_STALE_MESSAGE)
+
+    now = get_datetime_utc()
+    month_row.status = AttendanceMonthStatus.CONFIRMED
+    month_row.confirmed_at = now
+    month_row.updated_at = now
+    return _save_month(session, month_row)
+
+
+def unconfirm_month(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+) -> AttendanceMonthPublic:
+    """Return a confirmed month to calculated; no reason required."""
+    get_company_or_404(session, company_id)
+    month_row = _month_for_update(session, company_id, month)
+    if month_row is None:
+        raise DomainError(
+            AttendanceErrorCode.INVALID_MONTH_TRANSITION, MONTH_NOT_CONFIRMED_MESSAGE
+        )
+    if month_row.status == AttendanceMonthStatus.LOCKED:
+        raise DomainError(
+            AttendanceErrorCode.MONTH_LOCKED, MONTH_ALREADY_LOCKED_MESSAGE
+        )
+    if month_row.status != AttendanceMonthStatus.CONFIRMED:
+        raise DomainError(
+            AttendanceErrorCode.INVALID_MONTH_TRANSITION, MONTH_NOT_CONFIRMED_MESSAGE
+        )
+
+    now = get_datetime_utc()
+    month_row.status = AttendanceMonthStatus.CALCULATED
+    month_row.confirmed_at = None
+    month_row.updated_at = now
+    return _save_month(session, month_row)
+
+
+def _isoformat(value: datetime | None) -> str | None:
+    return value.isoformat() if value is not None else None
+
+
+def _snapshot_payload(
+    session: Session,
+    *,
+    month_row: AttendanceMonth,
+    calc_run: CalcRun,
+    locked_at: datetime,
+    locked_by: User,
+) -> dict[str, Any]:
+    """Freeze the locked result set into the snapshot payload (section 7.12)."""
+    day_rows = session.exec(
+        select(AttendanceDayResult)
+        .where(col(AttendanceDayResult.attendance_month_id) == month_row.id)
+        .order_by(
+            col(AttendanceDayResult.work_date).asc(),
+            col(AttendanceDayResult.employee_id).asc(),
+        )
+    ).all()
+    shift_rows = session.exec(
+        select(AttendanceDayShiftResult)
+        .where(col(AttendanceDayShiftResult.calc_run_id) == calc_run.id)
+        .order_by(
+            col(AttendanceDayShiftResult.work_date).asc(),
+            col(AttendanceDayShiftResult.employee_id).asc(),
+            col(AttendanceDayShiftResult.seq).asc(),
+        )
+    ).all()
+    summary_rows = session.exec(
+        select(AttendanceMonthSummary)
+        .where(col(AttendanceMonthSummary.attendance_month_id) == month_row.id)
+        .order_by(col(AttendanceMonthSummary.employee_id).asc())
+    ).all()
+    adjustment_rows = session.exec(
+        select(AttendanceResultAdjustment)
+        .where(col(AttendanceResultAdjustment.attendance_month_id) == month_row.id)
+        .order_by(
+            col(AttendanceResultAdjustment.work_date).asc(),
+            col(AttendanceResultAdjustment.employee_id).asc(),
+            col(AttendanceResultAdjustment.version).asc(),
+        )
+    ).all()
+    names = user_display_map(session, {row.adjusted_by for row in adjustment_rows})
+
+    adjustments_payload: list[dict[str, Any]] = []
+    for row in adjustment_rows:
+        public = AttendanceAdjustmentPublic.model_validate(row)
+        public.adjusted_by_name = names.get(row.adjusted_by)
+        adjustments_payload.append(public.model_dump(mode="json"))
+
+    payload = SnapshotPayload(
+        company_id=month_row.company_id,
+        month=month_row.month.strftime("%Y-%m"),
+        locked_at=locked_at,
+        locked_by=locked_by.id,
+        attendance_month={
+            "status": AttendanceMonthStatus.LOCKED.value,
+            "calculated_at": _isoformat(month_row.calculated_at),
+            "confirmed_at": _isoformat(month_row.confirmed_at),
+        },
+        calc_run={
+            "id": str(calc_run.id),
+            "trigger": calc_run.trigger.value,
+            "calc_version": calc_run.calc_version,
+            "rules_version": calc_run.rules_version,
+            "roster_version": calc_run.roster_version,
+            "rules_snapshot": calc_run.rules_snapshot,
+            "input_batches": calc_run.input_batches,
+            "summary": calc_run.summary,
+        },
+        day_results=[
+            AttendanceDayResultPublic.model_validate(row).model_dump(mode="json")
+            for row in day_rows
+        ],
+        shift_results=[
+            AttendanceDayShiftResultPublic.model_validate(row).model_dump(mode="json")
+            for row in shift_rows
+        ],
+        month_summaries=[
+            AttendanceMonthSummaryPublic.model_validate(row).model_dump(mode="json")
+            for row in summary_rows
+        ],
+        adjustments=adjustments_payload,
+        export={
+            "columns": list(PAYROLL_COLUMNS),
+            "rows": exports.payroll_rows(
+                session,
+                company_id=month_row.company_id,
+                month=month_row.month,
+            ),
+        },
+    )
+    return payload.model_dump(mode="json")
+
+
+def lock_month(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+    operator: User,
+) -> AttendanceMonthPublic:
+    """Lock a confirmed month and append an immutable snapshot."""
+    get_company_or_404(session, company_id)
+    month_row = _month_for_update(session, company_id, month)
+    if month_row is None or month_row.status == AttendanceMonthStatus.DRAFT:
+        raise DomainError(
+            AttendanceErrorCode.MONTH_NOT_CALCULATED, MONTH_NOT_CALCULATED_MESSAGE
+        )
+    if month_row.status == AttendanceMonthStatus.LOCKED:
+        raise DomainError(
+            AttendanceErrorCode.MONTH_LOCKED, MONTH_ALREADY_LOCKED_MESSAGE
+        )
+    if month_row.status != AttendanceMonthStatus.CONFIRMED:
+        raise DomainError(
+            AttendanceErrorCode.INVALID_MONTH_TRANSITION, MONTH_NOT_CONFIRMED_MESSAGE
+        )
+
+    calc_run = session.exec(
+        select(CalcRun)
+        .where(
+            col(CalcRun.attendance_month_id) == month_row.id,
+            col(CalcRun.status) == CalcRunStatus.SUCCESS,
+        )
+        .order_by(col(CalcRun.started_at).desc(), col(CalcRun.id).desc())
+    ).first()
+    if calc_run is None:
+        raise DomainError(
+            AttendanceErrorCode.MONTH_NOT_CALCULATED, MONTH_NOT_CALCULATED_MESSAGE
+        )
+
+    current_version = session.exec(
+        select(func.max(AttendanceMonthSnapshot.version)).where(
+            col(AttendanceMonthSnapshot.attendance_month_id) == month_row.id
+        )
+    ).one()
+    now = get_datetime_utc()
+    payload = _snapshot_payload(
+        session,
+        month_row=month_row,
+        calc_run=calc_run,
+        locked_at=now,
+        locked_by=operator,
+    )
+    snapshot = AttendanceMonthSnapshot(
+        attendance_month_id=month_row.id,
+        calc_run_id=calc_run.id,
+        version=(current_version or 0) + 1,
+        locked_at=now,
+        locked_by=operator.id,
+        payload=payload,
+    )
+    session.add(snapshot)
+
+    month_row.status = AttendanceMonthStatus.LOCKED
+    month_row.locked_at = now
+    month_row.updated_at = now
+    return _save_month(session, month_row)
+
+
+def unlock_month(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+    reason: str,
+) -> AttendanceMonthPublic:
+    """Unlock a locked month, keep snapshots, and require recalculation."""
+    get_company_or_404(session, company_id)
+    month_row = _month_for_update(session, company_id, month)
+    if month_row is None or month_row.status != AttendanceMonthStatus.LOCKED:
+        raise DomainError(
+            AttendanceErrorCode.INVALID_MONTH_TRANSITION, MONTH_NOT_LOCKED_MESSAGE
+        )
+
+    now = get_datetime_utc()
+    month_row.status = AttendanceMonthStatus.CALCULATED
+    month_row.is_stale = True
+    month_row.locked_at = None
+    month_row.confirmed_at = None
+    month_row.unlock_reason = reason
+    month_row.updated_at = now
+    return _save_month(session, month_row)
+
+
 def list_calc_runs(
     session: Session,
     *,
@@ -241,6 +526,128 @@ def list_calc_runs(
     runs, count = paginate(session, statement, count_statement, skip=skip, limit=limit)
     return CalcRunsPublic(
         data=[CalcRunPublic.model_validate(run) for run in runs], count=count
+    )
+
+
+def read_calc_run(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    calc_run_id: uuid.UUID,
+) -> CalcRunPublic:
+    """Return one calculation run; cross-company access is a 404."""
+    get_company_or_404(session, company_id)
+    calc_run = session.get(CalcRun, calc_run_id)
+    if calc_run is None:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, CALC_RUN_NOT_FOUND_MESSAGE)
+    month_row = session.get(AttendanceMonth, calc_run.attendance_month_id)
+    if month_row is None or month_row.company_id != company_id:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, CALC_RUN_NOT_FOUND_MESSAGE)
+    return CalcRunPublic.model_validate(calc_run)
+
+
+def _snapshot_public(
+    snapshot: AttendanceMonthSnapshot,
+    *,
+    calc_run: CalcRun | None,
+    locked_by_name: str | None,
+    include_payload: bool,
+) -> AttendanceMonthSnapshotPublic:
+    public = AttendanceMonthSnapshotPublic.model_validate(snapshot)
+    public.locked_by_name = locked_by_name
+    if calc_run is not None and calc_run.summary is not None:
+        public.summary = CalcRunSummary.model_validate(calc_run.summary)
+    if include_payload:
+        public.payload = SnapshotPayload.model_validate(snapshot.payload)
+    else:
+        public.payload = None
+    return public
+
+
+def _snapshot_context(
+    session: Session, snapshots: list[AttendanceMonthSnapshot]
+) -> tuple[dict[uuid.UUID, CalcRun], dict[uuid.UUID, str | None]]:
+    calc_run_ids = {snapshot.calc_run_id for snapshot in snapshots}
+    runs = (
+        {
+            run.id: run
+            for run in session.exec(
+                select(CalcRun).where(col(CalcRun.id).in_(calc_run_ids))
+            ).all()
+        }
+        if calc_run_ids
+        else {}
+    )
+    names = user_display_map(session, {snapshot.locked_by for snapshot in snapshots})
+    return runs, names
+
+
+def list_snapshots(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    month: date,
+    skip: int,
+    limit: int,
+) -> AttendanceMonthSnapshotsPublic:
+    """List lock snapshots newest version first; payloads are omitted."""
+    get_company_or_404(session, company_id)
+    month_row = existing_month(session, company_id, month.replace(day=1))
+    if month_row is None:
+        return AttendanceMonthSnapshotsPublic(data=[], count=0)
+
+    filters = [col(AttendanceMonthSnapshot.attendance_month_id) == month_row.id]
+    statement = (
+        select(AttendanceMonthSnapshot)
+        .where(*filters)
+        .order_by(
+            col(AttendanceMonthSnapshot.version).desc(),
+            col(AttendanceMonthSnapshot.id).desc(),
+        )
+    )
+    count_statement = (
+        select(func.count()).select_from(AttendanceMonthSnapshot).where(*filters)
+    )
+    snapshots, count = paginate(
+        session, statement, count_statement, skip=skip, limit=limit
+    )
+    runs, names = _snapshot_context(session, snapshots)
+    return AttendanceMonthSnapshotsPublic(
+        data=[
+            _snapshot_public(
+                snapshot,
+                calc_run=runs.get(snapshot.calc_run_id),
+                locked_by_name=names.get(snapshot.locked_by),
+                include_payload=False,
+            )
+            for snapshot in snapshots
+        ],
+        count=count,
+    )
+
+
+def read_snapshot(
+    session: Session,
+    *,
+    company_id: uuid.UUID,
+    snapshot_id: uuid.UUID,
+    include_payload: bool,
+) -> AttendanceMonthSnapshotPublic:
+    """Return one snapshot; payload only when requested."""
+    get_company_or_404(session, company_id)
+    snapshot = session.get(AttendanceMonthSnapshot, snapshot_id)
+    if snapshot is None:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, SNAPSHOT_NOT_FOUND_MESSAGE)
+    month_row = session.get(AttendanceMonth, snapshot.attendance_month_id)
+    if month_row is None or month_row.company_id != company_id:
+        raise DomainError(AttendanceErrorCode.NOT_FOUND, SNAPSHOT_NOT_FOUND_MESSAGE)
+    calc_run = session.get(CalcRun, snapshot.calc_run_id)
+    operator = session.get(User, snapshot.locked_by)
+    return _snapshot_public(
+        snapshot,
+        calc_run=calc_run,
+        locked_by_name=user_display_name(operator),
+        include_payload=include_payload,
     )
 
 

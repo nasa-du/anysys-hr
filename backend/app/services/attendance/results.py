@@ -109,6 +109,7 @@ from app.services.attendance.calc import (
     RosterEntry as CalcRosterEntry,
 )
 from app.services.attendance.calc._common import amount_value, day_value, hours_value
+from app.services.attendance.displays import employee_display_map
 from app.services.attendance.errors import AttendanceErrorCode
 from app.services.attendance.expansion import month_bounds
 from app.services.attendance.month_state import existing_month
@@ -1024,29 +1025,7 @@ def _company_department_or_404(
 def _employee_displays(
     session: Session, employee_ids: set[uuid.UUID]
 ) -> dict[uuid.UUID, tuple[Employee, Department]]:
-    if not employee_ids:
-        return {}
-    employees = {
-        employee.id: employee
-        for employee in session.exec(
-            select(Employee).where(col(Employee.id).in_(employee_ids))
-        ).all()
-    }
-    departments = {
-        department.id: department
-        for department in session.exec(
-            select(Department).where(
-                col(Department.id).in_(
-                    {employee.dept_id for employee in employees.values()}
-                )
-            )
-        ).all()
-    }
-    return {
-        employee.id: (employee, departments[employee.dept_id])
-        for employee in employees.values()
-        if employee.dept_id in departments
-    }
+    return employee_display_map(session, employee_ids)
 
 
 def _employee_display(employee: Employee, department: Department) -> EmployeeDisplay:

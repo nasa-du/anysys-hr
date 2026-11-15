@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises"
+
 import { expect, type Page, test } from "@playwright/test"
 
 import {
@@ -355,4 +357,81 @@ test("surfaces a conflict when another version was submitted first", async ({
     "他人先提交",
   )
   await expect(drawer.getByTestId("day-result-status")).toHaveText("正常")
+})
+
+test("confirms, locks, views snapshots, exports, and requires recalculation after unlock", async ({
+  page,
+}) => {
+  const setup = await setupResults(page)
+  await openResults(page)
+
+  const confirmButton = page.getByTestId("confirm-month-button")
+  await expect(confirmButton).toBeEnabled()
+  await confirmButton.click()
+  await expect(page.getByText(/考勤结果已确认/)).toBeVisible()
+  await expect(page.getByTestId("month-confirmed-banner")).toBeVisible()
+  await expect(page.getByTestId("recalculate-button")).toBeDisabled()
+
+  await page.getByTestId("lock-month-button").click()
+  await expect(page.getByTestId("lock-month-dialog")).toBeVisible()
+  await page.getByTestId("lock-submit").click()
+  await expect(page.getByText(/已锁定，并生成不可变快照/)).toBeVisible()
+  await expect(page.getByTestId("month-locked-banner")).toBeVisible()
+  await expect(page.getByTestId("month-state-step-locked")).toHaveAttribute(
+    "data-current",
+    "true",
+  )
+  await expect(page.getByTestId("month-action-hint")).toContainText("已锁定")
+
+  await dayRow(page, setup, LATE_DAY).click()
+  const drawer = page.getByTestId("day-detail-drawer")
+  await expect(drawer).toBeVisible()
+  await expect(drawer.getByTestId("open-adjustment-dialog")).toBeDisabled()
+  await expect(drawer.getByTestId("adjustment-readonly")).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(drawer).toHaveCount(0)
+
+  await page.getByTestId("view-snapshots-button").click()
+  const viewer = page.getByTestId("snapshot-viewer")
+  await expect(viewer).toBeVisible()
+  await expect(page.getByTestId("snapshot-row-1")).toBeVisible()
+  await page.getByTestId("snapshot-toggle-1").click()
+  await expect(page.getByTestId("snapshot-payload-1")).toContainText(
+    "schema_version",
+  )
+  await page.keyboard.press("Escape")
+  await expect(viewer).toHaveCount(0)
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByTestId("export-payroll-button").click(),
+  ])
+  expect(download.suggestedFilename()).toBe("attendance-payroll-2026-09.csv")
+  const downloadPath = await download.path()
+  expect(downloadPath).not.toBeNull()
+  const csv = await readFile(downloadPath as string, "utf8")
+  expect(csv.startsWith("\ufeff")).toBe(true)
+  expect(csv).toContain(
+    "attendance_month,company_name,employee_no,employee_name,department_name,weekday_full,weekend_full,weekday_attended,weekend_attended,paid_leave_days,ot_weekday_hours,ot_weekend_hours,ot_holiday_hours,attendance_deduct",
+  )
+  expect(csv).toContain(setup.employeeNo)
+
+  await page.getByTestId("unlock-month-button").click()
+  const unlockDialog = page.getByTestId("unlock-month-dialog")
+  await expect(unlockDialog).toBeVisible()
+  await unlockDialog.getByTestId("unlock-submit").click()
+  await expect(unlockDialog.getByText("请填写解锁理由")).toBeVisible()
+  await unlockDialog.getByTestId("unlock-reason-input").fill("复核后重新打开")
+  await unlockDialog.getByTestId("unlock-submit").click()
+  await expect(page.getByText(/已解锁，结果已标记为过期/)).toBeVisible()
+  await expect(page.getByTestId("month-locked-banner")).toHaveCount(0)
+  await expect(page.getByTestId("month-stale-banner")).toBeVisible()
+  await expect(page.getByTestId("confirm-month-button")).toBeDisabled()
+  await expect(page.getByTestId("month-action-hint")).toContainText("已过期")
+  await expect(page.getByTestId("recalculate-button")).toBeEnabled()
+
+  await page.getByTestId("recalculate-button").click()
+  await expect(page.getByText(/重新计算完成/)).toBeVisible()
+  await expect(page.getByTestId("month-stale-banner")).toHaveCount(0)
+  await expect(page.getByTestId("confirm-month-button")).toBeEnabled()
 })

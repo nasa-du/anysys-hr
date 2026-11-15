@@ -32,6 +32,7 @@ from app.schemas_attendance.results import (
     AttendanceAdjustmentsPublic,
 )
 from app.services.attendance.calc._common import month_bounds
+from app.services.attendance.displays import user_display_name
 from app.services.attendance.errors import AttendanceErrorCode
 from app.services.attendance.month_state import ensure_month_editable, existing_month
 from app.services.attendance.results import (
@@ -134,10 +135,6 @@ def _public(
     return public
 
 
-def _user_name(user: User) -> str | None:
-    return user.full_name or user.email
-
-
 def _adjusted_by_names(
     session: Session, rows: list[AttendanceResultAdjustment]
 ) -> dict[uuid.UUID, str | None]:
@@ -145,7 +142,7 @@ def _adjusted_by_names(
     if not user_ids:
         return {}
     users = session.exec(select(User).where(col(User.id).in_(user_ids))).all()
-    return {user.id: _user_name(user) for user in users}
+    return {user.id: user_display_name(user) for user in users}
 
 
 def list_adjustments(
@@ -378,4 +375,4 @@ def create_adjustment(
     )
     session.commit()
     session.refresh(adjustment)
-    return _public(adjustment, _user_name(operator))
+    return _public(adjustment, user_display_name(operator))

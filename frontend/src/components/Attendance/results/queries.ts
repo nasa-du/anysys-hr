@@ -5,7 +5,10 @@ import {
   AttendanceAdjustmentsService,
   type AttendanceDayDetailPublic,
   type AttendanceDayResultsPublic,
+  AttendanceExportsService,
   type AttendanceMonthPublic,
+  type AttendanceMonthSnapshotPublic,
+  type AttendanceMonthSnapshotsPublic,
   type AttendanceMonthSummariesPublic,
   AttendanceMonthsService,
   AttendanceResultsService,
@@ -19,6 +22,7 @@ import {
 } from "@/client"
 import useCustomToast from "@/hooks/useCustomToast"
 import { getErrorMessage } from "@/lib/api-error"
+import { downloadBlob } from "@/lib/download"
 
 export type DayResultFilters = {
   isAbnormalOnly: boolean
@@ -127,6 +131,10 @@ export function calcRunsQueryKey(
     month,
     { skip, limit },
   ] as const
+}
+
+export function snapshotsQueryKey(companyId: string, month: string) {
+  return ["attendance", "months", "snapshots", companyId, month] as const
 }
 
 /** Calculation and import changes invalidate results and month state (spec 8.9). */
@@ -337,6 +345,156 @@ export function useRecalculateMonth(companyId: string, month: string) {
         } 天`,
       )
       invalidateResultQueries(queryClient)
+    },
+    onError: (error) => showErrorToast(getErrorMessage(error)),
+  })
+}
+
+export function useSnapshots(companyId: string, month: string, enabled = true) {
+  return useQuery({
+    queryKey: snapshotsQueryKey(companyId, month),
+    queryFn: async (): Promise<AttendanceMonthSnapshotsPublic> => {
+      const response = await AttendanceMonthsService.readSnapshots({
+        path: { month },
+        query: { company_id: companyId, skip: 0, limit: 100 },
+      })
+      return response.data
+    },
+    enabled: Boolean(companyId && month) && enabled,
+  })
+}
+
+/** Load one snapshot's full payload only when the viewer asks for it. */
+export function useSnapshotDetail(
+  companyId: string,
+  snapshotId: string | null,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: [
+      "attendance",
+      "months",
+      "snapshots",
+      companyId,
+      "detail",
+      snapshotId,
+    ],
+    queryFn: async (): Promise<AttendanceMonthSnapshotPublic> => {
+      const response = await AttendanceMonthsService.readSnapshot({
+        path: { snapshot_id: snapshotId as string },
+        query: { company_id: companyId, include_payload: true },
+      })
+      return response.data
+    },
+    enabled: Boolean(companyId && snapshotId) && enabled,
+  })
+}
+
+export function useConfirmMonth(companyId: string, month: string) {
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
+
+  return useMutation({
+    mutationFn: async (): Promise<AttendanceMonthPublic> => {
+      const response = await AttendanceMonthsService.confirmMonth({
+        path: { month },
+        query: { company_id: companyId },
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      showSuccessToast(`${month} 考勤结果已确认`)
+      invalidateResultQueries(queryClient)
+    },
+    onError: (error) => showErrorToast(getErrorMessage(error)),
+  })
+}
+
+export function useUnconfirmMonth(companyId: string, month: string) {
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
+
+  return useMutation({
+    mutationFn: async (): Promise<AttendanceMonthPublic> => {
+      const response = await AttendanceMonthsService.unconfirmMonth({
+        path: { month },
+        query: { company_id: companyId },
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      showSuccessToast(`${month} 已取消确认，可重新编辑`)
+      invalidateResultQueries(queryClient)
+    },
+    onError: (error) => showErrorToast(getErrorMessage(error)),
+  })
+}
+
+export function useLockMonth(companyId: string, month: string) {
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
+
+  return useMutation({
+    mutationFn: async (): Promise<AttendanceMonthPublic> => {
+      const response = await AttendanceMonthsService.lockMonth({
+        path: { month },
+        query: { company_id: companyId },
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      showSuccessToast(`${month} 已锁定，并生成不可变快照`)
+      invalidateResultQueries(queryClient)
+    },
+    onError: (error) => showErrorToast(getErrorMessage(error)),
+  })
+}
+
+export function useUnlockMonth(companyId: string, month: string) {
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
+
+  return useMutation({
+    mutationFn: async (reason: string): Promise<AttendanceMonthPublic> => {
+      const response = await AttendanceMonthsService.unlockMonth({
+        path: { month },
+        query: { company_id: companyId },
+        body: { reason },
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      showSuccessToast(`${month} 已解锁，结果已标记为过期，请重新计算`)
+      invalidateResultQueries(queryClient)
+    },
+    onError: (error) => showErrorToast(getErrorMessage(error)),
+  })
+}
+
+export type MonthExportKind = "payroll" | "detail"
+
+/** Download a streamed CSV; the API already escapes cells and adds a BOM. */
+export function useMonthExport(companyId: string, month: string) {
+  const { showErrorToast } = useCustomToast()
+
+  return useMutation({
+    mutationFn: async (kind: MonthExportKind) => {
+      const options = {
+        path: { month },
+        query: { company_id: companyId },
+      }
+      const response =
+        kind === "payroll"
+          ? await AttendanceExportsService.exportPayrollCsv(options)
+          : await AttendanceExportsService.exportDetailCsv(options)
+      return { kind, content: response.data }
+    },
+    onSuccess: ({ kind, content }) => {
+      const text = content.startsWith("\ufeff") ? content : `\ufeff${content}`
+      downloadBlob(
+        new Blob([text], { type: "text/csv;charset=utf-8" }),
+        `attendance-${kind}-${month}.csv`,
+      )
     },
     onError: (error) => showErrorToast(getErrorMessage(error)),
   })

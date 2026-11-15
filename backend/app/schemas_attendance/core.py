@@ -446,6 +446,20 @@ class MonthCounts(SQLModel):
     month_summary_count: int = 0
 
 
+class AttendanceMonthUnlock(WriteModel):
+    """Unlock requires a non-blank reason; snapshots are retained."""
+
+    reason: str = Field(min_length=1, max_length=500)
+
+    @field_validator("reason")
+    @classmethod
+    def _non_blank_reason(cls, value: str) -> str:
+        reason = value.strip()
+        if not reason:
+            raise ValueError("请填写解锁理由")
+        return reason
+
+
 class AttendanceMonthPublic(ReadModel):
     id: uuid.UUID | None = None
     exists: bool

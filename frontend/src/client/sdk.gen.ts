@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { attendanceAdjustmentsCreateAdjustmentData, attendanceAdjustmentsCreateAdjustmentErrors, attendanceAdjustmentsCreateAdjustmentResponses, attendanceAdjustmentsReadAdjustmentData, attendanceAdjustmentsReadAdjustmentErrors, attendanceAdjustmentsReadAdjustmentResponses, attendanceAdjustmentsReadAdjustmentsData, attendanceAdjustmentsReadAdjustmentsErrors, attendanceAdjustmentsReadAdjustmentsResponses, attendanceHolidaysCopyYearData, attendanceHolidaysCopyYearErrors, attendanceHolidaysCopyYearResponses, attendanceHolidaysCreateHolidayData, attendanceHolidaysCreateHolidayErrors, attendanceHolidaysCreateHolidayResponses, attendanceHolidaysDeleteHolidayData, attendanceHolidaysDeleteHolidayErrors, attendanceHolidaysDeleteHolidayResponses, attendanceHolidaysPreviewCopyYearData, attendanceHolidaysPreviewCopyYearErrors, attendanceHolidaysPreviewCopyYearResponses, attendanceHolidaysReadHolidaysData, attendanceHolidaysReadHolidaysErrors, attendanceHolidaysReadHolidaysResponses, attendanceHolidaysUpdateHolidayData, attendanceHolidaysUpdateHolidayErrors, attendanceHolidaysUpdateHolidayResponses, attendanceImportsCommitImportData, attendanceImportsCommitImportErrors, attendanceImportsCommitImportResponses, attendanceImportsDiscardImportData, attendanceImportsDiscardImportErrors, attendanceImportsDiscardImportResponses, attendanceImportsPreviewImportsData, attendanceImportsPreviewImportsErrors, attendanceImportsPreviewImportsResponses, attendanceImportsReadImportBatchData, attendanceImportsReadImportBatchErrors, attendanceImportsReadImportBatchErrorsData, attendanceImportsReadImportBatchErrorsErrors, attendanceImportsReadImportBatchErrorsResponses, attendanceImportsReadImportBatchesData, attendanceImportsReadImportBatchesErrors, attendanceImportsReadImportBatchesResponses, attendanceImportsReadImportBatchRecordsData, attendanceImportsReadImportBatchRecordsErrors, attendanceImportsReadImportBatchRecordsResponses, attendanceImportsReadImportBatchResponses, attendanceImportsReadMappingTemplateData, attendanceImportsReadMappingTemplateErrors, attendanceImportsReadMappingTemplateResponses, attendanceImportsRevokeImportData, attendanceImportsRevokeImportErrors, attendanceImportsRevokeImportResponses, attendanceMonthsCalculateMonthData, attendanceMonthsCalculateMonthErrors, attendanceMonthsCalculateMonthResponses, attendanceMonthsReadCalcRunsData, attendanceMonthsReadCalcRunsErrors, attendanceMonthsReadCalcRunsResponses, attendanceMonthsReadMonthData, attendanceMonthsReadMonthErrors, attendanceMonthsReadMonthResponses, attendanceMonthsReadMonthsData, attendanceMonthsReadMonthsErrors, attendanceMonthsReadMonthsResponses, attendanceResultsReadDayDetailData, attendanceResultsReadDayDetailErrors, attendanceResultsReadDayDetailResponses, attendanceResultsReadDayResultsData, attendanceResultsReadDayResultsErrors, attendanceResultsReadDayResultsResponses, attendanceResultsReadMonthSummariesData, attendanceResultsReadMonthSummariesErrors, attendanceResultsReadMonthSummariesResponses, attendanceResultsReadResultCalendarData, attendanceResultsReadResultCalendarErrors, attendanceResultsReadResultCalendarResponses, attendanceRosterBatchRosterEntriesData, attendanceRosterBatchRosterEntriesErrors, attendanceRosterBatchRosterEntriesResponses, attendanceRosterCreateRosterEntryData, attendanceRosterCreateRosterEntryErrors, attendanceRosterCreateRosterEntryResponses, attendanceRosterDeleteRosterEntryData, attendanceRosterDeleteRosterEntryErrors, attendanceRosterDeleteRosterEntryResponses, attendanceRosterReadEmployeeCalendarData, attendanceRosterReadEmployeeCalendarErrors, attendanceRosterReadEmployeeCalendarResponses, attendanceRosterReadRosterDayData, attendanceRosterReadRosterDayErrors, attendanceRosterReadRosterDayResponses, attendanceRosterReadRosterEmployeesData, attendanceRosterReadRosterEmployeesErrors, attendanceRosterReadRosterEmployeesResponses, attendanceRosterReadRosterEntriesData, attendanceRosterReadRosterEntriesErrors, attendanceRosterReadRosterEntriesResponses, attendanceRosterReadRosterEntryData, attendanceRosterReadRosterEntryErrors, attendanceRosterReadRosterEntryResponses, attendanceRosterReadRosterMonthData, attendanceRosterReadRosterMonthErrors, attendanceRosterReadRosterMonthResponses, attendanceRosterSyncPersonnelData, attendanceRosterSyncPersonnelErrors, attendanceRosterSyncPersonnelResponses, attendanceRosterSyncPreviewData, attendanceRosterSyncPreviewErrors, attendanceRosterSyncPreviewResponses, attendanceRosterUpdateRosterEntryData, attendanceRosterUpdateRosterEntryErrors, attendanceRosterUpdateRosterEntryResponses, attendanceRulesReadCompanyRuleData, attendanceRulesReadCompanyRuleErrors, attendanceRulesReadCompanyRuleResponses, attendanceRulesUpdateCompanyRuleData, attendanceRulesUpdateCompanyRuleErrors, attendanceRulesUpdateCompanyRuleResponses, attendanceSchedulePlansArchiveSchedulePlanData, attendanceSchedulePlansArchiveSchedulePlanErrors, attendanceSchedulePlansArchiveSchedulePlanResponses, attendanceSchedulePlansCopyPreviewData, attendanceSchedulePlansCopyPreviewErrors, attendanceSchedulePlansCopyPreviewResponses, attendanceSchedulePlansCopySchedulePlanData, attendanceSchedulePlansCopySchedulePlanErrors, attendanceSchedulePlansCopySchedulePlanResponses, attendanceSchedulePlansCreateSchedulePlanData, attendanceSchedulePlansCreateSchedulePlanErrors, attendanceSchedulePlansCreateSchedulePlanResponses, attendanceSchedulePlansDeleteSchedulePlanData, attendanceSchedulePlansDeleteSchedulePlanErrors, attendanceSchedulePlansDeleteSchedulePlanResponses, attendanceSchedulePlansExpandPreviewData, attendanceSchedulePlansExpandPreviewErrors, attendanceSchedulePlansExpandPreviewResponses, attendanceSchedulePlansExpandSchedulePlanData, attendanceSchedulePlansExpandSchedulePlanErrors, attendanceSchedulePlansExpandSchedulePlanResponses, attendanceSchedulePlansPreviewSchedulePlanData, attendanceSchedulePlansPreviewSchedulePlanErrors, attendanceSchedulePlansPreviewSchedulePlanResponses, attendanceSchedulePlansReadPlanRuleOverridesData, attendanceSchedulePlansReadPlanRuleOverridesErrors, attendanceSchedulePlansReadPlanRuleOverridesResponses, attendanceSchedulePlansReadSchedulePlanData, attendanceSchedulePlansReadSchedulePlanErrors, attendanceSchedulePlansReadSchedulePlanResponses, attendanceSchedulePlansReadSchedulePlansData, attendanceSchedulePlansReadSchedulePlansErrors, attendanceSchedulePlansReadSchedulePlansResponses, attendanceSchedulePlansUnarchiveSchedulePlanData, attendanceSchedulePlansUnarchiveSchedulePlanErrors, attendanceSchedulePlansUnarchiveSchedulePlanResponses, attendanceSchedulePlansUpdatePlanRuleOverridesData, attendanceSchedulePlansUpdatePlanRuleOverridesErrors, attendanceSchedulePlansUpdatePlanRuleOverridesResponses, attendanceSchedulePlansUpdateSchedulePlanData, attendanceSchedulePlansUpdateSchedulePlanErrors, attendanceSchedulePlansUpdateSchedulePlanResponses, attendanceShiftsCreateShiftData, attendanceShiftsCreateShiftErrors, attendanceShiftsCreateShiftResponses, attendanceShiftsDeleteShiftData, attendanceShiftsDeleteShiftErrors, attendanceShiftsDeleteShiftResponses, attendanceShiftsReadShiftData, attendanceShiftsReadShiftErrors, attendanceShiftsReadShiftResponses, attendanceShiftsReadShiftsData, attendanceShiftsReadShiftsErrors, attendanceShiftsReadShiftsResponses, attendanceShiftsUpdateShiftData, attendanceShiftsUpdateShiftErrors, attendanceShiftsUpdateShiftResponses, companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { attendanceAdjustmentsCreateAdjustmentData, attendanceAdjustmentsCreateAdjustmentErrors, attendanceAdjustmentsCreateAdjustmentResponses, attendanceAdjustmentsReadAdjustmentData, attendanceAdjustmentsReadAdjustmentErrors, attendanceAdjustmentsReadAdjustmentResponses, attendanceAdjustmentsReadAdjustmentsData, attendanceAdjustmentsReadAdjustmentsErrors, attendanceAdjustmentsReadAdjustmentsResponses, attendanceExportsExportDetailCsvData, attendanceExportsExportDetailCsvErrors, attendanceExportsExportDetailCsvResponses, attendanceExportsExportPayrollCsvData, attendanceExportsExportPayrollCsvErrors, attendanceExportsExportPayrollCsvResponses, attendanceHolidaysCopyYearData, attendanceHolidaysCopyYearErrors, attendanceHolidaysCopyYearResponses, attendanceHolidaysCreateHolidayData, attendanceHolidaysCreateHolidayErrors, attendanceHolidaysCreateHolidayResponses, attendanceHolidaysDeleteHolidayData, attendanceHolidaysDeleteHolidayErrors, attendanceHolidaysDeleteHolidayResponses, attendanceHolidaysPreviewCopyYearData, attendanceHolidaysPreviewCopyYearErrors, attendanceHolidaysPreviewCopyYearResponses, attendanceHolidaysReadHolidaysData, attendanceHolidaysReadHolidaysErrors, attendanceHolidaysReadHolidaysResponses, attendanceHolidaysUpdateHolidayData, attendanceHolidaysUpdateHolidayErrors, attendanceHolidaysUpdateHolidayResponses, attendanceImportsCommitImportData, attendanceImportsCommitImportErrors, attendanceImportsCommitImportResponses, attendanceImportsDiscardImportData, attendanceImportsDiscardImportErrors, attendanceImportsDiscardImportResponses, attendanceImportsPreviewImportsData, attendanceImportsPreviewImportsErrors, attendanceImportsPreviewImportsResponses, attendanceImportsReadImportBatchData, attendanceImportsReadImportBatchErrors, attendanceImportsReadImportBatchErrorsData, attendanceImportsReadImportBatchErrorsErrors, attendanceImportsReadImportBatchErrorsResponses, attendanceImportsReadImportBatchesData, attendanceImportsReadImportBatchesErrors, attendanceImportsReadImportBatchesResponses, attendanceImportsReadImportBatchRecordsData, attendanceImportsReadImportBatchRecordsErrors, attendanceImportsReadImportBatchRecordsResponses, attendanceImportsReadImportBatchResponses, attendanceImportsReadMappingTemplateData, attendanceImportsReadMappingTemplateErrors, attendanceImportsReadMappingTemplateResponses, attendanceImportsRevokeImportData, attendanceImportsRevokeImportErrors, attendanceImportsRevokeImportResponses, attendanceMonthsCalculateMonthData, attendanceMonthsCalculateMonthErrors, attendanceMonthsCalculateMonthResponses, attendanceMonthsConfirmMonthData, attendanceMonthsConfirmMonthErrors, attendanceMonthsConfirmMonthResponses, attendanceMonthsLockMonthData, attendanceMonthsLockMonthErrors, attendanceMonthsLockMonthResponses, attendanceMonthsReadCalcRunData, attendanceMonthsReadCalcRunErrors, attendanceMonthsReadCalcRunResponses, attendanceMonthsReadCalcRunsData, attendanceMonthsReadCalcRunsErrors, attendanceMonthsReadCalcRunsResponses, attendanceMonthsReadMonthData, attendanceMonthsReadMonthErrors, attendanceMonthsReadMonthResponses, attendanceMonthsReadMonthsData, attendanceMonthsReadMonthsErrors, attendanceMonthsReadMonthsResponses, attendanceMonthsReadSnapshotData, attendanceMonthsReadSnapshotErrors, attendanceMonthsReadSnapshotResponses, attendanceMonthsReadSnapshotsData, attendanceMonthsReadSnapshotsErrors, attendanceMonthsReadSnapshotsResponses, attendanceMonthsUnconfirmMonthData, attendanceMonthsUnconfirmMonthErrors, attendanceMonthsUnconfirmMonthResponses, attendanceMonthsUnlockMonthData, attendanceMonthsUnlockMonthErrors, attendanceMonthsUnlockMonthResponses, attendanceResultsReadDayDetailData, attendanceResultsReadDayDetailErrors, attendanceResultsReadDayDetailResponses, attendanceResultsReadDayResultsData, attendanceResultsReadDayResultsErrors, attendanceResultsReadDayResultsResponses, attendanceResultsReadMonthSummariesData, attendanceResultsReadMonthSummariesErrors, attendanceResultsReadMonthSummariesResponses, attendanceResultsReadResultCalendarData, attendanceResultsReadResultCalendarErrors, attendanceResultsReadResultCalendarResponses, attendanceRosterBatchRosterEntriesData, attendanceRosterBatchRosterEntriesErrors, attendanceRosterBatchRosterEntriesResponses, attendanceRosterCreateRosterEntryData, attendanceRosterCreateRosterEntryErrors, attendanceRosterCreateRosterEntryResponses, attendanceRosterDeleteRosterEntryData, attendanceRosterDeleteRosterEntryErrors, attendanceRosterDeleteRosterEntryResponses, attendanceRosterReadEmployeeCalendarData, attendanceRosterReadEmployeeCalendarErrors, attendanceRosterReadEmployeeCalendarResponses, attendanceRosterReadRosterDayData, attendanceRosterReadRosterDayErrors, attendanceRosterReadRosterDayResponses, attendanceRosterReadRosterEmployeesData, attendanceRosterReadRosterEmployeesErrors, attendanceRosterReadRosterEmployeesResponses, attendanceRosterReadRosterEntriesData, attendanceRosterReadRosterEntriesErrors, attendanceRosterReadRosterEntriesResponses, attendanceRosterReadRosterEntryData, attendanceRosterReadRosterEntryErrors, attendanceRosterReadRosterEntryResponses, attendanceRosterReadRosterMonthData, attendanceRosterReadRosterMonthErrors, attendanceRosterReadRosterMonthResponses, attendanceRosterSyncPersonnelData, attendanceRosterSyncPersonnelErrors, attendanceRosterSyncPersonnelResponses, attendanceRosterSyncPreviewData, attendanceRosterSyncPreviewErrors, attendanceRosterSyncPreviewResponses, attendanceRosterUpdateRosterEntryData, attendanceRosterUpdateRosterEntryErrors, attendanceRosterUpdateRosterEntryResponses, attendanceRulesReadCompanyRuleData, attendanceRulesReadCompanyRuleErrors, attendanceRulesReadCompanyRuleResponses, attendanceRulesUpdateCompanyRuleData, attendanceRulesUpdateCompanyRuleErrors, attendanceRulesUpdateCompanyRuleResponses, attendanceSchedulePlansArchiveSchedulePlanData, attendanceSchedulePlansArchiveSchedulePlanErrors, attendanceSchedulePlansArchiveSchedulePlanResponses, attendanceSchedulePlansCopyPreviewData, attendanceSchedulePlansCopyPreviewErrors, attendanceSchedulePlansCopyPreviewResponses, attendanceSchedulePlansCopySchedulePlanData, attendanceSchedulePlansCopySchedulePlanErrors, attendanceSchedulePlansCopySchedulePlanResponses, attendanceSchedulePlansCreateSchedulePlanData, attendanceSchedulePlansCreateSchedulePlanErrors, attendanceSchedulePlansCreateSchedulePlanResponses, attendanceSchedulePlansDeleteSchedulePlanData, attendanceSchedulePlansDeleteSchedulePlanErrors, attendanceSchedulePlansDeleteSchedulePlanResponses, attendanceSchedulePlansExpandPreviewData, attendanceSchedulePlansExpandPreviewErrors, attendanceSchedulePlansExpandPreviewResponses, attendanceSchedulePlansExpandSchedulePlanData, attendanceSchedulePlansExpandSchedulePlanErrors, attendanceSchedulePlansExpandSchedulePlanResponses, attendanceSchedulePlansPreviewSchedulePlanData, attendanceSchedulePlansPreviewSchedulePlanErrors, attendanceSchedulePlansPreviewSchedulePlanResponses, attendanceSchedulePlansReadPlanRuleOverridesData, attendanceSchedulePlansReadPlanRuleOverridesErrors, attendanceSchedulePlansReadPlanRuleOverridesResponses, attendanceSchedulePlansReadSchedulePlanData, attendanceSchedulePlansReadSchedulePlanErrors, attendanceSchedulePlansReadSchedulePlanResponses, attendanceSchedulePlansReadSchedulePlansData, attendanceSchedulePlansReadSchedulePlansErrors, attendanceSchedulePlansReadSchedulePlansResponses, attendanceSchedulePlansUnarchiveSchedulePlanData, attendanceSchedulePlansUnarchiveSchedulePlanErrors, attendanceSchedulePlansUnarchiveSchedulePlanResponses, attendanceSchedulePlansUpdatePlanRuleOverridesData, attendanceSchedulePlansUpdatePlanRuleOverridesErrors, attendanceSchedulePlansUpdatePlanRuleOverridesResponses, attendanceSchedulePlansUpdateSchedulePlanData, attendanceSchedulePlansUpdateSchedulePlanErrors, attendanceSchedulePlansUpdateSchedulePlanResponses, attendanceShiftsCreateShiftData, attendanceShiftsCreateShiftErrors, attendanceShiftsCreateShiftResponses, attendanceShiftsDeleteShiftData, attendanceShiftsDeleteShiftErrors, attendanceShiftsDeleteShiftResponses, attendanceShiftsReadShiftData, attendanceShiftsReadShiftErrors, attendanceShiftsReadShiftResponses, attendanceShiftsReadShiftsData, attendanceShiftsReadShiftsErrors, attendanceShiftsReadShiftsResponses, attendanceShiftsUpdateShiftData, attendanceShiftsUpdateShiftErrors, attendanceShiftsUpdateShiftResponses, companiesCreateCompanyData, companiesCreateCompanyErrors, companiesCreateCompanyResponses, companiesDeleteCompanyData, companiesDeleteCompanyErrors, companiesDeleteCompanyResponses, companiesReadCompaniesData, companiesReadCompaniesErrors, companiesReadCompaniesResponses, companiesReadCompanyData, companiesReadCompanyErrors, companiesReadCompanyResponses, companiesUpdateCompanyData, companiesUpdateCompanyErrors, companiesUpdateCompanyResponses, costCentersCreateCostCenterData, costCentersCreateCostCenterErrors, costCentersCreateCostCenterResponses, costCentersDeleteCostCenterData, costCentersDeleteCostCenterErrors, costCentersDeleteCostCenterResponses, costCentersReadCostCenterData, costCentersReadCostCenterErrors, costCentersReadCostCenterResponses, costCentersReadCostCentersData, costCentersReadCostCentersErrors, costCentersReadCostCentersResponses, costCentersReadCostCenterTreeData, costCentersReadCostCenterTreeErrors, costCentersReadCostCenterTreeResponses, costCentersUpdateCostCenterData, costCentersUpdateCostCenterErrors, costCentersUpdateCostCenterResponses, departmentsCreateDepartmentData, departmentsCreateDepartmentErrors, departmentsCreateDepartmentResponses, departmentsDeleteDepartmentData, departmentsDeleteDepartmentErrors, departmentsDeleteDepartmentResponses, departmentsReadDepartmentData, departmentsReadDepartmentErrors, departmentsReadDepartmentResponses, departmentsReadDepartmentsData, departmentsReadDepartmentsErrors, departmentsReadDepartmentsResponses, departmentsReadDepartmentTreeData, departmentsReadDepartmentTreeErrors, departmentsReadDepartmentTreeResponses, departmentsUpdateDepartmentData, departmentsUpdateDepartmentErrors, departmentsUpdateDepartmentResponses, employeesCreateEmployeeData, employeesCreateEmployeeErrors, employeesCreateEmployeeResponses, employeesReadEmployeeData, employeesReadEmployeeErrors, employeesReadEmployeeResponses, employeesReadEmployeesData, employeesReadEmployeesErrors, employeesReadEmployeesResponses, employeesUpdateEmployeeData, employeesUpdateEmployeeErrors, employeesUpdateEmployeeResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, positionsCreatePositionData, positionsCreatePositionErrors, positionsCreatePositionResponses, positionsDeletePositionData, positionsDeletePositionErrors, positionsDeletePositionResponses, positionsReadPositionData, positionsReadPositionErrors, positionsReadPositionResponses, positionsReadPositionsData, positionsReadPositionsErrors, positionsReadPositionsResponses, positionsUpdatePositionData, positionsUpdatePositionErrors, positionsUpdatePositionResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -917,6 +917,66 @@ export class AttendanceMonthsService {
     }
     
     /**
+     * Confirm Month
+     *
+     * Confirm calculated results that are not stale.
+     */
+    public static confirmMonth<ThrowOnError extends boolean = true>(options: Options<attendanceMonthsConfirmMonthData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceMonthsConfirmMonthResponses, attendanceMonthsConfirmMonthErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/months/{month}/confirm',
+            ...options
+        });
+    }
+    
+    /**
+     * Unconfirm Month
+     *
+     * Return a confirmed month to calculated; no reason required.
+     */
+    public static unconfirmMonth<ThrowOnError extends boolean = true>(options: Options<attendanceMonthsUnconfirmMonthData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceMonthsUnconfirmMonthResponses, attendanceMonthsUnconfirmMonthErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/months/{month}/unconfirm',
+            ...options
+        });
+    }
+    
+    /**
+     * Lock Month
+     *
+     * Lock a confirmed month and append an immutable snapshot.
+     */
+    public static lockMonth<ThrowOnError extends boolean = true>(options: Options<attendanceMonthsLockMonthData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceMonthsLockMonthResponses, attendanceMonthsLockMonthErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/months/{month}/lock',
+            ...options
+        });
+    }
+    
+    /**
+     * Unlock Month
+     *
+     * Unlock a locked month with a reason; snapshots are retained.
+     */
+    public static unlockMonth<ThrowOnError extends boolean = true>(options: Options<attendanceMonthsUnlockMonthData, ThrowOnError>) {
+        return (options.client ?? client).post<attendanceMonthsUnlockMonthResponses, attendanceMonthsUnlockMonthErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/months/{month}/unlock',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
      * Read Calc Runs
      *
      * List calculation runs for one company-month, newest first.
@@ -931,6 +991,20 @@ export class AttendanceMonthsService {
     }
     
     /**
+     * Read Snapshots
+     *
+     * List lock snapshots newest first; payloads are omitted.
+     */
+    public static readSnapshots<ThrowOnError extends boolean = true>(options: Options<attendanceMonthsReadSnapshotsData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceMonthsReadSnapshotsResponses, attendanceMonthsReadSnapshotsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/months/{month}/snapshots/',
+            ...options
+        });
+    }
+    
+    /**
      * Calculate Month
      *
      * Calculate one company-month explicitly; no automatic recalculation.
@@ -940,6 +1014,34 @@ export class AttendanceMonthsService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/attendance/months/{month}/calculate',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Calc Run
+     *
+     * Return one calculation run; cross-company access is a 404.
+     */
+    public static readCalcRun<ThrowOnError extends boolean = true>(options: Options<attendanceMonthsReadCalcRunData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceMonthsReadCalcRunResponses, attendanceMonthsReadCalcRunErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/calc-runs/{calc_run_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Snapshot
+     *
+     * Return one lock snapshot; the payload is opt-in.
+     */
+    public static readSnapshot<ThrowOnError extends boolean = true>(options: Options<attendanceMonthsReadSnapshotData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceMonthsReadSnapshotResponses, attendanceMonthsReadSnapshotErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/snapshots/{snapshot_id}',
             ...options
         });
     }
@@ -1587,6 +1689,36 @@ export class AttendanceImportsService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/attendance/imports/{batch_id}/revoke',
+            ...options
+        });
+    }
+}
+
+export class AttendanceExportsService {
+    /**
+     * Export Payroll Csv
+     *
+     * Stream the fixed 14-column payroll CSV; header-only when empty.
+     */
+    public static exportPayrollCsv<ThrowOnError extends boolean = true>(options: Options<attendanceExportsExportPayrollCsvData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceExportsExportPayrollCsvResponses, attendanceExportsExportPayrollCsvErrors, ThrowOnError>({
+            responseType: 'text',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/months/{month}/exports/payroll.csv',
+            ...options
+        });
+    }
+    
+    /**
+     * Export Detail Csv
+     *
+     * Stream the union detail CSV; header-only when empty.
+     */
+    public static exportDetailCsv<ThrowOnError extends boolean = true>(options: Options<attendanceExportsExportDetailCsvData, ThrowOnError>) {
+        return (options.client ?? client).get<attendanceExportsExportDetailCsvResponses, attendanceExportsExportDetailCsvErrors, ThrowOnError>({
+            responseType: 'text',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/attendance/months/{month}/exports/detail.csv',
             ...options
         });
     }

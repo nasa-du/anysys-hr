@@ -4,12 +4,20 @@ Plan saves, roster writes, and personnel sync all need the same
 ``SELECT ... FOR UPDATE`` on the month row before they touch roster state.
 Confirmed and locked months reject every attendance data change (spec
 sections 5.6 and 8.7); the callers own the transaction.
+
+Calculation is stricter: a second concurrent calculation must fail fast with
+``calc_in_progress`` instead of queueing (spec section 7.12). It therefore
+takes a transaction-level advisory lock plus ``FOR UPDATE NOWAIT`` on the
+month row.
 """
 
+import hashlib
 import uuid
 from datetime import date
+from typing import Any, cast
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlmodel import Session, col, select
 
 from app.core.errors import DomainError
@@ -21,8 +29,10 @@ from app.services.attendance.staleness import EDITABLE_MONTH_STATUSES
 MONTH_CONFIRMED_MESSAGE = "考勤月份已确认，请先取消确认"
 MONTH_LOCKED_MESSAGE = "考勤月份已锁定，请先解锁"
 EXPANSION_BLOCKED_MESSAGE = "考勤月份已确认或锁定，无法展开排班"
+CALC_IN_PROGRESS_MESSAGE = "考勤正在计算中，请稍后重试"
 
 __all__ = [
+    "CALC_IN_PROGRESS_MESSAGE",
     "EDITABLE_MONTH_STATUSES",
     "EXPANSION_BLOCKED_MESSAGE",
     "MONTH_CONFIRMED_MESSAGE",
@@ -31,7 +41,78 @@ __all__ = [
     "ensure_month_expandable",
     "existing_month",
     "get_or_create_month",
+    "lock_month_for_calculation",
 ]
+
+_LOCK_NOT_AVAILABLE_SQLSTATE = "55P03"
+
+
+def _is_lock_not_available(error: OperationalError) -> bool:
+    return getattr(error.orig, "sqlstate", None) == _LOCK_NOT_AVAILABLE_SQLSTATE
+
+
+def _calculation_lock_key(company_id: uuid.UUID, month: date) -> int:
+    digest = hashlib.sha256(
+        f"attendance-calc:{company_id}:{month.isoformat()}".encode()
+    ).digest()
+    return int.from_bytes(digest[:8], "big", signed=True)
+
+
+def _calc_in_progress_error() -> DomainError:
+    return DomainError(AttendanceErrorCode.CALC_IN_PROGRESS, CALC_IN_PROGRESS_MESSAGE)
+
+
+def _first_with_nowait_lock(session: Session, statement: Any) -> AttendanceMonth | None:
+    try:
+        return cast(AttendanceMonth | None, session.exec(statement).first())
+    except OperationalError as error:
+        if _is_lock_not_available(error):
+            raise _calc_in_progress_error() from error
+        raise
+
+
+def lock_month_for_calculation(
+    session: Session, company_id: uuid.UUID, month: date
+) -> AttendanceMonth:
+    """Lock one company-month for calculation or fail with ``calc_in_progress``.
+
+    The advisory lock makes first-time row creation race-free and is released
+    by the caller's rollback; the row lock remains the contract-level guard.
+    """
+    acquired = session.scalar(
+        text("SELECT pg_try_advisory_xact_lock(:key)"),
+        {"key": _calculation_lock_key(company_id, month)},
+    )
+    if not acquired:
+        raise _calc_in_progress_error()
+
+    statement = (
+        select(AttendanceMonth)
+        .where(
+            col(AttendanceMonth.company_id) == company_id,
+            col(AttendanceMonth.month) == month,
+        )
+        .with_for_update(nowait=True)
+    )
+    month_row = _first_with_nowait_lock(session, statement)
+    if month_row is not None:
+        return month_row
+
+    month_row = AttendanceMonth(
+        company_id=company_id,
+        month=month,
+        status=AttendanceMonthStatus.DRAFT,
+        is_stale=True,
+    )
+    try:
+        with session.begin_nested():
+            session.add(month_row)
+            session.flush()
+    except IntegrityError:
+        month_row = _first_with_nowait_lock(session, statement)
+        if month_row is None:
+            raise
+    return month_row
 
 
 def existing_month(

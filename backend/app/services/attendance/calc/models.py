@@ -61,6 +61,9 @@ class RosterEntry:
     work_date: date
     state: RosterState
     shifts: tuple[ShiftSnapshot, ...] = ()
+    # Effective rules for this entry's plan; ``None`` inherits the month
+    # default. Plans are never re-resolved here (ADR-0004).
+    rules: Rules | None = None
 
 
 @dataclass(frozen=True, slots=True)

@@ -507,6 +507,7 @@ def create_oa_trip(
     start_date: date | None = None,
     end_date: date | None = None,
     approval_result_raw: str = "审批通过",
+    application_type_raw: str = "出差",
 ) -> OaTrip:
     effective_start = start_at or datetime.now(UTC)
     effective_start_date = start_date or effective_start.date()
@@ -520,7 +521,7 @@ def create_oa_trip(
         approval_no=approval_no,
         employee_name_raw="冯芷茵",
         department_raw="生产部",
-        application_type_raw="出差",
+        application_type_raw=application_type_raw,
         approval_result_raw=approval_result_raw,
         approval_status_raw="已完成",
         start_at=effective_start,

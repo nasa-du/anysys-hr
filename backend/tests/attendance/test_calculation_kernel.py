@@ -967,3 +967,26 @@ def test_resign_date_truncates_the_day_universe() -> None:
     assert outputs.summary.days_total == 10
     assert outputs.summary.days_by_status[DayStatus.REST.value] == 9
     assert only_day(outputs, date(2026, 9, 4)).day_type is DayType.WORKDAY
+
+
+def test_roster_entry_rules_override_month_defaults() -> None:
+    overridden = RosterEntry(
+        employee_id="E1",
+        work_date=date(2026, 9, 1),
+        state=RosterState.WORK,
+        shifts=(ADM,),
+        rules=make_rules(late_grace_min=0),
+    )
+    outputs = run_month(
+        make_inputs(
+            roster=(overridden,),
+            punches=(
+                punch("E1", "2026-09-01", "2026-09-01T08:33:00+08:00"),
+                punch("E1", "2026-09-01", "2026-09-01T17:30:00+08:00"),
+            ),
+        )
+    )
+
+    result = only_day(outputs, date(2026, 9, 1))
+    assert result.day_status is DayStatus.LATE
+    assert result.late_minutes == 3

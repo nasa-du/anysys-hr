@@ -1309,6 +1309,10 @@ export type ErrorDetail = {
      * Blocker Count
      */
     blocker_count?: number;
+    /**
+     * Calc Run Id
+     */
+    calc_run_id?: string | null;
 };
 
 /**
@@ -6164,6 +6168,49 @@ export type attendanceMonthsReadMonthsResponses = {
 };
 
 export type attendanceMonthsReadMonthsResponse = attendanceMonthsReadMonthsResponses[keyof attendanceMonthsReadMonthsResponses];
+
+export type attendanceMonthsCalculateMonthData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+    };
+    url: '/api/v1/attendance/months/{month}/calculate';
+};
+
+export type attendanceMonthsCalculateMonthErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type attendanceMonthsCalculateMonthError = attendanceMonthsCalculateMonthErrors[keyof attendanceMonthsCalculateMonthErrors];
+
+export type attendanceMonthsCalculateMonthResponses = {
+    /**
+     * Successful Response
+     */
+    200: CalcRunPublic;
+};
+
+export type attendanceMonthsCalculateMonthResponse = attendanceMonthsCalculateMonthResponses[keyof attendanceMonthsCalculateMonthResponses];
 
 export type attendanceSchedulePlansReadSchedulePlansData = {
     body?: never;

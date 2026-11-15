@@ -3108,6 +3108,71 @@
         }
       }
     },
+    "/api/v1/attendance/months/{month}/calculate": {
+      "post": {
+        "tags": ["attendance-months"],
+        "summary": "Calculate Month",
+        "description": "Calculate one company-month explicitly; no automatic recalculation.",
+        "operationId": "attendance-months-calculate_month",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["2026-09"],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CalcRunPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/attendance/schedule-plans/": {
       "get": {
         "tags": ["attendance-schedule-plans"],
@@ -7337,6 +7402,13 @@
             "type": "integer",
             "title": "Blocker Count",
             "default": 0
+          },
+          "calc_run_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Calc Run Id"
           }
         },
         "type": "object",

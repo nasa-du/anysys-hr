@@ -45,6 +45,7 @@ class ErrorDetail(BaseModel):
     field_errors: dict[str, str] = {}
     blockers: list[Blocker] = []
     blocker_count: int = 0
+    calc_run_id: uuid.UUID | None = None
 
 
 class ErrorResponse(BaseModel):
@@ -58,6 +59,7 @@ class DomainError(Exception):
     ``unsupported_file_type`` to 415, and every other domain code to 409.
     Blockers are only attached to reference and deactivation errors;
     ``blocker_count`` is None for other codes so the envelope omits them.
+    ``calc_run_id`` is only present on ``calc_run_failed``.
     """
 
     def __init__(
@@ -68,6 +70,7 @@ class DomainError(Exception):
         field_errors: dict[str, str] | None = None,
         blockers: list[Blocker] | None = None,
         blocker_count: int | None = None,
+        calc_run_id: uuid.UUID | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
@@ -75,6 +78,7 @@ class DomainError(Exception):
         self.field_errors = field_errors or {}
         self.blockers = blockers
         self.blocker_count = blocker_count
+        self.calc_run_id = calc_run_id
 
     @property
     def status_code(self) -> int:
@@ -179,6 +183,8 @@ async def domain_error_handler(request: Request, exc: Exception) -> JSONResponse
             blocker.model_dump(mode="json") for blocker in exc.blockers
         ]
         detail["blocker_count"] = exc.blocker_count or 0
+    if exc.calc_run_id is not None:
+        detail["calc_run_id"] = str(exc.calc_run_id)
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": detail},

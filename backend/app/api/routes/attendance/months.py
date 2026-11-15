@@ -1,11 +1,13 @@
 import uuid
+from datetime import date
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import SessionDep, attendance_access
 from app.core.errors import ErrorResponse
-from app.schemas_attendance.core import AttendanceMonthsPublic
+from app.schemas_attendance.common import MonthString
+from app.schemas_attendance.core import AttendanceMonthsPublic, CalcRunPublic
 from app.services.attendance import months as month_service
 
 router = APIRouter(
@@ -30,3 +32,21 @@ def read_months(
 ) -> Any:
     """List existing attendance months; synthetic drafts are not listed."""
     return month_service.list_months(session, company_id=company_id, year=year)
+
+
+@router.post(
+    "/{month}/calculate",
+    response_model=CalcRunPublic,
+    responses=ERROR_RESPONSES,
+)
+def calculate_month(
+    session: SessionDep,
+    company_id: uuid.UUID,
+    month: MonthString,
+) -> Any:
+    """Calculate one company-month explicitly; no automatic recalculation."""
+    return month_service.calculate_month(
+        session,
+        company_id=company_id,
+        month=date.fromisoformat(f"{month}-01"),
+    )

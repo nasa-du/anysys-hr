@@ -38,6 +38,7 @@ from app.services.attendance.calc.models import (
     MonthOutputs,
     MonthSummary,
     Punch,
+    Rules,
     RunSummary,
     ShiftSnapshot,
     Trip,
@@ -55,6 +56,7 @@ _OUT_OF_EMPLOYMENT_REASON = "out_of_employment"
 class RosterEntryView:
     state: ResultRosterState
     shifts: tuple[ShiftSnapshot, ...]
+    rules: Rules | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,6 +85,7 @@ def _index_inputs(
                 else ResultRosterState.REST
             ),
             shifts=entry.shifts,
+            rules=entry.rules,
         )
 
     adjacent_work: dict[str, set[date]] = defaultdict(set)
@@ -200,11 +203,16 @@ def _roster_state(
     day: date,
     index: _EmployeeIndex,
     default: ResultRosterState,
-) -> tuple[ResultRosterState, tuple[ShiftInstance, ...]]:
+    default_rules: Rules,
+) -> tuple[ResultRosterState, tuple[ShiftInstance, ...], Rules]:
     entry = index.roster.get(day)
     if entry is not None:
-        return entry.state, index.instances.get(day, ())
-    return default, ()
+        return (
+            entry.state,
+            index.instances.get(day, ()),
+            entry.rules or default_rules,
+        )
+    return default, (), default_rules
 
 
 def _trips_on_day(trips: tuple[Trip, ...], day: date) -> tuple[Trip, ...]:
@@ -223,7 +231,9 @@ def _calculate_employee(
     keys = _day_keys(index, inputs, start, end)
     computations: list[DayComputation] = []
     for day in keys:
-        roster_state, instances = _roster_state(day, index, inputs.roster_default)
+        roster_state, instances, rules = _roster_state(
+            day, index, inputs.roster_default, inputs.rules
+        )
         context = DayContext(
             employee_id=index.employee_id,
             work_date=day,
@@ -238,7 +248,7 @@ def _calculate_employee(
             missing_work_start_minutes=(
                 index.leave.missing_work_start_minutes_by_date.get(day, 0)
             ),
-            rules=inputs.rules,
+            rules=rules,
         )
         computations.append(calculate_day(context))
     return computations

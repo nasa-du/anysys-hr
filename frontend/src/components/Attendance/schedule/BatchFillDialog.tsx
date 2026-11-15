@@ -96,7 +96,9 @@ export function BatchFillDialog({
       const response = await AttendanceHolidaysService.readHolidays({
         query: { company_id: companyId, year, limit: 500 },
       })
-      return response.data.data
+      // Share the same cached shape as HolidayCalendar (the paginated
+      // response); both use holidaysQueryKey, so the cache must agree.
+      return response.data
     },
   })
   const manualEntriesQuery = useQuery({
@@ -123,7 +125,7 @@ export function BatchFillDialog({
   const holidayDates = useMemo(
     () =>
       new Set(
-        (holidaysQuery.data ?? [])
+        (holidaysQuery.data?.data ?? [])
           .filter((holiday) => holiday.day_type === "holiday")
           .map((holiday) => holiday.date),
       ),

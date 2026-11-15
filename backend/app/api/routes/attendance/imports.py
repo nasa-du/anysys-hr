@@ -3,13 +3,18 @@ import uuid
 from datetime import date
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 
 from app.api.deps import CurrentUser, SessionDep, attendance_access
 from app.core.errors import DomainError, ErrorResponse
-from app.enums import ImportDataType
+from app.enums import ImportBatchStatus, ImportDataType, ImportSeverity
 from app.schemas_attendance.common import MonthString
 from app.schemas_attendance.imports import (
+    ImportBatchErrorsPublic,
+    ImportBatchesPublic,
+    ImportBatchPublic,
+    ImportBatchRecordsPublic,
+    ImportCommitPublic,
     ImportMappingTemplatePublic,
     ImportPreviewPublic,
 )
@@ -32,6 +37,10 @@ ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
 }
 
 INVALID_MAPPING_MESSAGE = "列映射格式不正确"
+
+Skip = Annotated[int, Query(ge=0)]
+Limit = Annotated[int, Query(ge=1, le=500)]
+OptionalMonth = Annotated[MonthString | None, Query()]
 
 
 @router.post(
@@ -72,6 +81,28 @@ def preview_imports(
     )
 
 
+@router.get("/", response_model=ImportBatchesPublic, responses=ERROR_RESPONSES)
+def read_import_batches(
+    session: SessionDep,
+    company_id: uuid.UUID,
+    data_type: ImportDataType | None = None,
+    month: OptionalMonth = None,
+    status: ImportBatchStatus | None = None,
+    skip: Skip = 0,
+    limit: Limit = 100,
+) -> Any:
+    """List batch history for one company, newest first."""
+    return import_service.list_batches(
+        session,
+        company_id=company_id,
+        data_type=data_type,
+        month=date.fromisoformat(f"{month}-01") if month else None,
+        status=status,
+        skip=skip,
+        limit=limit,
+    )
+
+
 @router.get(
     "/mapping-template",
     response_model=ImportMappingTemplatePublic,
@@ -86,6 +117,87 @@ def read_mapping_template(
     return import_service.read_mapping_template(
         session, company_id=company_id, data_type=data_type
     )
+
+
+@router.get(
+    "/{batch_id}",
+    response_model=ImportBatchPublic,
+    responses=ERROR_RESPONSES,
+)
+def read_import_batch(session: SessionDep, batch_id: uuid.UUID) -> Any:
+    """Return one batch with counts, mapping, and the first 20 samples."""
+    return import_service.get_batch(session, batch_id)
+
+
+@router.get(
+    "/{batch_id}/errors",
+    response_model=ImportBatchErrorsPublic,
+    responses=ERROR_RESPONSES,
+)
+def read_import_batch_errors(
+    session: SessionDep,
+    batch_id: uuid.UUID,
+    severity: ImportSeverity | None = None,
+    skip: Skip = 0,
+    limit: Limit = 100,
+) -> Any:
+    """Page the batch's row-level errors and warnings."""
+    return import_service.list_batch_errors(
+        session,
+        batch_id,
+        severity=severity,
+        skip=skip,
+        limit=limit,
+    )
+
+
+@router.get(
+    "/{batch_id}/records",
+    response_model=ImportBatchRecordsPublic,
+    responses=ERROR_RESPONSES,
+)
+def read_import_batch_records(
+    session: SessionDep,
+    batch_id: uuid.UUID,
+    skip: Skip = 0,
+    limit: Limit = 100,
+) -> Any:
+    """Page the batch's normalized records with the data-type union."""
+    return import_service.list_batch_records(session, batch_id, skip=skip, limit=limit)
+
+
+@router.post(
+    "/{batch_id}/commit",
+    response_model=ImportCommitPublic,
+    responses=ERROR_RESPONSES,
+)
+def commit_import(
+    session: SessionDep,
+    current_user: CurrentUser,
+    batch_id: uuid.UUID,
+) -> Any:
+    """Commit a preview, superseding the previous batch for the same scope."""
+    return import_service.commit_batch(session, batch_id, operator=current_user)
+
+
+@router.post(
+    "/{batch_id}/discard",
+    response_model=ImportBatchPublic,
+    responses=ERROR_RESPONSES,
+)
+def discard_import(session: SessionDep, batch_id: uuid.UUID) -> Any:
+    """Discard a preview batch and delete its staged rows."""
+    return import_service.discard_batch(session, batch_id)
+
+
+@router.post(
+    "/{batch_id}/revoke",
+    response_model=ImportBatchPublic,
+    responses=ERROR_RESPONSES,
+)
+def revoke_import(session: SessionDep, batch_id: uuid.UUID) -> Any:
+    """Revoke the active committed batch in an editable month."""
+    return import_service.revoke_batch(session, batch_id)
 
 
 def _decode_column_mapping(raw: str | None) -> dict[str, str | int | None] | None:

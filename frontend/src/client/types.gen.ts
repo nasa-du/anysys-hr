@@ -1565,6 +1565,20 @@ export type ImportBatchErrorPublic = {
 };
 
 /**
+ * ImportBatchErrorsPublic
+ */
+export type ImportBatchErrorsPublic = {
+    /**
+     * Data
+     */
+    data: Array<ImportBatchErrorPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * ImportBatchPublic
  */
 export type ImportBatchPublic = {
@@ -1698,9 +1712,57 @@ export type ImportBatchPublic = {
 };
 
 /**
+ * ImportBatchRecordsPublic
+ */
+export type ImportBatchRecordsPublic = {
+    data_type: ImportDataType;
+    /**
+     * Records
+     */
+    records: Array<PunchRecordPublic | OaTripPublic | OaOvertimePublic | OaLeavePublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * ImportBatchStatus
  */
 export type ImportBatchStatus = 'preview' | 'committed' | 'superseded' | 'discarded' | 'revoked';
+
+/**
+ * ImportBatchesPublic
+ */
+export type ImportBatchesPublic = {
+    /**
+     * Data
+     */
+    data: Array<ImportBatchPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * ImportCommitPublic
+ */
+export type ImportCommitPublic = {
+    batch: ImportBatchPublic;
+    /**
+     * Superseded Batch Id
+     */
+    superseded_batch_id?: string | null;
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Is Stale
+     */
+    is_stale: boolean;
+};
 
 /**
  * ImportDataType
@@ -1932,6 +1994,11 @@ export type InputBatches = {
 };
 
 /**
+ * LeaveKind
+ */
+export type LeaveKind = 'paid' | 'unpaid' | 'comp';
+
+/**
  * Message
  */
 export type Message = {
@@ -1975,6 +2042,301 @@ export type NewPassword = {
      * New Password
      */
     new_password: string;
+};
+
+/**
+ * OaLeavePublic
+ */
+export type OaLeavePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Batch Id
+     */
+    batch_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Source Row Number
+     */
+    source_row_number: number;
+    /**
+     * Approval No
+     */
+    approval_no?: string | null;
+    /**
+     * Employee Name Raw
+     */
+    employee_name_raw: string;
+    /**
+     * Department Raw
+     */
+    department_raw: string;
+    /**
+     * Leave Type Raw
+     */
+    leave_type_raw: string;
+    leave_kind: LeaveKind;
+    /**
+     * Days
+     */
+    days: string;
+    /**
+     * Rest Start At
+     */
+    rest_start_at: string;
+    /**
+     * Rest End At
+     */
+    rest_end_at: string;
+    /**
+     * Rest Start Date
+     */
+    rest_start_date: string;
+    /**
+     * Rest End Date
+     */
+    rest_end_date: string;
+    /**
+     * Work Start At
+     */
+    work_start_at?: string | null;
+    /**
+     * Work End At
+     */
+    work_end_at?: string | null;
+    /**
+     * Work Start Date
+     */
+    work_start_date?: string | null;
+    /**
+     * Work End Date
+     */
+    work_end_date?: string | null;
+    /**
+     * Balance Days Declared
+     */
+    balance_days_declared?: string | null;
+    /**
+     * Reason
+     */
+    reason?: string | null;
+    /**
+     * Approval Result Raw
+     */
+    approval_result_raw: string;
+    /**
+     * Approval Status Raw
+     */
+    approval_status_raw: string;
+    /**
+     * Raw Row
+     */
+    raw_row: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * OaOvertimeDayPublic
+ */
+export type OaOvertimeDayPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Overtime Id
+     */
+    overtime_id: string;
+    /**
+     * Work Date
+     */
+    work_date: string;
+    /**
+     * Minutes
+     */
+    minutes: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * OaOvertimePublic
+ */
+export type OaOvertimePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Batch Id
+     */
+    batch_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Source Row Number
+     */
+    source_row_number: number;
+    /**
+     * Approval No
+     */
+    approval_no?: string | null;
+    /**
+     * Employee Name Raw
+     */
+    employee_name_raw: string;
+    /**
+     * Department Raw
+     */
+    department_raw: string;
+    /**
+     * Approval Result Raw
+     */
+    approval_result_raw: string;
+    /**
+     * Approval Status Raw
+     */
+    approval_status_raw: string;
+    /**
+     * Start At
+     */
+    start_at: string;
+    /**
+     * End At
+     */
+    end_at: string;
+    /**
+     * Declared Raw
+     */
+    declared_raw?: string | null;
+    /**
+     * Reason
+     */
+    reason?: string | null;
+    /**
+     * Raw Row
+     */
+    raw_row: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Days
+     */
+    days?: Array<OaOvertimeDayPublic>;
+};
+
+/**
+ * OaTripPublic
+ */
+export type OaTripPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Batch Id
+     */
+    batch_id: string;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Source Row Number
+     */
+    source_row_number: number;
+    /**
+     * Split Index
+     */
+    split_index: number;
+    /**
+     * Approval No
+     */
+    approval_no?: string | null;
+    /**
+     * Employee Name Raw
+     */
+    employee_name_raw: string;
+    /**
+     * Department Raw
+     */
+    department_raw: string;
+    /**
+     * Application Type Raw
+     */
+    application_type_raw?: string | null;
+    /**
+     * Approval Result Raw
+     */
+    approval_result_raw: string;
+    /**
+     * Approval Status Raw
+     */
+    approval_status_raw: string;
+    /**
+     * Start At
+     */
+    start_at: string;
+    /**
+     * End At
+     */
+    end_at: string;
+    /**
+     * Start Date
+     */
+    start_date: string;
+    /**
+     * End Date
+     */
+    end_date: string;
+    /**
+     * Days Declared
+     */
+    days_declared?: string | null;
+    /**
+     * Reason
+     */
+    reason?: string | null;
+    /**
+     * Raw Row
+     */
+    raw_row: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -2377,6 +2739,74 @@ export type PrivateUserCreate = {
      * Is Verified
      */
     is_verified?: boolean;
+};
+
+/**
+ * PunchRecordPublic
+ */
+export type PunchRecordPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Company Id
+     */
+    company_id: string;
+    /**
+     * Batch Id
+     */
+    batch_id: string;
+    /**
+     * Source Row Number
+     */
+    source_row_number: number;
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Employee No Raw
+     */
+    employee_no_raw: string;
+    /**
+     * Employee Name Raw
+     */
+    employee_name_raw: string;
+    /**
+     * Department Raw
+     */
+    department_raw: string;
+    /**
+     * Attendance Date
+     */
+    attendance_date: string;
+    /**
+     * Punch Time
+     */
+    punch_time: string;
+    /**
+     * Punch Result Raw
+     */
+    punch_result_raw: string;
+    /**
+     * Device Raw
+     */
+    device_raw?: string | null;
+    /**
+     * Address Raw
+     */
+    address_raw?: string | null;
+    /**
+     * Raw Row
+     */
+    raw_row: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -6847,6 +7277,72 @@ export type attendanceImportsPreviewImportsResponses = {
 
 export type attendanceImportsPreviewImportsResponse = attendanceImportsPreviewImportsResponses[keyof attendanceImportsPreviewImportsResponses];
 
+export type attendanceImportsReadImportBatchesData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Company Id
+         */
+        company_id: string;
+        /**
+         * Data Type
+         */
+        data_type?: ImportDataType | null;
+        /**
+         * Month
+         */
+        month?: string | null;
+        /**
+         * Status
+         */
+        status?: ImportBatchStatus | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/imports/';
+};
+
+export type attendanceImportsReadImportBatchesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsReadImportBatchesError = attendanceImportsReadImportBatchesErrors[keyof attendanceImportsReadImportBatchesErrors];
+
+export type attendanceImportsReadImportBatchesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportBatchesPublic;
+};
+
+export type attendanceImportsReadImportBatchesResponse = attendanceImportsReadImportBatchesResponses[keyof attendanceImportsReadImportBatchesResponses];
+
 export type attendanceImportsReadMappingTemplateData = {
     body?: never;
     path?: never;
@@ -6893,6 +7389,304 @@ export type attendanceImportsReadMappingTemplateResponses = {
 };
 
 export type attendanceImportsReadMappingTemplateResponse = attendanceImportsReadMappingTemplateResponses[keyof attendanceImportsReadMappingTemplateResponses];
+
+export type attendanceImportsReadImportBatchData = {
+    body?: never;
+    path: {
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/imports/{batch_id}';
+};
+
+export type attendanceImportsReadImportBatchErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsReadImportBatchError = attendanceImportsReadImportBatchErrors[keyof attendanceImportsReadImportBatchErrors];
+
+export type attendanceImportsReadImportBatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportBatchPublic;
+};
+
+export type attendanceImportsReadImportBatchResponse = attendanceImportsReadImportBatchResponses[keyof attendanceImportsReadImportBatchResponses];
+
+export type attendanceImportsReadImportBatchErrorsData = {
+    body?: never;
+    path: {
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query?: {
+        /**
+         * Severity
+         */
+        severity?: ImportSeverity | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/imports/{batch_id}/errors';
+};
+
+export type attendanceImportsReadImportBatchErrorsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsReadImportBatchErrorsError = attendanceImportsReadImportBatchErrorsErrors[keyof attendanceImportsReadImportBatchErrorsErrors];
+
+export type attendanceImportsReadImportBatchErrorsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportBatchErrorsPublic;
+};
+
+export type attendanceImportsReadImportBatchErrorsResponse = attendanceImportsReadImportBatchErrorsResponses[keyof attendanceImportsReadImportBatchErrorsResponses];
+
+export type attendanceImportsReadImportBatchRecordsData = {
+    body?: never;
+    path: {
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/attendance/imports/{batch_id}/records';
+};
+
+export type attendanceImportsReadImportBatchRecordsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsReadImportBatchRecordsError = attendanceImportsReadImportBatchRecordsErrors[keyof attendanceImportsReadImportBatchRecordsErrors];
+
+export type attendanceImportsReadImportBatchRecordsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportBatchRecordsPublic;
+};
+
+export type attendanceImportsReadImportBatchRecordsResponse = attendanceImportsReadImportBatchRecordsResponses[keyof attendanceImportsReadImportBatchRecordsResponses];
+
+export type attendanceImportsCommitImportData = {
+    body?: never;
+    path: {
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/imports/{batch_id}/commit';
+};
+
+export type attendanceImportsCommitImportErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsCommitImportError = attendanceImportsCommitImportErrors[keyof attendanceImportsCommitImportErrors];
+
+export type attendanceImportsCommitImportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportCommitPublic;
+};
+
+export type attendanceImportsCommitImportResponse = attendanceImportsCommitImportResponses[keyof attendanceImportsCommitImportResponses];
+
+export type attendanceImportsDiscardImportData = {
+    body?: never;
+    path: {
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/imports/{batch_id}/discard';
+};
+
+export type attendanceImportsDiscardImportErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsDiscardImportError = attendanceImportsDiscardImportErrors[keyof attendanceImportsDiscardImportErrors];
+
+export type attendanceImportsDiscardImportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportBatchPublic;
+};
+
+export type attendanceImportsDiscardImportResponse = attendanceImportsDiscardImportResponses[keyof attendanceImportsDiscardImportResponses];
+
+export type attendanceImportsRevokeImportData = {
+    body?: never;
+    path: {
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query?: never;
+    url: '/api/v1/attendance/imports/{batch_id}/revoke';
+};
+
+export type attendanceImportsRevokeImportErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ErrorResponse;
+    /**
+     * Unsupported Media Type
+     */
+    415: ErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorResponse;
+};
+
+export type attendanceImportsRevokeImportError = attendanceImportsRevokeImportErrors[keyof attendanceImportsRevokeImportErrors];
+
+export type attendanceImportsRevokeImportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportBatchPublic;
+};
+
+export type attendanceImportsRevokeImportResponse = attendanceImportsRevokeImportResponses[keyof attendanceImportsRevokeImportResponses];
 
 export type utilsTestEmailData = {
     body?: never;

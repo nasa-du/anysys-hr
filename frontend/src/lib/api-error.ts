@@ -53,6 +53,11 @@ export function getErrorDetail(err: unknown): ErrorDetail | null {
   return null
 }
 
+/** The domain error message when present, otherwise the generic API message. */
+export function getRequestErrorMessage(err: unknown): string {
+  return getErrorDetail(err)?.message ?? getErrorMessage(err)
+}
+
 /** Map 409 field_errors and 422 loc/msg pairs onto form field names. */
 export function getFieldErrors(err: unknown): Record<string, string> {
   const detail = getDetail(err)

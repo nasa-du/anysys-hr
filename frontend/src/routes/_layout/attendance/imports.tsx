@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 
+import { BatchHistory } from "@/components/Attendance/imports/BatchHistory"
+import { CurrentBatches } from "@/components/Attendance/imports/CurrentBatches"
 import { ImportWizard } from "@/components/Attendance/imports/ImportWizard"
 import { AttendancePage } from "@/components/Attendance/shared/AttendancePage"
 import {
@@ -57,6 +59,16 @@ function ImportsPage() {
     >
       <ImportWizard
         key={`${selectedCompanyId}-${month}`}
+        companyId={selectedCompanyId}
+        month={month}
+      />
+      <CurrentBatches
+        key={`current-${selectedCompanyId}-${month}`}
+        companyId={selectedCompanyId}
+        month={month}
+      />
+      <BatchHistory
+        key={`history-${selectedCompanyId}-${month}`}
         companyId={selectedCompanyId}
         month={month}
       />

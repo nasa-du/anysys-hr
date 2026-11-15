@@ -176,7 +176,7 @@ function withPrefixedEmployeeNumbers(
   return text.replace(/\bE\d{3}\b/g, (match) => numbers[match] ?? match)
 }
 
-async function uploadFixture(
+async function selectFixtureFile(
   page: Page,
   fileName: string,
   numbers: EmployeeNumberMap,
@@ -188,8 +188,41 @@ async function uploadFixture(
     buffer: Buffer.from(withPrefixedEmployeeNumbers(content, numbers), "utf8"),
   })
   await expect(page.getByTestId("selected-file")).toContainText(fileName)
+}
+
+async function uploadFixture(
+  page: Page,
+  fileName: string,
+  numbers: EmployeeNumberMap,
+): Promise<void> {
+  await selectFixtureFile(page, fileName, numbers)
   await page.getByTestId("parse-preview").click()
   await expect(page.getByTestId("import-preview-step")).toBeVisible()
+}
+
+/** Upload a fixture and return the persisted preview batch id. */
+async function uploadFixtureForId(
+  page: Page,
+  fileName: string,
+  numbers: EmployeeNumberMap,
+): Promise<string> {
+  await selectFixtureFile(page, fileName, numbers)
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().includes("/attendance/imports/preview"),
+  )
+  await page.getByTestId("parse-preview").click()
+  const response = await responsePromise
+  const body = (await response.json()) as { batch: { id: string } }
+  await expect(page.getByTestId("import-preview-step")).toBeVisible()
+  return body.batch.id
+}
+
+async function openBatchDetail(page: Page, batchId: string): Promise<void> {
+  await expect(page.getByTestId(`view-batch-${batchId}`)).toBeVisible()
+  await page.getByTestId(`view-batch-${batchId}`).click()
+  await expect(page.getByTestId("batch-detail-dialog")).toBeVisible()
 }
 
 async function expectStat(
@@ -337,4 +370,124 @@ test("shows the expired preview state when the 24-hour window has passed", async
 
   await expect(page.getByTestId("preview-expired")).toBeVisible()
   await expect(page.getByTestId("preview-expired")).toContainText("预览已过期")
+})
+
+test("commits a preview and shows the active batch and history", async ({
+  page,
+}) => {
+  const numbers = await setup(page)
+  await expect(
+    page
+      .getByTestId("current-batch-punch")
+      .getByText("未生效", { exact: true }),
+  ).toBeVisible()
+  await expect(page.getByTestId("batch-history")).toContainText(
+    "当前筛选下没有批次",
+  )
+
+  const batchId = await uploadFixtureForId(page, "punch-2026-09.csv", numbers)
+  await expect(page.getByTestId("commit-import")).toBeEnabled()
+  await page.getByTestId("commit-import").click()
+
+  await expect(page.getByTestId("commit-success")).toContainText("已提交生效")
+  await expect(page.getByTestId("commit-success")).toContainText("待重算")
+  await expect(page.getByTestId("import-month-stale")).toBeVisible()
+  await expect(
+    page.getByTestId("current-batch-punch").getByText("生效", { exact: true }),
+  ).toBeVisible()
+  await expect(page.getByTestId("current-batch-punch")).toContainText(
+    "punch-2026-09.csv",
+  )
+  await expect(page.getByTestId(`batch-row-${batchId}`)).toContainText("生效")
+})
+
+test("re-import supersedes the previous committed batch", async ({ page }) => {
+  const numbers = await setup(page)
+  const firstId = await uploadFixtureForId(page, "punch-2026-09.csv", numbers)
+  await page.getByTestId("commit-import").click()
+  await expect(page.getByTestId("commit-success")).toBeVisible()
+
+  const secondId = await uploadFixtureForId(page, "punch-2026-09.csv", numbers)
+  await expect(page.getByText("当前生效批次：punch-2026-09.csv")).toBeVisible()
+  await expect(page.getByTestId("commit-import")).toBeEnabled()
+  await page.getByTestId("commit-import").click()
+
+  await expect(page.getByTestId("commit-success")).toContainText("已替代")
+  await expect(page.getByTestId(`batch-row-${firstId}`)).toContainText("已替代")
+  await expect(page.getByTestId(`batch-row-${secondId}`)).toContainText("生效")
+  await expect(
+    page.getByTestId("current-batch-punch").getByText("生效", { exact: true }),
+  ).toBeVisible()
+})
+
+test("batch detail reports errors/records and discards a preview", async ({
+  page,
+}) => {
+  const numbers = await setup(page)
+  const batchId = await uploadFixtureForId(page, "punch-2026-09.csv", numbers)
+  await openBatchDetail(page, batchId)
+  const dialog = page.getByTestId("batch-detail-dialog")
+
+  await expect(dialog).toContainText("表头与列映射")
+  await expect(dialog.getByTestId("batch-errors")).toContainText("员工不存在")
+  await expect(dialog.getByTestId("batch-records")).toContainText(
+    "第 1–10 条 / 共 27 条",
+  )
+  await dialog
+    .getByTestId("record-pagination")
+    .getByRole("button", { name: "下一页" })
+    .click()
+  await expect(dialog.getByTestId("batch-records")).toContainText(
+    "第 11–20 条 / 共 27 条",
+  )
+
+  await dialog.getByTestId("error-severity-filter").click()
+  await page.getByRole("option", { name: "仅错误" }).click()
+  await expect(dialog.getByTestId("batch-errors")).toContainText("共 4 条")
+
+  await dialog.getByTestId("discard-batch").click()
+  await expect(dialog.getByTestId("batch-action-confirm")).toContainText(
+    "确认丢弃预览",
+  )
+  await dialog.getByTestId("confirm-discard").click()
+
+  await expect(dialog).not.toBeVisible()
+  await expect(page.getByTestId(`batch-row-${batchId}`)).toContainText("已丢弃")
+  await expect(
+    page
+      .getByTestId("current-batch-punch")
+      .getByText("未生效", { exact: true }),
+  ).toBeVisible()
+})
+
+test("revokes the active batch and allows re-import afterwards", async ({
+  page,
+}) => {
+  const numbers = await setup(page)
+  const firstId = await uploadFixtureForId(page, "punch-2026-09.csv", numbers)
+  await page.getByTestId("commit-import").click()
+  await expect(page.getByTestId("commit-success")).toBeVisible()
+
+  await openBatchDetail(page, firstId)
+  const dialog = page.getByTestId("batch-detail-dialog")
+  await dialog.getByTestId("revoke-batch").click()
+  await expect(dialog.getByTestId("batch-action-confirm")).toContainText(
+    "不会恢复上一批次",
+  )
+  await dialog.getByTestId("confirm-revoke").click()
+
+  await expect(dialog).not.toBeVisible()
+  await expect(page.getByTestId(`batch-row-${firstId}`)).toContainText("已撤销")
+  await expect(
+    page
+      .getByTestId("current-batch-punch")
+      .getByText("未生效", { exact: true }),
+  ).toBeVisible()
+
+  await uploadFixture(page, "punch-2026-09.csv", numbers)
+  await page.getByTestId("commit-import").click()
+  await expect(page.getByTestId("commit-success")).toContainText("已提交生效")
+  await expect(
+    page.getByTestId("current-batch-punch").getByText("生效", { exact: true }),
+  ).toBeVisible()
 })

@@ -1,10 +1,14 @@
 """Helpers for the attendance import fixtures (docs/specs/attendance-fixtures)."""
 
+import uuid
 from datetime import date
 from pathlib import Path
 
+from fastapi.testclient import TestClient
+from httpx import Response
 from sqlmodel import Session
 
+from app.core.config import settings
 from app.enums import EmployeeStatus, ImportDataType
 from app.models import Company, Employee
 from app.services.attendance import import_mapping, import_parsing
@@ -13,6 +17,8 @@ from tests.utils.factories import (
     create_employee,
     create_position,
 )
+
+IMPORTS_URL = f"{settings.API_V1_STR}/attendance/imports"
 
 FIXTURE_DIR = (
     Path(__file__).resolve().parents[3] / "docs" / "specs" / "attendance-fixtures"
@@ -67,9 +73,7 @@ def seed_fixture_employees(db: Session, company: Company) -> dict[str, Employee]
             name=name,
             hire_date=hire_date,
             resign_date=resign_date,
-            status=(
-                EmployeeStatus.RESIGNED if resign_date else EmployeeStatus.ACTIVE
-            ),
+            status=(EmployeeStatus.RESIGNED if resign_date else EmployeeStatus.ACTIVE),
         )
     return employees
 
@@ -82,3 +86,30 @@ def parse_fixture(
         file_name=FIXTURE_FILES[data_type],
     )
     return import_mapping.detect_header(parsed, data_type)
+
+
+def preview_fixture(
+    client: TestClient,
+    headers: dict[str, str],
+    company_id: uuid.UUID,
+    data_type: ImportDataType,
+    *,
+    month: str = "2026-09",
+) -> Response:
+    """Upload one repository fixture as a preview batch through the API."""
+    return client.post(
+        f"{IMPORTS_URL}/preview",
+        headers=headers,
+        data={
+            "company_id": str(company_id),
+            "data_type": data_type.value,
+            "month": month,
+        },
+        files={
+            "file": (
+                FIXTURE_FILES[data_type],
+                load_fixture_bytes(data_type),
+                "application/octet-stream",
+            )
+        },
+    )

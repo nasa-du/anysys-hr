@@ -4898,6 +4898,136 @@
         "security": [{ "OAuth2PasswordBearer": [] }]
       }
     },
+    "/api/v1/attendance/imports/": {
+      "get": {
+        "tags": ["attendance-imports"],
+        "summary": "Read Import Batches",
+        "description": "List batch history for one company, newest first.",
+        "operationId": "attendance-imports-read_import_batches",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Company Id"
+            }
+          },
+          {
+            "name": "data_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/ImportDataType" },
+                { "type": "null" }
+              ],
+              "title": "Data Type"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "examples": ["2026-09"] },
+                { "type": "null" }
+              ],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/ImportBatchStatus" },
+                { "type": "null" }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ImportBatchesPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/v1/attendance/imports/mapping-template": {
       "get": {
         "tags": ["attendance-imports"],
@@ -4931,6 +5061,494 @@
                 "schema": {
                   "$ref": "#/components/schemas/ImportMappingTemplatePublic"
                 }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/imports/{batch_id}": {
+      "get": {
+        "tags": ["attendance-imports"],
+        "summary": "Read Import Batch",
+        "description": "Return one batch with counts, mapping, and the first 20 samples.",
+        "operationId": "attendance-imports-read_import_batch",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ImportBatchPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/imports/{batch_id}/errors": {
+      "get": {
+        "tags": ["attendance-imports"],
+        "summary": "Read Import Batch Errors",
+        "description": "Page the batch's row-level errors and warnings.",
+        "operationId": "attendance-imports-read_import_batch_errors",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/ImportSeverity" },
+                { "type": "null" }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchErrorsPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/imports/{batch_id}/records": {
+      "get": {
+        "tags": ["attendance-imports"],
+        "summary": "Read Import Batch Records",
+        "description": "Page the batch's normalized records with the data-type union.",
+        "operationId": "attendance-imports-read_import_batch_records",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchRecordsPublic"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/imports/{batch_id}/commit": {
+      "post": {
+        "tags": ["attendance-imports"],
+        "summary": "Commit Import",
+        "description": "Commit a preview, superseding the previous batch for the same scope.",
+        "operationId": "attendance-imports-commit_import",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ImportCommitPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/imports/{batch_id}/discard": {
+      "post": {
+        "tags": ["attendance-imports"],
+        "summary": "Discard Import",
+        "description": "Discard a preview batch and delete its staged rows.",
+        "operationId": "attendance-imports-discard_import",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ImportBatchPublic" }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/imports/{batch_id}/revoke": {
+      "post": {
+        "tags": ["attendance-imports"],
+        "summary": "Revoke Import",
+        "description": "Revoke the active committed batch in an editable month.",
+        "operationId": "attendance-imports-revoke_import",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ImportBatchPublic" }
               }
             }
           },
@@ -6975,6 +7593,19 @@
         ],
         "title": "ImportBatchErrorPublic"
       },
+      "ImportBatchErrorsPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/ImportBatchErrorPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "ImportBatchErrorsPublic"
+      },
       "ImportBatchPublic": {
         "properties": {
           "id": { "type": "string", "format": "uuid", "title": "Id" },
@@ -7132,10 +7763,66 @@
         ],
         "title": "ImportBatchPublic"
       },
+      "ImportBatchRecordsPublic": {
+        "properties": {
+          "data_type": { "$ref": "#/components/schemas/ImportDataType" },
+          "records": {
+            "items": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/PunchRecordPublic" },
+                { "$ref": "#/components/schemas/OaTripPublic" },
+                { "$ref": "#/components/schemas/OaOvertimePublic" },
+                { "$ref": "#/components/schemas/OaLeavePublic" }
+              ]
+            },
+            "type": "array",
+            "title": "Records"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data_type", "records", "count"],
+        "title": "ImportBatchRecordsPublic"
+      },
       "ImportBatchStatus": {
         "type": "string",
         "enum": ["preview", "committed", "superseded", "discarded", "revoked"],
         "title": "ImportBatchStatus"
+      },
+      "ImportBatchesPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/ImportBatchPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "ImportBatchesPublic"
+      },
+      "ImportCommitPublic": {
+        "properties": {
+          "batch": { "$ref": "#/components/schemas/ImportBatchPublic" },
+          "superseded_batch_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Superseded Batch Id"
+          },
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "examples": ["2026-09"]
+          },
+          "is_stale": { "type": "boolean", "title": "Is Stale" }
+        },
+        "type": "object",
+        "required": ["batch", "month", "is_stale"],
+        "title": "ImportCommitPublic"
       },
       "ImportDataType": {
         "type": "string",
@@ -7394,6 +8081,11 @@
         "type": "object",
         "title": "InputBatches"
       },
+      "LeaveKind": {
+        "type": "string",
+        "enum": ["paid", "unpaid", "comp"],
+        "title": "LeaveKind"
+      },
       "Message": {
         "properties": { "message": { "type": "string", "title": "Message" } },
         "type": "object",
@@ -7439,6 +8131,357 @@
         "type": "object",
         "required": ["token", "new_password"],
         "title": "NewPassword"
+      },
+      "OaLeavePublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "source_row_number": {
+            "type": "integer",
+            "title": "Source Row Number"
+          },
+          "approval_no": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Approval No"
+          },
+          "employee_name_raw": {
+            "type": "string",
+            "title": "Employee Name Raw"
+          },
+          "department_raw": { "type": "string", "title": "Department Raw" },
+          "leave_type_raw": { "type": "string", "title": "Leave Type Raw" },
+          "leave_kind": { "$ref": "#/components/schemas/LeaveKind" },
+          "days": { "type": "string", "title": "Days" },
+          "rest_start_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Rest Start At"
+          },
+          "rest_end_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Rest End At"
+          },
+          "rest_start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Rest Start Date"
+          },
+          "rest_end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Rest End Date"
+          },
+          "work_start_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Work Start At"
+          },
+          "work_end_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Work End At"
+          },
+          "work_start_date": {
+            "anyOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ],
+            "title": "Work Start Date"
+          },
+          "work_end_date": {
+            "anyOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ],
+            "title": "Work End Date"
+          },
+          "balance_days_declared": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Balance Days Declared"
+          },
+          "reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Reason"
+          },
+          "approval_result_raw": {
+            "type": "string",
+            "title": "Approval Result Raw"
+          },
+          "approval_status_raw": {
+            "type": "string",
+            "title": "Approval Status Raw"
+          },
+          "raw_row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Raw Row"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "batch_id",
+          "employee_id",
+          "source_row_number",
+          "employee_name_raw",
+          "department_raw",
+          "leave_type_raw",
+          "leave_kind",
+          "days",
+          "rest_start_at",
+          "rest_end_at",
+          "rest_start_date",
+          "rest_end_date",
+          "approval_result_raw",
+          "approval_status_raw",
+          "raw_row",
+          "created_at"
+        ],
+        "title": "OaLeavePublic"
+      },
+      "OaOvertimeDayPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "overtime_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Overtime Id"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Work Date"
+          },
+          "minutes": { "type": "integer", "title": "Minutes" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "overtime_id", "work_date", "minutes", "created_at"],
+        "title": "OaOvertimeDayPublic"
+      },
+      "OaOvertimePublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "source_row_number": {
+            "type": "integer",
+            "title": "Source Row Number"
+          },
+          "approval_no": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Approval No"
+          },
+          "employee_name_raw": {
+            "type": "string",
+            "title": "Employee Name Raw"
+          },
+          "department_raw": { "type": "string", "title": "Department Raw" },
+          "approval_result_raw": {
+            "type": "string",
+            "title": "Approval Result Raw"
+          },
+          "approval_status_raw": {
+            "type": "string",
+            "title": "Approval Status Raw"
+          },
+          "start_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start At"
+          },
+          "end_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End At"
+          },
+          "declared_raw": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Declared Raw"
+          },
+          "reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Reason"
+          },
+          "raw_row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Raw Row"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "days": {
+            "items": { "$ref": "#/components/schemas/OaOvertimeDayPublic" },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "batch_id",
+          "employee_id",
+          "source_row_number",
+          "employee_name_raw",
+          "department_raw",
+          "approval_result_raw",
+          "approval_status_raw",
+          "start_at",
+          "end_at",
+          "raw_row",
+          "created_at"
+        ],
+        "title": "OaOvertimePublic"
+      },
+      "OaTripPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "source_row_number": {
+            "type": "integer",
+            "title": "Source Row Number"
+          },
+          "split_index": { "type": "integer", "title": "Split Index" },
+          "approval_no": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Approval No"
+          },
+          "employee_name_raw": {
+            "type": "string",
+            "title": "Employee Name Raw"
+          },
+          "department_raw": { "type": "string", "title": "Department Raw" },
+          "application_type_raw": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Application Type Raw"
+          },
+          "approval_result_raw": {
+            "type": "string",
+            "title": "Approval Result Raw"
+          },
+          "approval_status_raw": {
+            "type": "string",
+            "title": "Approval Status Raw"
+          },
+          "start_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start At"
+          },
+          "end_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End At"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          },
+          "days_declared": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Days Declared"
+          },
+          "reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Reason"
+          },
+          "raw_row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Raw Row"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "batch_id",
+          "employee_id",
+          "source_row_number",
+          "split_index",
+          "employee_name_raw",
+          "department_raw",
+          "approval_result_raw",
+          "approval_status_raw",
+          "start_at",
+          "end_at",
+          "start_date",
+          "end_date",
+          "raw_row",
+          "created_at"
+        ],
+        "title": "OaTripPublic"
       },
       "PersonnelSyncPreview": {
         "properties": {
@@ -7834,6 +8877,82 @@
         "type": "object",
         "required": ["email", "password", "full_name"],
         "title": "PrivateUserCreate"
+      },
+      "PunchRecordPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "company_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Company Id"
+          },
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "source_row_number": {
+            "type": "integer",
+            "title": "Source Row Number"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "employee_no_raw": { "type": "string", "title": "Employee No Raw" },
+          "employee_name_raw": {
+            "type": "string",
+            "title": "Employee Name Raw"
+          },
+          "department_raw": { "type": "string", "title": "Department Raw" },
+          "attendance_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Attendance Date"
+          },
+          "punch_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Punch Time"
+          },
+          "punch_result_raw": { "type": "string", "title": "Punch Result Raw" },
+          "device_raw": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Device Raw"
+          },
+          "address_raw": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Address Raw"
+          },
+          "raw_row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Raw Row"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "batch_id",
+          "source_row_number",
+          "employee_id",
+          "employee_no_raw",
+          "employee_name_raw",
+          "department_raw",
+          "attendance_date",
+          "punch_time",
+          "punch_result_raw",
+          "raw_row",
+          "created_at"
+        ],
+        "title": "PunchRecordPublic"
       },
       "RosterCalendarDay": {
         "properties": {

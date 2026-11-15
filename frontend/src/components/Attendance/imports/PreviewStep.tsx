@@ -1,10 +1,10 @@
-import type { ReactNode } from "react"
+import { useState } from "react"
 
-import type { ImportPreviewPublic } from "@/client"
+import type { ImportCommitPublic, ImportPreviewPublic } from "@/client"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { LoadingButton } from "@/components/ui/loading-button"
 import {
   Table,
   TableBody,
@@ -13,107 +13,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import useCustomToast from "@/hooks/useCustomToast"
+import { getRequestErrorMessage } from "@/lib/api-error"
 import {
   type AttendanceImportDataType,
   IMPORT_COMMIT_BLOCKED_LABELS,
   IMPORT_DATA_TYPE_LABELS,
   IMPORT_ROW_CODE_LABELS,
   IMPORT_SEVERITY_LABELS,
-  LEAVE_KIND_LABELS,
 } from "@/lib/enums"
+import { ImportIssueBadges } from "./ImportIssueBadges"
+import { formatDateTime, isPreviewExpired } from "./import-format"
+import { useCommitImport } from "./queries"
+import { SampleTable } from "./SampleTable"
 
 interface PreviewStepProps {
   dataType: AttendanceImportDataType
   preview: ImportPreviewPublic
-}
-
-type SampleRow = { [key: string]: unknown }
-
-type SampleColumn = {
-  label: string
-  render: (row: SampleRow) => ReactNode
-}
-
-const dateTimeFormatter = new Intl.DateTimeFormat("zh-CN", {
-  timeZone: "Asia/Shanghai",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-})
-
-function text(row: SampleRow, key: string): string {
-  const value = row[key]
-  return value === null || value === undefined || value === ""
-    ? "—"
-    : String(value)
-}
-
-function dateTime(value: unknown): string {
-  if (typeof value !== "string" || !value) return "—"
-  const parsed = new Date(value)
-  return Number.isNaN(parsed.getTime())
-    ? value
-    : dateTimeFormatter.format(parsed)
-}
-
-function overtimeDays(value: unknown): string {
-  if (!Array.isArray(value)) return "—"
-  return value
-    .map((day) => {
-      if (!day || typeof day !== "object") return ""
-      const item = day as { work_date?: unknown; minutes?: unknown }
-      return `${String(item.work_date ?? "")} ${String(item.minutes ?? 0)} 分钟`
-    })
-    .filter(Boolean)
-    .join("；")
-}
-
-const SAMPLE_COLUMNS: Record<AttendanceImportDataType, SampleColumn[]> = {
-  punch: [
-    { label: "行", render: (row) => text(row, "source_row_number") },
-    { label: "工号", render: (row) => text(row, "employee_no") },
-    { label: "姓名", render: (row) => text(row, "employee_name") },
-    { label: "考勤日期", render: (row) => text(row, "attendance_date") },
-    { label: "打卡时间", render: (row) => dateTime(row.punch_time) },
-    { label: "结果", render: (row) => text(row, "punch_result") },
-  ],
-  trip: [
-    { label: "行", render: (row) => text(row, "source_row_number") },
-    { label: "拆分", render: (row) => text(row, "split_index") },
-    { label: "姓名", render: (row) => text(row, "employee_name") },
-    { label: "审批编号", render: (row) => text(row, "approval_no") },
-    { label: "开始", render: (row) => dateTime(row.start_at) },
-    { label: "结束", render: (row) => dateTime(row.end_at) },
-  ],
-  ot: [
-    { label: "行", render: (row) => text(row, "source_row_number") },
-    { label: "姓名", render: (row) => text(row, "employee_name") },
-    { label: "审批编号", render: (row) => text(row, "approval_no") },
-    { label: "开始", render: (row) => dateTime(row.start_at) },
-    { label: "结束", render: (row) => dateTime(row.end_at) },
-    { label: "按日分钟", render: (row) => overtimeDays(row.days) },
-  ],
-  leave: [
-    { label: "行", render: (row) => text(row, "source_row_number") },
-    { label: "姓名", render: (row) => text(row, "employee_name") },
-    { label: "审批编号", render: (row) => text(row, "approval_no") },
-    { label: "类型", render: (row) => text(row, "leave_type") },
-    {
-      label: "归类",
-      render: (row) => {
-        const kind = row.leave_kind
-        return typeof kind === "string" && kind in LEAVE_KIND_LABELS
-          ? LEAVE_KIND_LABELS[kind as keyof typeof LEAVE_KIND_LABELS]
-          : text(row, "leave_kind")
-      },
-    },
-    { label: "天数", render: (row) => text(row, "days") },
-    { label: "休息开始", render: (row) => dateTime(row.rest_start_at) },
-    { label: "休息结束", render: (row) => dateTime(row.rest_end_at) },
-  ],
 }
 
 function StatCard({
@@ -136,41 +52,42 @@ function StatCard({
   )
 }
 
-function CountBadges({
-  counts,
-  labels,
-}: {
-  counts: Record<string, number> | undefined
-  labels: Record<string, string>
-}) {
-  const entries = Object.entries(counts ?? {}).filter(([, count]) => count > 0)
-  if (entries.length === 0) {
-    return <span className="text-sm text-muted-foreground">无</span>
-  }
-  return (
-    <div className="flex flex-wrap gap-2">
-      {entries.map(([code, count]) => (
-        <Badge key={code} variant="secondary">
-          {labels[code] ?? code} × {count}
-        </Badge>
-      ))}
-    </div>
-  )
-}
-
-/** Preview statistics, errors/warnings, samples, impact, and commit gate. */
+/** Preview statistics, errors/warnings, samples, impact, and commit action. */
 export function PreviewStep({ dataType, preview }: PreviewStepProps) {
+  const { showErrorToast, showSuccessToast } = useCustomToast()
+  const commitMutation = useCommitImport()
+  const [commitResult, setCommitResult] = useState<ImportCommitPublic | null>(
+    null,
+  )
+  const [commitError, setCommitError] = useState<string | null>(null)
   const { batch, stats, employees, impact } = preview
   const errors = preview.errors ?? []
-  const samples = (preview.samples ?? []) as SampleRow[]
+  const samples = (preview.samples ?? []) as Record<string, unknown>[]
   const errorTotal = preview.error_total ?? errors.length
-  const expiresAt = batch.expires_at ? new Date(batch.expires_at) : null
-  const isExpired = expiresAt !== null && expiresAt.getTime() <= Date.now()
+  const expired = isPreviewExpired(batch)
   const blockedReason = preview.commit_blocked_reason
   const blockedLabel = blockedReason
     ? (IMPORT_COMMIT_BLOCKED_LABELS[blockedReason] ?? blockedReason)
     : null
-  const sampleColumns = SAMPLE_COLUMNS[dataType]
+  const commitAllowed =
+    preview.can_commit && !expired && batch.status === "preview"
+
+  const submitCommit = async () => {
+    setCommitError(null)
+    try {
+      const result = await commitMutation.mutateAsync(batch.id)
+      setCommitResult(result)
+      showSuccessToast(
+        result.superseded_batch_id
+          ? "导入批次已提交生效，旧批次已置为「已替代」。"
+          : "导入批次已提交生效。",
+      )
+    } catch (error) {
+      const message = getRequestErrorMessage(error)
+      setCommitError(message)
+      showErrorToast(message)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6" data-testid="import-preview-step">
@@ -186,13 +103,17 @@ export function PreviewStep({ dataType, preview }: PreviewStepProps) {
                 {batch.parser_version}
               </p>
             </div>
-            <Badge variant="outline">
-              有效期至 {expiresAt ? dateTimeFormatter.format(expiresAt) : "—"}
+            <Badge variant={commitResult ? "default" : "outline"}>
+              {commitResult
+                ? "已提交生效"
+                : expired
+                  ? "预览已过期"
+                  : `有效期至 ${formatDateTime(batch.expires_at)}`}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-5 pt-6">
-          {isExpired && (
+          {expired && (
             <Alert variant="destructive" data-testid="preview-expired">
               <AlertTitle>预览已过期</AlertTitle>
               <AlertDescription>
@@ -232,17 +153,11 @@ export function PreviewStep({ dataType, preview }: PreviewStepProps) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <p className="text-sm font-medium">跳过原因</p>
-              <CountBadges
-                counts={stats.skip_counts}
-                labels={IMPORT_ROW_CODE_LABELS}
-              />
+              <ImportIssueBadges counts={stats.skip_counts} />
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium">告警</p>
-              <CountBadges
-                counts={stats.warning_counts}
-                labels={IMPORT_ROW_CODE_LABELS}
-              />
+              <ImportIssueBadges counts={stats.warning_counts} />
             </div>
           </div>
 
@@ -267,10 +182,8 @@ export function PreviewStep({ dataType, preview }: PreviewStepProps) {
           {impact.current_batch ? (
             <p className="text-muted-foreground">
               当前生效批次：{impact.current_batch.file_name ?? "—"} ·{" "}
-              {dateTimeFormatter.format(
-                new Date(impact.current_batch.committed_at),
-              )}{" "}
-              · 有效 {impact.current_batch.valid_records} 条 / 源{" "}
+              {formatDateTime(impact.current_batch.committed_at)} · 有效{" "}
+              {impact.current_batch.valid_records} 条 / 源{" "}
               {impact.current_batch.source_rows} 行
             </p>
           ) : (
@@ -364,57 +277,57 @@ export function PreviewStep({ dataType, preview }: PreviewStepProps) {
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          {samples.length === 0 ? (
-            <p className="text-sm text-muted-foreground">没有有效记录样例。</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {sampleColumns.map((column) => (
-                      <TableHead key={column.label}>{column.label}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {samples.map((sample, index) => (
-                    <TableRow
-                      key={`${String(sample.source_row_number)}-${index}`}
-                    >
-                      {sampleColumns.map((column) => (
-                        <TableCell key={column.label}>
-                          {column.render(sample)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          <SampleTable dataType={dataType} samples={samples} />
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="flex flex-col gap-3 pt-6">
-          {!preview.can_commit && blockedLabel ? (
+          {commitResult ? (
+            <Alert data-testid="commit-success">
+              <AlertTitle>已提交生效</AlertTitle>
+              <AlertDescription>
+                {commitResult.superseded_batch_id
+                  ? `同范围的旧生效批次 ${commitResult.superseded_batch_id} 已置为「已替代」。`
+                  : "该数据类型在该月份首次生效。"}
+                考勤月份已标记为待重算；本次提交不会自动重算。
+              </AlertDescription>
+            </Alert>
+          ) : commitError ? (
+            <Alert variant="destructive" data-testid="commit-error">
+              <AlertTitle>提交失败</AlertTitle>
+              <AlertDescription>{commitError}</AlertDescription>
+            </Alert>
+          ) : !commitAllowed ? (
             <Alert variant="destructive">
-              <AlertTitle>当前不可提交</AlertTitle>
-              <AlertDescription>{blockedLabel}</AlertDescription>
+              <AlertTitle>{expired ? "预览已过期" : "当前不可提交"}</AlertTitle>
+              <AlertDescription>
+                {expired
+                  ? "请重新上传或粘贴内容生成新的预览后再提交。"
+                  : (blockedLabel ?? "请重新预览后再提交。")}
+              </AlertDescription>
             </Alert>
           ) : (
             <Alert>
               <AlertTitle>预览校验通过</AlertTitle>
               <AlertDescription>
-                本阶段先提供解析与预览；提交、替换旧批次与撤销将在下一阶段开放。
+                提交后本批次生效，同公司、同月份、同类型的旧生效批次将自动置为「已替代」，考勤月份标记为待重算。
               </AlertDescription>
             </Alert>
           )}
-          <div>
-            <Button type="button" disabled title="提交功能将在下一阶段开放">
-              提交生效
-            </Button>
-          </div>
+          {!commitResult && (
+            <div>
+              <LoadingButton
+                type="button"
+                loading={commitMutation.isPending}
+                disabled={!commitAllowed}
+                onClick={() => void submitCommit()}
+                data-testid="commit-import"
+              >
+                提交生效
+              </LoadingButton>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

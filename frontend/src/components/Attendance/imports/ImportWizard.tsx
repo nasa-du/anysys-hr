@@ -326,7 +326,11 @@ export function ImportWizard({ companyId, month }: ImportWizardProps) {
             onApplyTemplate={applyTemplate}
             onApply={applyMapping}
           />
-          <PreviewStep dataType={dataType} preview={preview} />
+          <PreviewStep
+            key={preview.batch.id}
+            dataType={dataType}
+            preview={preview}
+          />
         </>
       )}
     </div>

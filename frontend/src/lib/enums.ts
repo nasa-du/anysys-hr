@@ -334,6 +334,9 @@ export const IMPORT_BATCH_STATUS_LABELS: Record<
   revoked: "已撤销",
 }
 
+/** Backend discard reason for a preview that outlived its 24-hour window. */
+export const IMPORT_DISCARD_REASON_EXPIRED = "expired"
+
 export type AttendanceImportSeverity = "error" | "warning"
 
 export const IMPORT_SEVERITY_LABELS: Record<AttendanceImportSeverity, string> =

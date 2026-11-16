@@ -46,7 +46,7 @@ The interactive API documentation is only registered when `FASTAPI_ENV=developme
 
 ### Development Seed Data
 
-From the `backend` directory, seed the three demo companies (`C1` 华信建设, `C2` 云启科技, `C3` 明德考勤演示) and their departments, positions, cost centers, and employees:
+From the `backend` directory, generate the deterministic mid-sized demo dataset:
 
 ```bash
 uv run python -m app.seed_dev
@@ -59,17 +59,54 @@ container (from the repository root):
 docker compose exec backend python -m app.seed_dev
 ```
 
-`C1` gets a three-level tree (`D1 总部` → `D2 生产部` → `D3 一车间` / `D4 二车间`, plus `D5 运营部` and `D6 财务部`), including the inactive `D7 旧项目部` for the inactive-state demo. `C2` gets a two-level tree.
+The generator uses a fixed random seed, so the same scale always produces the
+same companies, org trees, employees, rosters, imports, and results. `main()`
+seeds the full scale:
 
-`C1` also gets six positions (`P1 项目经理` through `P6 行政专员`), including positions with default departments and `P6` without one; `C2` gets two positions (`K1 研发工程师`, `K2 市场专员`).
+- `C1` 华信建设 — 240 employees across 13 departments (`D1 总部` → `D2 生产部` →
+  `D3`–`D4` 车间 plus generated `D8 三车间`/`D9 四车间`, and `D5`–`D6`,
+  `D10`–`D13`). The inactive `D7 旧项目部` has no employees. 12 positions
+  (`P1`–`P12`, `P6` without a default department) and 12 cost centers
+  (`K1`–`K12`, inactive `K6`).
+- `C2` 云启科技 — 420 employees across nine departments (`K1 总部` → `K2 研发部`
+  with `K9 测试部` nested, plus `K3`–`K8`), 10 positions, and 5 cost centers.
+- `C3` 明德考勤演示 — 520 employees across 13 departments and 12 positions; the
+  attendance demo company described below.
 
-`C1` gets a multi-level cost center tree (`K1 总部成本中心` → `K2 生产成本中心` → `K3 一车间成本中心` / `K4 二车间成本中心`, plus `K5 运营成本中心`), including the inactive `K6 旧项目成本中心` for the inactive-state demo; `C2` gets two cost centers (`K1 总部成本中心`, `K2 研发成本中心`).
+Generated employees cover every status (active/probation/resigned) and contract
+type, have manager chains per department, and include a few records without a
+cost center (「未分配」). Employees have no login accounts. The seed also creates
+nine non-superuser users (`USER_PASSWORD = changethis`) alongside the first
+superuser, for ten user rows in total.
 
-`C1` also gets 16 employees (`E1001` 张建国 through `E1016` 周敏) with managers, a mix of active, probation, and resigned records, varied contract types, and two employees whose cost center is 「未分配」; `C2` gets four employees (`E2001` 李雷 through `E2004` 张军). Seeded employees have no login accounts.
+`C3` is the attendance demo company. It keeps the seven golden-case shifts, the
+company default attendance rule, and the 2026 holidays (09-25 中秋节, 09-27
+调休上班, 10-01…10-07 国庆节, 10-10 调休上班). For each of **2026-08, 2026-09,
+and 2026-10** it creates four schedule plans through the real expansion path:
+行政班 (`all`), 财务技术班 (`dept` 财务部), 园林班 (`position` 园林工 with
+`ot_threshold_min = 15`), and an employee-scope night-shift plan. Employment
+windows are exercised: one employee resigned before August, one on 2026-09-10,
+one joins on 2026-09-15, and one on 2026-10-08. Two manual exceptions follow
+expansion in September: `E3001 吕倩` rests on 2026-09-10 and `E3002 邓丹静`
+works 2026-09-11 with the `EARLY` and `MID` shifts.
 
-`C3` is the attendance demo company. It has departments `D1`–`D4`, positions `P1`–`P5`, employees `E101`–`E113` (including duplicate names, one resignation before September, and one hire during September), the seven golden-case shifts, the company default attendance rule, the 2026-09/2026-10 holidays, and four 2026-09 schedule plans from the implementation spec (行政班 `all`, 财务技术班 `dept` 财务部, 园林班 `position` 园林工 with `ot_threshold_min = 15`, 李金辉夜班 `employee` E105 with 09-30 `NIGHT`). The plan seed runs the real expansion path, so September also has its expanded roster entries; resigned and not-yet-hired employees are excluded per date. Two manual exceptions are seeded after expansion: E103 周玉琼 rests on 2026-09-10, and E104 胡国邵 works 2026-09-11 with the `EARLY` and `MID` shifts. The four 2026-09 fixtures (`punch`, `oa-trip`, `oa-overtime`, `oa-leave`) commit through the same preview/commit services the API uses, producing four committed batches. Calculation outputs are not seeded; the demo triggers calculation. `C1`–`C2` never receive attendance rows.
+Punch and OA data are generated in memory and committed through the same
+preview/commit services the API uses: four data types × three months = twelve
+committed batches. Each month is then calculated once through the real service
+path, so all three months end in the `calculated` state with day results, month
+summaries, and a successful `calc_run`. Confirming, locking, and snapshots are
+left to the demo. `C1`–`C2` never receive attendance rows.
 
-The script is idempotent — it inserts by business key and never overwrites existing rows — and refuses to run unless `FASTAPI_ENV=development`. It needs the first superuser as the import operator, so run `prestart.sh` first. It is not part of `prestart.sh`; run it manually when you want demo data.
+The script is idempotent — it inserts by business key, never overwrites existing
+rows, skips already-committed import scopes, and skips months that already have
+a successful calculation. It refuses to run unless `FASTAPI_ENV=development`.
+It needs the first superuser as the import operator, so run `prestart.sh` first.
+It is not part of `prestart.sh`; run it manually when you want demo data.
+
+The test suite calls the same generator with `seed_dev.SMALL_SCALE` (18/16/24
+employees) so the contracts stay covered without a multi-minute seed per test.
+For a clean reseed, drop and recreate the database first (`docker compose down
+-v`, or drop the local database), then run `prestart.sh` and the seed again.
 
 The complete dataset, API/error model, migration chain, backup steps, demo script, and requirement-prototype differences are documented in [docs/attendance.md](./docs/attendance.md) and [docs/basic-management.md](./docs/basic-management.md).
 

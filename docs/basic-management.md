@@ -104,17 +104,20 @@ Docker Compose (backend running):
 docker compose exec backend python -m app.seed_dev
 ```
 
-Dataset:
+Dataset (deterministic, fixed random seed; `FULL_SCALE`):
 
 | Company | Content |
 |---|---|
-| `C1` 华信建设 | Full organization: 7 departments in a 3-level tree (`D1 总部` → `D2 生产部` → `D3 一车间`/`D4 二车间`, plus `D5`/`D6`), inactive `D7 旧项目部`; 6 positions (`P1`–`P6`, `P6` without a default department); 6 cost centers (`K1`–`K6`, `K6` inactive); 16 employees (`E1001`–`E1016`) across active/probation/resigned, with managers, varied contract types, and two employees with no cost center |
-| `C2` 云启科技 | Small organization: 3 departments, 2 positions, 2 cost centers, 4 employees (`E2001`–`E2004`) |
-| `C3` 明德考勤演示 | Attendance demo company: 4 departments, 5 positions, 13 employees (`E101`–`E113`), shifts, rules, holidays, schedule plans, and imports |
+| `C1` 华信建设 | 240 employees; 13 departments (`D1 总部` → `D2 生产部` → `D3`/`D4`/`D8`/`D9` 车间, plus `D5`–`D6` and `D10`–`D13`), inactive `D7 旧项目部`; 12 positions (`P1`–`P12`, `P6` without a default department); 12 cost centers (`K1`–`K12`, `K6` inactive); manager chains, all statuses and contract types, and employees without a cost center (「未分配」) |
+| `C2` 云启科技 | 420 employees; 9 departments (`K1 总部` → `K2 研发部` with nested `K9 测试部`, plus `K3`–`K8`); 10 positions; 5 cost centers |
+| `C3` 明德考勤演示 | Attendance demo company: 520 employees, 13 departments, 12 positions, shifts, rules, holidays, three months of schedule plans, imports, and calculated results |
 
 The inactive department and cost center have no active/probation employee
-references. Seeded employees have no login accounts. Re-running the script
-produces the same counts and codes.
+references. Seeded employees have no login accounts, and employee names are
+unique inside each company. The seed also creates nine non-superuser users in
+addition to the first superuser. Re-running the script produces the same counts
+and codes. The test suite uses `seed_dev.SMALL_SCALE` (18/16/24 employees) to
+cover the same contracts quickly.
 
 ## Migrations and backups
 
@@ -176,18 +179,19 @@ Prerequisites: Docker Compose services, migrations applied, and the seed loaded
    `D2`: blocked by active children/employees. Note `D7 旧项目部` is displayed
    as 「已停用」 and disappears from create/edit selectors.
 4. **Positions.** Create a position with `D5` as the default department, edit it,
-   then try to delete `P4 财务会计`: blocked by employees, including the
-   resigned `E1013 李娜`. Delete the new position successfully. `P6 行政专员`
-   has no default department.
+   then try to delete `P4 财务会计`: blocked by its 15 employees. Delete the new
+   position successfully. `P6 行政专员` has no default department; one of its
+   employees, `E1027 余婷`, is resigned.
 5. **Cost centers.** In `C1`, explore the `K1 总部成本中心` → `K2 生产成本中心` →
    `K3`/`K4` tree. Create a child, edit `budget`/`warn_pct` (budget ≥ 0,
    warn 1–100). Click 「未分配」 at the end of the tree to list employees without
-   a cost center (`E1009`). Try to delete `K3`: blocked by employees.
+   a cost center (`E1053 吕磊健`). Try to delete `K3`: blocked by employees.
 6. **Employees.** Create an employee under `D3 一车间`/`P3 车间工人`, choose a
-   manager (`E1004`) and cost center, then filter by keyword, status, position,
-   cost center, department subtree, and 「未分配」. Mark the employee as resigned
-   with a resignation date: the record leaves the default list and its fields are
-   locked except note and resignation-date correction (「离职为终态」).
+   manager (`E1055 丁鹏斌`) and cost center, then filter by keyword, status,
+   position, cost center, department subtree, and 「未分配」. Mark the employee
+   as resigned with a resignation date: the record leaves the default list and
+   its fields are locked except note and resignation-date correction
+   (「离职为终态」).
 7. **Chinese errors.** Submit a duplicate company code or duplicate employee
    number (409 `duplicate_code`) and an invalid budget or warn range (422) in the
    forms. Send an immutable code in a PATCH payload from Swagger or `curl` (422
@@ -198,11 +202,11 @@ Prerequisites: Docker Compose services, migrations applied, and the seed loaded
    error state with 「重试」; retry to recover. Loading skeletons appear while
    requests are in flight. Resize to a narrow viewport and confirm the sidebar
    collapses into a sheet, layouts stack, and drawers become full width.
-9. **Data isolation.** Switch back to `C2 云启科技` and confirm only its three
-   departments, two positions, and two cost centers are shown. The employee list
-   defaults to active/probation, so it shows three people (`E2001`–`E2003`);
-   switching the status filter to 「离职」 shows `E2004 张军`. `C1` records are
-   absent everywhere, including selectors.
+9. **Data isolation.** Switch back to `C2 云启科技` and confirm only its nine
+   departments, ten positions, and five cost centers are shown. The employee list
+   defaults to active/probation (408 people); switching the status filter to
+   「离职」 shows the resigned records, e.g. `E2129 钟霞`. `C1` records are absent
+   everywhere, including selectors.
 
 ## Verification gates
 

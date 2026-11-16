@@ -113,36 +113,47 @@ docker compose exec backend python -m app.seed_dev
 The script needs the first superuser as the import operator; run
 `backend/scripts/prestart.sh` (which runs `app/initial_data.py`) first.
 
+The dataset is generated deterministically (fixed random seed). `main()` seeds
+`FULL_SCALE`: `C1` 华信建设 (240 employees), `C2` 云启科技 (420), and `C3`
+明德考勤演示 (520). The test suite uses `seed_dev.SMALL_SCALE` against the same
+code paths.
+
 What it creates for `C3` 「明德考勤演示」:
 
-- Departments `D1 生产部`, `D2 财务部`, `D3 技术部`, `D4 行政部`; positions
-  `P1 生产操作工`, `P2 园林工`, `P3 会计`, `P4 技术员`, `P5 行政专员`.
-- Employees `E101`–`E113` exactly as
-  [`attendance-fixtures/README.md`](./specs/attendance-fixtures/README.md)
-  section 1 describes: duplicate 张伟 (`E110`/`E111`), resigned `E112` before
-  September, late hire `E113` on 2026-09-15.
+- Departments `D1`–`D13` (生产部, 财务部, 技术部, 行政部, three workshops,
+  质检组, 仓储组, two R&D groups, 后勤组, 人力资源部) and positions
+  `P1 生产操作工` through `P12 人力资源专员`.
+- Employees `E3001`–`E3520` with unique names inside the company (OA imports
+  match by name) and employment windows that exercise expansion: one
+  resignation before August, one on 2026-09-10, a hire on 2026-09-15, and a
+  hire on 2026-10-08.
 - Seven golden-case shifts (`ADM`, `TEC`, `YL`, `EARLY`, `MID`, `NIGHT`,
-  `DAWN`), the company default rule (14 fields), and 2026-09/10 holidays
-  (09-25 中秋节, 09-27 调休上班, 10-01…10-07 国庆节).
-- Four 2026-09 plans through the real expansion path: 行政班 (`all`),
-  财务技术班 (`dept` 财务部), 园林班 (`position` 园林工 with
-  `ot_threshold_min = 15`), 李金辉夜班 (`employee` `E105`, 09-30 `NIGHT`).
-- Two manual exceptions after expansion: `E103` rests on 2026-09-10; `E104`
-  works 2026-09-11 with `EARLY` + `MID`.
-- Four committed 2026-09 import batches through the real preview/commit path:
-  `punch-2026-09.csv`, `oa-trip-2026-09.csv`, `oa-overtime-2026-09.csv`,
-  `oa-leave-2026-09.csv`.
-
-The seed deliberately does **not** create `calc_run`, day/shift results, month
-summaries, snapshots, or adjustments; the demo triggers calculation.
+  `DAWN`), the company default rule (14 fields), and holidays for 2026-09/10
+  (09-25 中秋节, 09-27 调休上班, 10-01…10-07 国庆节, 10-10 调休上班).
+- Four plans for **each** of 2026-08, 2026-09, and 2026-10 through the real
+  expansion path: 行政班 (`all`), 财务技术班 (`dept` 财务部), 园林班
+  (`position` 园林工 with `ot_threshold_min = 15`), and an employee-scope
+  night-shift plan (`E3215 金佳丹`, night shifts on 08-27, 09-30, 10-29;
+  09-27/10-10 adjusted-workday overrides).
+- Two manual exceptions after expansion: `E3001 吕倩` rests on 2026-09-10;
+  `E3002 邓丹静` works 2026-09-11 with `EARLY` + `MID`.
+- Twelve committed import batches (punch/trip/OT/leave × three months) through
+  the real preview/commit path. Generated files are named
+  `punch-YYYY-MM.csv`, `oa-trip-YYYY-MM.csv`, `oa-overtime-YYYY-MM.csv`, and
+  `oa-leave-YYYY-MM.csv`.
+- One successful calculation per month through `calculate_month`, leaving all
+  three months `calculated` with day results and month summaries. Snapshots,
+  confirmations, and locks are deliberately left to the demo.
 
 Idempotency keys: company `company_code`; department `dept_code`; position
 `position_code`; employee `employee_no`; shift `shift_code`; rule `company_id`;
 holiday `(company_id, date)`; plan `(company_id, month, plan_name)`; roster
 entry `(employee_id, work_date)`; committed batch
-`(company_id, data_type, month, committed)`. The script only inserts missing
-rows, never updates or deletes user edits, and running it twice leaves counts
-stable. Attendance seed rows never touch `C1`–`C3`.
+`(company_id, data_type, month, committed)`; calculation `(month, successful
+calc_run)`. The script only inserts missing rows, never updates or deletes user
+edits, and running it twice leaves counts stable. A month is re-expanded only
+when one of its plans was recreated or it has no roster yet. Attendance seed
+rows never touch `C1`–`C2`.
 
 ## Migrations and backups
 
@@ -192,10 +203,11 @@ with a new migration in the owning slice; never rewrite a merged migration.
    the conflict/overwrite flow.
 6. 排班工作台: create a plan → conflict preview → expand → copy next month
    (big/small month hints) → personnel sync → manual exception.
-7. 导入中心: upload the four fixtures → column mapping → preview counts/errors
-   → commit; show the superseded old batch in history.
-8. 考勤结果: trigger calculation; review day results, anomalies, and month
-   summaries.
+7. 导入中心: review the twelve committed batches (three months × four types) →
+   re-upload a generated CSV to show mapping, preview counts, and errors → show
+   the superseded old batch in history.
+8. 考勤结果: review the pre-calculated day results, anomalies, and month
+   summaries for the three months; recalculate one month to show the new run.
 9. Open a day detail four-way comparison (roster/punch/OA/result) → create a
    manual adjustment → recalculate and verify idempotency/re-application.
 10. 考勤结果: confirm → lock → view snapshot versions.

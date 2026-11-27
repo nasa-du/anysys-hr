@@ -3,7 +3,7 @@
 - Ticket: [#56](https://github.com/nasa-du/anysys-hr/issues/56) (research), feeding [#47](https://github.com/nasa-du/anysys-hr/issues/47) (decision)
 - Date: 2026-11-27
 - Runtime used for experiments: CPython 3.14.4 on Linux (WSL2)
-- Status: research complete; recommendation and decisions for #47 below
+- Status: research input, non-normative. The final decision lives in the payroll specification and ADRs. Merged to `main` on 2026-11-27; experiment artifacts were throwaway and are not committed.
 - Requirement source: [`docs/requirement/rx-hr-requirement.html`](../requirement/rx-hr-requirement.html) §3.9, §4.1–§4.4
 - Constraint from the map: no production code in this effort; the experiment is a throwaway prototype outside the repository
 

@@ -3,7 +3,7 @@
 - **Ticket**: [#57](https://github.com/nasa-du/anysys-hr/issues/57)（Wayfinder research）
 - **上游地图**: [#45](https://github.com/nasa-du/anysys-hr/issues/45)
 - **下游决策**: [#50 工资条与报表定稿](https://github.com/nasa-du/anysys-hr/issues/50)
-- **状态**: 调研完成；本报告只做技术选型，不包含生产代码
+- **状态**: 非规范性调研输入；最终决策以薪资 spec/ADR 为准。2026-11-27 合并到 `main`；实验脚本为 throwaway，未入库。
 - **日期**: 2026-11-27
 - **实验环境**: WSL2 Linux 6.18，12 vCPU，15 GiB RAM；Python 3.14.4；WeasyPrint 70.0；ReportLab 5.1.2；Playwright 1.65.2 / Chromium 1254；pypdf 7.2.0；openpyxl 3.1.5
 

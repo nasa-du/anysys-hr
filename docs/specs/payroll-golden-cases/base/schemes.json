@@ -1,0 +1,9 @@
+{
+  "schemes": [
+    {
+      "calc_code": "STD",
+      "calc_name": "标准计算方案",
+      "formulas": {}
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "workday_code": "STD",
+  "workday_name": "标准工时",
+  "avg_pay_days": "21.75",
+  "work_hours": "8.00",
+  "ot_mult_weekday": "1.50",
+  "ot_mult_weekend": "2.00",
+  "ot_mult_holiday": "3.00",
+  "min_wage": "2040.00"
+}

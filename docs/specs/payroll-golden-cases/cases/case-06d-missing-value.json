@@ -1,0 +1,19 @@
+{
+  "id": "case-06d-missing-value",
+  "title": "已知输入缺失值",
+  "kind": "scheme",
+  "covers": ["missing_value"],
+  "engine_version": "1.0.0",
+  "notes": "字段目录已知 base_salary 是构成输入，但用例未提供值；引擎不静默当 0。",
+  "input": {
+    "formula_overrides": {
+      "base_pay": "base_salary + 1"
+    }
+  },
+  "expected": {
+    "error": {
+      "code": "formula_missing_value",
+      "field_key": "base_pay"
+    }
+  }
+}

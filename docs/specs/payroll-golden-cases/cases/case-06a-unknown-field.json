@@ -1,0 +1,19 @@
+{
+  "id": "case-06a-unknown-field",
+  "title": "未知字段",
+  "kind": "scheme",
+  "covers": ["unknown_field"],
+  "engine_version": "1.0.0",
+  "notes": "公式引用了字段目录、构成输入和参数之外的名称。",
+  "input": {
+    "formula_overrides": {
+      "base_pay": "not_a_field + 1"
+    }
+  },
+  "expected": {
+    "error": {
+      "code": "formula_unknown_field",
+      "field_key": "base_pay"
+    }
+  }
+}

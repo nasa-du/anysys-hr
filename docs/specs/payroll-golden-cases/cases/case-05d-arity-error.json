@@ -1,0 +1,15 @@
+{
+  "id": "case-05d-arity-error",
+  "title": "函数参数个数错误",
+  "kind": "formula",
+  "covers": ["function_arity"],
+  "engine_version": "1.0.0",
+  "notes": "ROUND 必须两个参数。",
+  "formula": "ROUND(1)",
+  "input": {},
+  "expected": {
+    "error": {
+      "code": "formula_arity_error"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "id": "case-06e-zero-denominator",
+  "title": "默认公式零分母",
+  "kind": "scheme",
+  "covers": ["zero_denominator", "no_default_guard"],
+  "engine_version": "1.0.0",
+  "notes": "默认 base_pay 不做 IF 护栏；weekday_full=0 时直接失败。",
+  "input": {
+    "values": {
+      "base_salary": "100.00",
+      "hightemp_subsidy": "0.00",
+      "performance_salary": "0.00",
+      "overtime_pay": "0.00",
+      "confidentiality_allowance": "0.00",
+      "social_subsidy": "0.00",
+      "noncompete_subsidy": "0.00",
+      "total_package": "100.00",
+      "weekday_full": "0.0",
+      "weekend_full": "1.0",
+      "weekday_attended": "0.0",
+      "weekend_attended": "0.0",
+      "paid_leave_days": "0.0",
+      "ot_weekday_hours": "0.00",
+      "ot_weekend_hours": "0.00",
+      "ot_holiday_hours": "0.00",
+      "attendance_deduct": "0.00",
+      "phone_allowance": "0.00",
+      "car_allowance": "0.00",
+      "other_addon": "0.00",
+      "production_bonus": "0.00",
+      "commission": "0.00",
+      "admin_deduct": "0.00",
+      "social_this": "0.00",
+      "tax": "0.00",
+      "paid_advance": "0.00"
+    },
+    "params": {
+      "avg_pay_days": "21.75",
+      "work_hours": "8.00",
+      "ot_mult_weekday": "1.50",
+      "ot_mult_weekend": "2.00",
+      "ot_mult_holiday": "3.00",
+      "min_wage": "2040.00",
+      "tax_threshold": "5000.00",
+      "tax_rate": "0.03",
+      "social_rate": "0.23338"
+    }
+  },
+  "expected": {
+    "error": {
+      "code": "formula_division_by_zero",
+      "field_key": "base_pay"
+    }
+  }
+}

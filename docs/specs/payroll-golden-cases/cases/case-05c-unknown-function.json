@@ -1,0 +1,15 @@
+{
+  "id": "case-05c-unknown-function",
+  "title": "未知函数",
+  "kind": "formula",
+  "covers": ["unknown_function"],
+  "engine_version": "1.0.0",
+  "notes": "只允许 ROUND/SUM/MIN/MAX/ABS/IF。",
+  "formula": "FOO(1)",
+  "input": {},
+  "expected": {
+    "error": {
+      "code": "formula_unknown_function"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "case-06c-division-by-zero",
+  "title": "显式零除",
+  "kind": "scheme",
+  "covers": ["division_by_zero"],
+  "engine_version": "1.0.0",
+  "notes": "零除在运算符位置报错，不做隐式 IFERROR。",
+  "input": {
+    "formula_overrides": {
+      "base_pay": "base_salary / 0"
+    },
+    "values": {
+      "base_salary": "100.00"
+    }
+  },
+  "expected": {
+    "error": {
+      "code": "formula_division_by_zero",
+      "field_key": "base_pay"
+    }
+  }
+}

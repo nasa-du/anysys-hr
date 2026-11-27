@@ -1,0 +1,22 @@
+{
+  "id": "case-04-cycle",
+  "title": "三节点依赖环",
+  "kind": "scheme",
+  "covers": ["cycle_detection", "cycle_path"],
+  "engine_version": "1.0.0",
+  "notes": "base_pay → performance → overtime_pay_actual → base_pay 三节点环；按显示顺序从 base_pay 开始报告路径。",
+  "input": {
+    "formula_overrides": {
+      "base_pay": "performance + 1",
+      "performance": "overtime_pay_actual + 1",
+      "overtime_pay_actual": "base_pay + 1"
+    }
+  },
+  "expected": {
+    "error": {
+      "code": "formula_cycle",
+      "field_key": "base_pay",
+      "path": ["base_pay", "performance", "overtime_pay_actual", "base_pay"]
+    }
+  }
+}

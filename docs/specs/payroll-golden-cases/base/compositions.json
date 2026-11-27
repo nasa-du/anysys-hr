@@ -1,0 +1,15 @@
+{
+  "comp_code": "STD",
+  "comp_name": "标准薪资构成",
+  "version_no": 1,
+  "amounts": {
+    "base_salary": "10000.00",
+    "hightemp_subsidy": "300.00",
+    "performance_salary": "2000.00",
+    "overtime_pay": "1000.00",
+    "confidentiality_allowance": "500.00",
+    "social_subsidy": "200.00",
+    "noncompete_subsidy": "0.00",
+    "total_package": "14000.00"
+  }
+}

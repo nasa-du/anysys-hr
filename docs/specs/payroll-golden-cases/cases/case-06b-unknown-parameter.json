@@ -1,0 +1,19 @@
+{
+  "id": "case-06b-unknown-parameter",
+  "title": "未知参数",
+  "kind": "scheme",
+  "covers": ["unknown_parameter"],
+  "engine_version": "1.0.0",
+  "notes": "花括号参数只允许工作日参数与全局数值参数。",
+  "input": {
+    "formula_overrides": {
+      "base_pay": "{not_a_param} + 1"
+    }
+  },
+  "expected": {
+    "error": {
+      "code": "formula_unknown_parameter",
+      "field_key": "base_pay"
+    }
+  }
+}

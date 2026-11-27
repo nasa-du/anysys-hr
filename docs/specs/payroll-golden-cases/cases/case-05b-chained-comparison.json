@@ -1,0 +1,15 @@
+{
+  "id": "case-05b-chained-comparison",
+  "title": "拒绝链式比较",
+  "kind": "formula",
+  "covers": ["chained_comparison_rejected"],
+  "engine_version": "1.0.0",
+  "notes": "链式比较必须显式嵌套 IF 或加括号。",
+  "formula": "1 < 2 < 3",
+  "input": {},
+  "expected": {
+    "error": {
+      "code": "formula_syntax_error"
+    }
+  }
+}

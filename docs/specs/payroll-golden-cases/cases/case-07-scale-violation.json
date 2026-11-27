@@ -1,0 +1,22 @@
+{
+  "id": "case-07-scale-violation",
+  "title": "金额精度违规",
+  "kind": "scheme",
+  "covers": ["money_scale"],
+  "engine_version": "1.0.0",
+  "notes": "金额字段公式未显式取整为 2 位；引擎不隐式取整，报 formula_value_scale。",
+  "input": {
+    "formula_overrides": {
+      "base_pay": "base_salary / 3"
+    },
+    "values": {
+      "base_salary": "10000.00"
+    }
+  },
+  "expected": {
+    "error": {
+      "code": "formula_value_scale",
+      "field_key": "base_pay"
+    }
+  }
+}

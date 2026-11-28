@@ -62,7 +62,7 @@ from app.schemas_attendance.imports import (
     OaTripPublic,
     PunchRecordPublic,
 )
-from app.services.attendance import import_mapping, import_normalize, import_parsing
+from app.services.attendance import import_mapping, import_normalize
 from app.services.attendance.errors import AttendanceErrorCode
 from app.services.attendance.month_state import (
     ensure_month_editable,
@@ -72,6 +72,7 @@ from app.services.attendance.month_state import (
 from app.services.attendance.staleness import mark_month_stale
 from app.services.common import paginate
 from app.services.companies import get_company_or_404
+from app.services.importing import parsing as import_parsing
 
 PARSER_VERSION = "attendance-import-v1"
 PREVIEW_TTL = timedelta(hours=24)

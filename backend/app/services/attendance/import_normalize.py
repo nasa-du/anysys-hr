@@ -19,8 +19,8 @@ from openpyxl.utils.datetime import from_excel
 
 from app.enums import ImportDataType, ImportSeverity, LeaveKind
 from app.models import Employee
-from app.services.attendance import import_parsing
 from app.services.attendance.import_mapping import DetectedTable
+from app.services.importing import parsing as import_parsing
 
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 

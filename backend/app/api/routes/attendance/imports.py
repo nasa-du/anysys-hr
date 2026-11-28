@@ -18,9 +18,10 @@ from app.schemas_attendance.imports import (
     ImportMappingTemplatePublic,
     ImportPreviewPublic,
 )
-from app.services.attendance import import_mapping, import_parsing
+from app.services.attendance import import_mapping
 from app.services.attendance import imports as import_service
 from app.services.attendance.errors import AttendanceErrorCode
+from app.services.importing import parsing as import_parsing
 
 router = APIRouter(
     prefix="/attendance/imports",

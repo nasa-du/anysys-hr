@@ -6,14 +6,15 @@ payroll uses it later; it imports neither module's code and carries no
 module-specific column registry.
 """
 
-import ast
-from pathlib import Path
 from types import ModuleType
 
 import pytest
 
 from app.core.errors import DomainError
+from app.services.attendance.errors import AttendanceErrorCode
 from app.services.importing import header, parsing
+from app.services.importing.errors import ImportErrorCode
+from tests.utils.source_imports import imported_modules
 
 PAYROLL_FIELDS = {
     "employee_no": header.FieldSpec(required=True, aliases=("工号",)),
@@ -59,21 +60,15 @@ def test_shared_parser_keeps_the_documented_file_and_row_limits() -> None:
     assert exc_info.value.code == "file_too_large"
 
 
-def _imported_modules(module: ModuleType) -> set[str]:
-    path = Path(module.__file__ or "")
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    imported: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            imported.update(alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom) and node.module is not None:
-            imported.add(node.module)
-    return imported
+def test_shared_import_codes_stay_compatible_with_the_attendance_vocabulary() -> None:
+    attendance_codes = {code.value for code in AttendanceErrorCode}
+
+    assert {code.value for code in ImportErrorCode} <= attendance_codes
 
 
 @pytest.mark.parametrize("module", [parsing, header])
 def test_shared_import_modules_import_no_feature_module(module: ModuleType) -> None:
-    imported = _imported_modules(module)
+    imported = imported_modules(module)
 
     assert not any(
         name.startswith(("app.services.attendance", "app.services.payroll"))

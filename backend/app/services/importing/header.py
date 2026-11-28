@@ -171,12 +171,11 @@ def _apply_overrides(
 ) -> dict[str, ColumnRef]:
     for field in overrides:
         if field not in fields:
+            message = UNKNOWN_FIELD_TEMPLATE.format(field=field)
             raise DomainError(
                 ImportErrorCode.IMPORT_PARSE_FAILED,
-                f"未知列映射字段：{field}",
-                field_errors={
-                    "column_mapping": UNKNOWN_FIELD_TEMPLATE.format(field=field)
-                },
+                message,
+                field_errors={"column_mapping": message},
             )
 
     normalized = [normalize_header(column) for column in header_columns]

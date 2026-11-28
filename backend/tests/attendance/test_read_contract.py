@@ -6,18 +6,25 @@ source-metadata dataclasses; unlocked or missing sources fail with explicit
 contract codes.
 """
 
-import ast
 import uuid
 from dataclasses import FrozenInstanceError, is_dataclass
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from pathlib import Path
+from typing import NamedTuple
 
 import pytest
 from sqlmodel import Session
 
 from app.core.errors import DomainError
 from app.enums import AttendanceMonthStatus
+from app.models import (
+    AttendanceMonth,
+    AttendanceMonthSnapshot,
+    AttendanceMonthSummary,
+    CalcRun,
+    Company,
+    Employee,
+)
 from app.services.attendance import read_contract
 from tests.utils.attendance_factories import (
     create_attendance_month,
@@ -31,13 +38,23 @@ from tests.utils.factories import (
     create_employee,
     create_position,
 )
+from tests.utils.source_imports import imported_modules
 from tests.utils.user import create_random_user
 
 MONTH = date(2026, 9, 1)
 LOCKED_AT = datetime(2026, 10, 5, 2, 0, tzinfo=UTC)
 
 
-def _locked_month(db: Session):
+class LockedMonth(NamedTuple):
+    company: Company
+    employee: Employee
+    month: AttendanceMonth
+    snapshot: AttendanceMonthSnapshot
+    calc_run: CalcRun
+    summary: AttendanceMonthSummary
+
+
+def _locked_month(db: Session) -> LockedMonth:
     company = create_company(db)
     department = create_department(db, company=company)
     position = create_position(db, company=company)
@@ -83,25 +100,32 @@ def _locked_month(db: Session):
         ot_holiday_hours=Decimal("0"),
         attendance_deduct=Decimal("-125.50"),
     )
-    return company, employee, month, snapshot, calc_run, summary
+    return LockedMonth(
+        company=company,
+        employee=employee,
+        month=month,
+        snapshot=snapshot,
+        calc_run=calc_run,
+        summary=summary,
+    )
 
 
 def test_reads_the_nine_values_and_source_metadata_for_a_locked_month(
     db: Session,
 ) -> None:
-    company, employee, month, snapshot, calc_run, _ = _locked_month(db)
+    locked = _locked_month(db)
 
     source = read_contract.read_locked_month_summary(
         db,
-        company_id=company.id,
+        company_id=locked.company.id,
         month=MONTH,
-        employee_id=employee.id,
+        employee_id=locked.employee.id,
     )
 
-    assert source.attendance_month_id == month.id
-    assert source.attendance_snapshot_id == snapshot.id
+    assert source.attendance_month_id == locked.month.id
+    assert source.attendance_snapshot_id == locked.snapshot.id
     assert source.attendance_snapshot_version == 3
-    assert source.attendance_calc_run_id == calc_run.id
+    assert source.attendance_calc_run_id == locked.calc_run.id
     assert source.calc_version == "attendance-calc-v1"
     assert source.rules_version == "rules-2026.09"
     assert source.locked_at == LOCKED_AT
@@ -158,34 +182,34 @@ def test_unlocked_attendance_month_fails_with_the_contract_code(db: Session) -> 
 
 
 def test_missing_month_summary_fails_with_the_contract_code(db: Session) -> None:
-    company, employee, _, _, _, summary = _locked_month(db)
-    db.delete(summary)
+    locked = _locked_month(db)
+    db.delete(locked.summary)
     db.commit()
 
     with pytest.raises(DomainError) as exc_info:
         read_contract.read_locked_month_summary(
             db,
-            company_id=company.id,
+            company_id=locked.company.id,
             month=MONTH,
-            employee_id=employee.id,
+            employee_id=locked.employee.id,
         )
 
     assert exc_info.value.code == read_contract.AttendanceReadErrorCode.SUMMARY_MISSING
 
 
 def test_summary_run_mismatch_fails_with_the_contract_code(db: Session) -> None:
-    company, employee, month, _, _, summary = _locked_month(db)
-    other_run = create_calc_run(db, attendance_month_id=month.id)
-    summary.calc_run_id = other_run.id
-    db.add(summary)
+    locked = _locked_month(db)
+    other_run = create_calc_run(db, attendance_month_id=locked.month.id)
+    locked.summary.calc_run_id = other_run.id
+    db.add(locked.summary)
     db.commit()
 
     with pytest.raises(DomainError) as exc_info:
         read_contract.read_locked_month_summary(
             db,
-            company_id=company.id,
+            company_id=locked.company.id,
             month=MONTH,
-            employee_id=employee.id,
+            employee_id=locked.employee.id,
         )
 
     assert (
@@ -194,7 +218,7 @@ def test_summary_run_mismatch_fails_with_the_contract_code(db: Session) -> None:
 
 
 def test_another_companys_locked_month_is_not_readable(db: Session) -> None:
-    _, employee, _, _, _, _ = _locked_month(db)
+    locked = _locked_month(db)
     other_company = create_company(db)
 
     with pytest.raises(DomainError) as exc_info:
@@ -202,21 +226,14 @@ def test_another_companys_locked_month_is_not_readable(db: Session) -> None:
             db,
             company_id=other_company.id,
             month=MONTH,
-            employee_id=employee.id,
+            employee_id=locked.employee.id,
         )
 
     assert exc_info.value.code == read_contract.AttendanceReadErrorCode.MONTH_MISSING
 
 
 def test_read_contract_imports_no_payroll_code() -> None:
-    path = Path(read_contract.__file__ or "")
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    imported: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            imported.update(alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom) and node.module is not None:
-            imported.add(node.module)
+    imported = imported_modules(read_contract)
 
     assert not any(
         name.startswith(("app.services.payroll", "app.schemas_payroll"))

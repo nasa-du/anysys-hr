@@ -79,7 +79,13 @@ def _quantized(value: Decimal, quantum: Decimal) -> Decimal:
     return Decimal(value).quantize(quantum)
 
 
-def _values(summary: AttendanceMonthSummary) -> AttendanceSourceValues:
+def _source_inconsistent() -> DomainError:
+    return DomainError(
+        AttendanceReadErrorCode.SOURCE_INCONSISTENT, SOURCE_INCONSISTENT_MESSAGE
+    )
+
+
+def _summary_values(summary: AttendanceMonthSummary) -> AttendanceSourceValues:
     return AttendanceSourceValues(
         weekday_full=_quantized(summary.weekday_full, DAY_QUANTUM),
         weekend_full=_quantized(summary.weekend_full, DAY_QUANTUM),
@@ -125,10 +131,7 @@ def read_locked_month_summary(
         )
     ).first()
     if snapshot is None:
-        raise DomainError(
-            AttendanceReadErrorCode.SOURCE_INCONSISTENT,
-            SOURCE_INCONSISTENT_MESSAGE,
-        )
+        raise _source_inconsistent()
     summary = session.exec(
         select(AttendanceMonthSummary).where(
             col(AttendanceMonthSummary.attendance_month_id) == month_row.id,
@@ -140,16 +143,10 @@ def read_locked_month_summary(
             AttendanceReadErrorCode.SUMMARY_MISSING, SUMMARY_MISSING_MESSAGE
         )
     if summary.calc_run_id != snapshot.calc_run_id:
-        raise DomainError(
-            AttendanceReadErrorCode.SOURCE_INCONSISTENT,
-            SOURCE_INCONSISTENT_MESSAGE,
-        )
+        raise _source_inconsistent()
     calc_run = session.get(CalcRun, snapshot.calc_run_id)
     if calc_run is None or calc_run.attendance_month_id != month_row.id:
-        raise DomainError(
-            AttendanceReadErrorCode.SOURCE_INCONSISTENT,
-            SOURCE_INCONSISTENT_MESSAGE,
-        )
+        raise _source_inconsistent()
     return AttendanceSource(
         attendance_month_id=month_row.id,
         attendance_snapshot_id=snapshot.id,
@@ -158,5 +155,5 @@ def read_locked_month_summary(
         calc_version=calc_run.calc_version,
         rules_version=calc_run.rules_version,
         locked_at=snapshot.locked_at,
-        values=_values(summary),
+        values=_summary_values(summary),
     )

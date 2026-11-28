@@ -75,6 +75,10 @@ services:
       - "8025:8025"
       - "1025:1025"
 
+  worker:
+    environment:
+      FASTAPI_ENV: "development"
+
   playwright:
     build:
       context: .

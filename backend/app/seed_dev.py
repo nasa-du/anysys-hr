@@ -18,8 +18,18 @@ Three mid-sized companies are seeded:
   and OA imports committed through the real service path, and pre-calculated
   monthly results. ``C1`` and ``C2`` never receive attendance rows.
 
+One fixed payroll company is also seeded:
+
+* ``C4`` 明德薪资演示 — the payroll demo skeleton: 7 departments, 6 positions,
+  6 cost centers, and exactly 15 employees with the documented edge cases
+  (duplicate names, a resigned employee, a probation hire, a future hire, and
+  an unassigned cost center). Phase 0 adds no payroll configuration or
+  results; later payroll slices complete this company through the real
+  service paths.
+
 ``FULL_SCALE`` is what ``main()`` seeds; ``SMALL_SCALE`` keeps the same code
-paths at a size that is cheap enough for the test suite.
+paths at a size that is cheap enough for the test suite. Both scales contain
+``C4`` at exactly 15 employees.
 """
 
 import calendar
@@ -93,8 +103,11 @@ class SeedScale:
     employees: dict[str, int]
 
 
-FULL_SCALE = SeedScale("full", {"C1": 240, "C2": 420, "C3": 520})
-SMALL_SCALE = SeedScale("small", {"C1": 18, "C2": 16, "C3": 24})
+FULL_SCALE = SeedScale("full", {"C1": 240, "C2": 420, "C3": 520, "C4": 15})
+SMALL_SCALE = SeedScale("small", {"C1": 18, "C2": 16, "C3": 24, "C4": 15})
+
+# The payroll demo company's organization is fixed, not generated.
+PAYROLL_COMPANY_CODE = "C4"
 
 
 COMPANIES: list[dict[str, Any]] = [
@@ -109,6 +122,11 @@ COMPANIES: list[dict[str, Any]] = [
         "company_name": "明德考勤演示",
         "note": "考勤演示公司；C1-C2 不包含考勤数据",
     },
+    {
+        "company_code": PAYROLL_COMPANY_CODE,
+        "company_name": "明德薪资演示",
+        "note": "薪资演示公司；仅包含组织与员工骨架，不含薪资结果",
+    },
 ]
 
 USERS: list[tuple[str, str]] = [
@@ -121,6 +139,149 @@ USERS: list[tuple[str, str]] = [
     ("auditor@example.com", "审计专员"),
     ("viewer@example.com", "演示访客"),
     ("ops@example.com", "运维管理员"),
+]
+
+
+# C4 is the payroll demo company. These rows are fixed (not generated) so the
+# documented edge cases survive every scale: duplicate names, a resigned
+# employee, a probation hire, a future hire, and an unassigned cost center.
+C4_EMPLOYEES: list[dict[str, Any]] = [
+    {
+        "employee_no": "E4001",
+        "name": "冯芷茵",
+        "dept_code": "PROD-W1",
+        "position_code": "POS-OP",
+        "cost_org_code": "CC-MINE",
+        "hire_date": date(2020, 4, 11),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4002",
+        "name": "刘衍英",
+        "dept_code": "FIN",
+        "position_code": "POS-ACC",
+        "cost_org_code": "CC-ADMIN",
+        "hire_date": date(2018, 9, 3),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4003",
+        "name": "周玉琼",
+        "dept_code": "PROD-W1",
+        "position_code": "POS-OP",
+        "cost_org_code": "CC-MINE",
+        "hire_date": date(2019, 3, 18),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4004",
+        "name": "胡国邵",
+        "dept_code": "PROD-W1",
+        "position_code": "POS-OP",
+        "cost_org_code": "CC-MINE",
+        "hire_date": date(2017, 6, 1),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4005",
+        "name": "李金辉",
+        "dept_code": "PROD-W2",
+        "position_code": "POS-OP",
+        "cost_org_code": "CC-SMELT",
+        "hire_date": date(2021, 11, 8),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4006",
+        "name": "黄佳誉",
+        "dept_code": "TECH",
+        "position_code": "POS-TECH",
+        "cost_org_code": "CC-TECH",
+        "hire_date": date(2020, 2, 17),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4007",
+        "name": "梁林高",
+        "dept_code": "ADMIN",
+        "position_code": "POS-ADMIN",
+        "cost_org_code": "CC-ADMIN",
+        "hire_date": date(2016, 5, 23),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4008",
+        "name": "黄国锋",
+        "dept_code": "PROD-W2",
+        "position_code": "POS-LEAD",
+        "cost_org_code": "CC-SMELT",
+        "hire_date": date(2019, 8, 30),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4009",
+        "name": "申佳林",
+        "dept_code": "ADMIN",
+        "position_code": "POS-ADMIN",
+        "cost_org_code": "CC-ADMIN",
+        "hire_date": date(2015, 10, 12),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4010",
+        "name": "张伟",
+        "dept_code": "PROD-W1",
+        "position_code": "POS-OP",
+        "cost_org_code": None,
+        "hire_date": date(2019, 1, 1),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4011",
+        "name": "张伟",
+        "dept_code": "FIN",
+        "position_code": "POS-ACC",
+        "cost_org_code": "CC-ADMIN",
+        "hire_date": date(2020, 1, 1),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4012",
+        "name": "王强",
+        "dept_code": "PROD-W1",
+        "position_code": "POS-OP",
+        "cost_org_code": "CC-MINE",
+        "hire_date": date(2018, 1, 1),
+        "resign_date": date(2026, 8, 31),
+        "status": EmployeeStatus.RESIGNED,
+    },
+    {
+        "employee_no": "E4013",
+        "name": "李娜",
+        "dept_code": "PROD-W2",
+        "position_code": "POS-OP",
+        "cost_org_code": "CC-SMELT",
+        "hire_date": date(2026, 9, 15),
+        "status": EmployeeStatus.PROBATION,
+    },
+    {
+        "employee_no": "E4014",
+        "name": "赵志强",
+        "dept_code": "ADMIN",
+        "position_code": "POS-DRIVER",
+        "cost_org_code": "CC-ADMIN",
+        "hire_date": date(2026, 12, 1),
+        "status": EmployeeStatus.ACTIVE,
+    },
+    {
+        "employee_no": "E4015",
+        "name": "陈晓",
+        "dept_code": "TECH",
+        "position_code": "POS-TECH",
+        "cost_org_code": "CC-TECH",
+        "hire_date": date(2021, 7, 19),
+        "status": EmployeeStatus.ACTIVE,
+    },
 ]
 
 
@@ -379,6 +540,56 @@ DEPARTMENTS: list[dict[str, Any]] = [
         "dept_name": "人力资源部",
         "parent_code": None,
         "order_no": 4,
+    },
+    # C4 明德薪资演示（薪资演示骨架，D4 切片补齐配置与结果）
+    {
+        "company_code": "C4",
+        "dept_code": "HQ",
+        "dept_name": "总部",
+        "parent_code": None,
+        "order_no": 10,
+    },
+    {
+        "company_code": "C4",
+        "dept_code": "PROD",
+        "dept_name": "生产部",
+        "parent_code": "HQ",
+        "order_no": 20,
+    },
+    {
+        "company_code": "C4",
+        "dept_code": "PROD-W1",
+        "dept_name": "一车间",
+        "parent_code": "PROD",
+        "order_no": 10,
+    },
+    {
+        "company_code": "C4",
+        "dept_code": "PROD-W2",
+        "dept_name": "二车间",
+        "parent_code": "PROD",
+        "order_no": 20,
+    },
+    {
+        "company_code": "C4",
+        "dept_code": "FIN",
+        "dept_name": "财务部",
+        "parent_code": "HQ",
+        "order_no": 30,
+    },
+    {
+        "company_code": "C4",
+        "dept_code": "TECH",
+        "dept_name": "技术部",
+        "parent_code": "HQ",
+        "order_no": 40,
+    },
+    {
+        "company_code": "C4",
+        "dept_code": "ADMIN",
+        "dept_name": "行政部",
+        "parent_code": "HQ",
+        "order_no": 50,
     },
 ]
 
@@ -670,6 +881,49 @@ POSITIONS: list[dict[str, Any]] = [
         "dept_code": "D13",
         "order_no": 0,
     },
+    # C4 薪资演示岗位；POS-DRIVER 在 D4 切片保持未配置以演示阻断。
+    {
+        "company_code": "C4",
+        "position_code": "POS-LEAD",
+        "position_name": "生产线班长",
+        "dept_code": "PROD",
+        "order_no": 10,
+    },
+    {
+        "company_code": "C4",
+        "position_code": "POS-OP",
+        "position_name": "操作工",
+        "dept_code": "PROD",
+        "order_no": 20,
+    },
+    {
+        "company_code": "C4",
+        "position_code": "POS-ACC",
+        "position_name": "会计",
+        "dept_code": "FIN",
+        "order_no": 30,
+    },
+    {
+        "company_code": "C4",
+        "position_code": "POS-TECH",
+        "position_name": "技术员",
+        "dept_code": "TECH",
+        "order_no": 40,
+    },
+    {
+        "company_code": "C4",
+        "position_code": "POS-ADMIN",
+        "position_name": "行政专员",
+        "dept_code": "ADMIN",
+        "order_no": 50,
+    },
+    {
+        "company_code": "C4",
+        "position_code": "POS-DRIVER",
+        "position_name": "司机",
+        "dept_code": "ADMIN",
+        "order_no": 60,
+    },
 ]
 
 
@@ -875,6 +1129,61 @@ COST_CENTERS: list[dict[str, Any]] = [
         "budget": Decimal("100000.00"),
         "warn_pct": 85,
         "order_no": 3,
+    },
+    # C4 薪资演示成本中心；预算只在根节点计入公司预算。
+    {
+        "company_code": "C4",
+        "cost_org_code": "CC-PROD",
+        "cost_org_name": "生产成本中心",
+        "parent_code": None,
+        "budget": Decimal("100000.00"),
+        "warn_pct": 90,
+        "order_no": 10,
+    },
+    {
+        "company_code": "C4",
+        "cost_org_code": "CC-MINE",
+        "cost_org_name": "采选成本中心",
+        "parent_code": "CC-PROD",
+        "budget": Decimal("20000.00"),
+        "warn_pct": 90,
+        "order_no": 10,
+    },
+    {
+        "company_code": "C4",
+        "cost_org_code": "CC-SMELT",
+        "cost_org_name": "冶炼成本中心",
+        "parent_code": "CC-PROD",
+        "budget": Decimal("22000.00"),
+        "warn_pct": 90,
+        "order_no": 20,
+    },
+    {
+        "company_code": "C4",
+        "cost_org_code": "CC-TECH",
+        "cost_org_name": "技术成本中心",
+        "parent_code": None,
+        "budget": Decimal("25000.00"),
+        "warn_pct": 90,
+        "order_no": 20,
+    },
+    {
+        "company_code": "C4",
+        "cost_org_code": "CC-ADMIN",
+        "cost_org_name": "行政成本中心",
+        "parent_code": None,
+        "budget": Decimal("24000.00"),
+        "warn_pct": 90,
+        "order_no": 30,
+    },
+    {
+        "company_code": "C4",
+        "cost_org_code": "CC-EMPTY",
+        "cost_org_name": "待启用成本中心",
+        "parent_code": None,
+        "budget": Decimal("0.00"),
+        "warn_pct": 90,
+        "order_no": 40,
     },
 ]
 
@@ -1225,9 +1534,17 @@ def _pick_position(
 
 
 def generate_employees(scale: SeedScale) -> list[dict[str, Any]]:
-    """Build the deterministic employee rows for one seed scale."""
+    """Build the deterministic employee rows for one seed scale.
+
+    C4 is a fixed payroll demo dataset (``C4_EMPLOYEES``) and never generated;
+    the scale still records its 15 employees so both scales agree on the
+    company's size.
+    """
     rows: list[dict[str, Any]] = []
+    generated_codes = set(scale.employees) - {PAYROLL_COMPANY_CODE}
     for company_index, company in enumerate(COMPANIES):
+        if company["company_code"] not in generated_codes:
+            continue
         rows.extend(
             _generate_company_employees(company["company_code"], company_index, scale)
         )
@@ -1577,7 +1894,10 @@ def _seed_employees(
         for cost_center in session.exec(select(CostCenter)).all()
     }
 
-    for data in generate_employees(scale):
+    payroll_employees = [
+        {**data, "company_code": PAYROLL_COMPANY_CODE} for data in C4_EMPLOYEES
+    ]
+    for data in (*generate_employees(scale), *payroll_employees):
         if data["employee_no"] in employees:
             continue
 

@@ -9,6 +9,7 @@ from datetime import date, time
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import text
 from sqlmodel import Session, col, select
 
 from app import seed_dev
@@ -56,6 +57,7 @@ from app.models import (
     Shift,
     User,
 )
+from tests.utils.payroll_tables import PAYROLL_STARTING_COUNTS, PAYROLL_TABLES
 
 ATTENDANCE_MONTHS = [date(2026, 8, 1), date(2026, 9, 1), date(2026, 10, 1)]
 
@@ -182,34 +184,44 @@ def test_seed_refuses_outside_development(
     assert _companies() == []
 
 
-def test_seed_inserts_three_companies_once() -> None:
+def test_seed_inserts_four_companies_once() -> None:
     _seed()
     _seed()
 
     companies = _companies()
-    assert [company.company_code for company in companies] == ["C1", "C2", "C3"]
+    assert [company.company_code for company in companies] == [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+    ]
     assert [company.company_name for company in companies] == [
         "华信建设",
         "云启科技",
         "明德考勤演示",
+        "明德薪资演示",
     ]
     assert all(company.is_active for company in companies)
     assert all("荣新" not in company.company_name for company in companies)
 
 
 def test_full_scale_is_mid_sized_and_deterministic() -> None:
-    counts = list(seed_dev.FULL_SCALE.employees.values())
-    assert len(counts) == 3
+    scale_codes = ["C1", "C2", "C3"]
+    counts = [seed_dev.FULL_SCALE.employees[code] for code in scale_codes]
+    assert len(seed_dev.FULL_SCALE.employees) == 4
     assert all(200 <= count <= 1000 for count in counts)
     assert len(set(counts)) > 1
+    assert seed_dev.FULL_SCALE.employees["C4"] == 15
+    assert seed_dev.SMALL_SCALE.employees["C4"] == 15
     assert all(
         seed_dev.SMALL_SCALE.employees[code] < seed_dev.FULL_SCALE.employees[code]
-        for code in seed_dev.FULL_SCALE.employees
+        for code in scale_codes
     )
 
     first = seed_dev.generate_employees(seed_dev.SMALL_SCALE)
     second = seed_dev.generate_employees(seed_dev.SMALL_SCALE)
     assert first == second
+    assert all(employee["company_code"] != "C4" for employee in first)
 
 
 def test_seed_does_not_overwrite_existing_edits() -> None:
@@ -285,6 +297,38 @@ def test_seed_inserts_the_department_tree_once() -> None:
         "D11",
         "D12",
         "D13",
+    }
+    assert {department.dept_code for department in departments["C4"]} == {
+        "HQ",
+        "PROD",
+        "PROD-W1",
+        "PROD-W2",
+        "FIN",
+        "TECH",
+        "ADMIN",
+    }
+
+    payroll_company = {
+        department.dept_code: department for department in departments["C4"]
+    }
+    assert payroll_company["HQ"].dept_name == "总部"
+    assert payroll_company["HQ"].parent_id is None
+    assert payroll_company["PROD"].parent_id == payroll_company["HQ"].id
+    assert payroll_company["FIN"].parent_id == payroll_company["HQ"].id
+    assert payroll_company["TECH"].parent_id == payroll_company["HQ"].id
+    assert payroll_company["ADMIN"].parent_id == payroll_company["HQ"].id
+    assert payroll_company["PROD-W1"].parent_id == payroll_company["PROD"].id
+    assert payroll_company["PROD-W2"].parent_id == payroll_company["PROD"].id
+    assert {
+        code: department.order_no for code, department in payroll_company.items()
+    } == {
+        "HQ": 10,
+        "PROD": 20,
+        "PROD-W1": 10,
+        "PROD-W2": 20,
+        "FIN": 30,
+        "TECH": 40,
+        "ADMIN": 50,
     }
 
     full_company = {
@@ -368,6 +412,32 @@ def test_seed_inserts_positions_once() -> None:
         "P11",
         "P12",
     }
+    assert {position.position_code for position in positions["C4"]} == {
+        "POS-LEAD",
+        "POS-OP",
+        "POS-ACC",
+        "POS-TECH",
+        "POS-ADMIN",
+        "POS-DRIVER",
+    }
+
+    payroll_company = {position.position_code: position for position in positions["C4"]}
+    payroll_departments = {
+        department.dept_code: department
+        for department in _departments_by_company()["C4"]
+    }
+    expected_departments = {
+        "POS-LEAD": "PROD",
+        "POS-OP": "PROD",
+        "POS-ACC": "FIN",
+        "POS-TECH": "TECH",
+        "POS-ADMIN": "ADMIN",
+        "POS-DRIVER": "ADMIN",
+    }
+    for position_code, dept_code in expected_departments.items():
+        assert payroll_company[position_code].dept_id == (
+            payroll_departments[dept_code].id
+        )
 
     full_company = {position.position_code: position for position in positions["C1"]}
     assert full_company["P1"].dept_id is not None
@@ -486,6 +556,35 @@ def test_seed_inserts_the_cost_center_tree_once() -> None:
         "K5",
     }
     assert cost_centers["C3"] == []
+    assert {cost_center.cost_org_code for cost_center in cost_centers["C4"]} == {
+        "CC-PROD",
+        "CC-MINE",
+        "CC-SMELT",
+        "CC-TECH",
+        "CC-ADMIN",
+        "CC-EMPTY",
+    }
+
+    payroll_company = {
+        cost_center.cost_org_code: cost_center for cost_center in cost_centers["C4"]
+    }
+    assert payroll_company["CC-PROD"].parent_id is None
+    assert payroll_company["CC-TECH"].parent_id is None
+    assert payroll_company["CC-ADMIN"].parent_id is None
+    assert payroll_company["CC-EMPTY"].parent_id is None
+    assert payroll_company["CC-MINE"].parent_id == payroll_company["CC-PROD"].id
+    assert payroll_company["CC-SMELT"].parent_id == payroll_company["CC-PROD"].id
+    assert {
+        code: (cost_center.budget, cost_center.warn_pct)
+        for code, cost_center in payroll_company.items()
+    } == {
+        "CC-PROD": (Decimal("100000.00"), 90),
+        "CC-MINE": (Decimal("20000.00"), 90),
+        "CC-SMELT": (Decimal("22000.00"), 90),
+        "CC-TECH": (Decimal("25000.00"), 90),
+        "CC-ADMIN": (Decimal("24000.00"), 90),
+        "CC-EMPTY": (Decimal("0.00"), 90),
+    }
 
     full_company = {
         cost_center.cost_org_code: cost_center for cost_center in cost_centers["C1"]
@@ -583,12 +682,18 @@ def test_seed_inserts_generated_employees_once() -> None:
 
     employees = _employees_by_company()
     for company_code, expected in seed_dev.SMALL_SCALE.employees.items():
+        if company_code == "C4":
+            continue
         assert len(employees[company_code]) == expected
         numbers = [employee.employee_no for employee in employees[company_code]]
         assert len(numbers) == len(set(numbers))
         names = [employee.name for employee in employees[company_code]]
         assert len(names) == len(set(names)), "OA imports match employees by name"
         assert all(employee.name for employee in employees[company_code])
+
+    assert len(employees["C4"]) == 15
+    c4_names = [employee.name for employee in employees["C4"]]
+    assert c4_names.count("张伟") == 2
 
     all_numbers = [
         employee.employee_no for rows in employees.values() for employee in rows
@@ -603,6 +708,7 @@ def test_seed_employee_managers_are_same_company_and_dates_are_valid() -> None:
         data["employee_no"]: data
         for data in seed_dev.generate_employees(seed_dev.SMALL_SCALE)
     }
+    payroll_company = _company_by_code("C4")
 
     with Session(engine) as session:
         departments = {
@@ -616,7 +722,12 @@ def test_seed_employee_managers_are_same_company_and_dates_are_valid() -> None:
 
         for employee in employees.values():
             department = departments[employee.dept_id]
-            assert employee.hire_date <= date.today()
+            if department.company_id == payroll_company.id:
+                # E4014 is hired in the future so opening 2026-12 has an
+                # in-scope employee on an unconfigured position.
+                assert employee.hire_date <= date(2026, 12, 1)
+            else:
+                assert employee.hire_date <= date.today()
             if employee.status is EmployeeStatus.RESIGNED:
                 assert employee.resign_date is not None
                 assert employee.resign_date <= date.today()
@@ -625,7 +736,8 @@ def test_seed_employee_managers_are_same_company_and_dates_are_valid() -> None:
                 assert employee.resign_date is None
 
             if employee.manager_id is None:
-                assert generated[employee.employee_no]["manager_no"] is None
+                if employee.employee_no in generated:
+                    assert generated[employee.employee_no]["manager_no"] is None
                 continue
             manager = session.get(Employee, employee.manager_id)
             assert manager is not None
@@ -654,6 +766,44 @@ def test_seed_employee_statuses_contracts_and_unassigned_are_varied() -> None:
     )
     assert any(employee.cost_org_id is None for employee in employees["C2"])
     assert all(employee.cost_org_id is None for employee in employees["C3"])
+
+
+def test_seed_c4_employees_match_the_payroll_demo_skeleton() -> None:
+    _seed()
+    _seed()
+
+    employees = {
+        employee.employee_no: employee for employee in _employees_by_company()["C4"]
+    }
+
+    assert set(employees) == {f"E40{index:02d}" for index in range(1, 16)}
+    assert employees["E4008"].name == "黄国锋"
+    assert employees["E4010"].name == "张伟"
+    assert employees["E4011"].name == "张伟"
+    assert employees["E4010"].cost_org_id is None
+    assert employees["E4012"].status is EmployeeStatus.RESIGNED
+    assert employees["E4012"].resign_date == date(2026, 8, 31)
+    assert employees["E4013"].status is EmployeeStatus.PROBATION
+    assert employees["E4013"].hire_date == date(2026, 9, 15)
+    assert employees["E4014"].hire_date == date(2026, 12, 1)
+    assert all(employee.manager_id is None for employee in employees.values())
+    assert {employee.status for employee in employees.values()} == {
+        EmployeeStatus.ACTIVE,
+        EmployeeStatus.PROBATION,
+        EmployeeStatus.RESIGNED,
+    }
+
+
+def test_seed_adds_no_payroll_data_for_any_company() -> None:
+    _seed()
+
+    with Session(engine) as session:
+        counts = {
+            table: session.execute(text(f'SELECT count(*) FROM "{table}"')).scalar_one()
+            for table in PAYROLL_TABLES
+        }
+
+    assert counts == PAYROLL_STARTING_COUNTS
 
 
 def test_seed_does_not_overwrite_existing_employee_edits() -> None:
@@ -1300,10 +1450,10 @@ def test_seed_never_writes_attendance_rows_for_other_companies() -> None:
         other_company_ids = [
             company.id
             for company in session.exec(
-                select(Company).where(Company.company_code.in_(["C1", "C2"]))
+                select(Company).where(Company.company_code.in_(["C1", "C2", "C4"]))
             ).all()
         ]
-        assert len(other_company_ids) == 2
+        assert len(other_company_ids) == 3
         for model in TOP_LEVEL_COMPANY_MODELS:
             rows = session.exec(
                 select(model).where(model.company_id.in_(other_company_ids))

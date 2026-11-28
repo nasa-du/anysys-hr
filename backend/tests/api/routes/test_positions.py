@@ -7,7 +7,7 @@ inactive rules. Employee factories stand in for the Employee slice.
 """
 
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Any
 
 import pytest
@@ -162,9 +162,7 @@ def test_get_position_returns_the_public_fields(
         note="备注",
     )
 
-    response = client.get(
-        position_url(created["id"]), headers=superuser_token_headers
-    )
+    response = client.get(position_url(created["id"]), headers=superuser_token_headers)
 
     assert response.status_code == 200, response.text
     assert response.json() == created
@@ -539,9 +537,7 @@ def test_inactive_position_rejects_default_department_changes_only(
     assert non_structural.json()["order_no"] == 5
 
 
-@pytest.mark.parametrize(
-    "status", [EmployeeStatus.ACTIVE, EmployeeStatus.PROBATION]
-)
+@pytest.mark.parametrize("status", [EmployeeStatus.ACTIVE, EmployeeStatus.PROBATION])
 def test_deactivating_position_is_blocked_by_active_employees(
     client: TestClient,
     superuser_token_headers: dict[str, str],
@@ -552,7 +548,12 @@ def test_deactivating_position_is_blocked_by_active_employees(
     department = create_department(db, company=company)
     position = create_position(db, company=company, dept=department)
     employee = create_employee(
-        db, dept=department, position=position, employee_no="E1001", name="张三", status=status
+        db,
+        dept=department,
+        position=position,
+        employee_no="E1001",
+        name="张三",
+        status=status,
     )
 
     response = client.patch(
@@ -665,9 +666,7 @@ def test_delete_position_is_blocked_by_any_employee_reference(
         status=status,
     )
 
-    response = client.delete(
-        position_url(position.id), headers=superuser_token_headers
-    )
+    response = client.delete(position_url(position.id), headers=superuser_token_headers)
 
     assert response.status_code == 409, response.text
     detail = _error(response)
@@ -691,17 +690,18 @@ def test_delete_position_succeeds_when_unreferenced(
     company = create_company(db)
     position = create_position(db, company=company)
 
-    response = client.delete(
-        position_url(position.id), headers=superuser_token_headers
-    )
+    response = client.delete(position_url(position.id), headers=superuser_token_headers)
 
     assert response.status_code == 200, response.text
     assert response.json() == {"message": "岗位删除成功"}
     db.expunge_all()
     assert db.get(Position, position.id) is None
-    assert client.get(
-        position_url(position.id), headers=superuser_token_headers
-    ).status_code == 404
+    assert (
+        client.get(
+            position_url(position.id), headers=superuser_token_headers
+        ).status_code
+        == 404
+    )
 
 
 def test_list_positions_filters_by_company_department_keyword_and_active(
@@ -751,20 +751,19 @@ def test_list_positions_filters_by_company_department_keyword_and_active(
         "P2",
         "P3",
     ]
-    assert [item["position_code"] for item in list_positions(dept_id=str(production.id))] == [
-        "P1"
-    ]
     assert [
-        item["position_code"] for item in list_positions(keyword="生产")
-    ] == ["P1", "P3"]
+        item["position_code"] for item in list_positions(dept_id=str(production.id))
+    ] == ["P1"]
+    assert [item["position_code"] for item in list_positions(keyword="生产")] == [
+        "P1",
+        "P3",
+    ]
     assert [item["position_code"] for item in list_positions(keyword="p2")] == ["P2"]
     assert [item["position_code"] for item in list_positions(is_active=True)] == [
         "P1",
         "P3",
     ]
-    assert [item["position_code"] for item in list_positions(is_active=False)] == [
-        "P2"
-    ]
+    assert [item["position_code"] for item in list_positions(is_active=False)] == ["P2"]
 
 
 def test_list_positions_uses_fixed_order_and_pagination(

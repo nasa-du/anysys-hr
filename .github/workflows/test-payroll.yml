@@ -1,0 +1,112 @@
+name: Test Payroll
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Phase 0 runs the approved fixture schemas. Case evaluation, the security
+  # corpus execution, API smokes, and formula coverage gates land with F1.
+  test-payroll-golden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Create CI environment file
+        run: cp .env.example .env
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version-file: .python-version
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "latest-known"
+      - run: docker compose up -d --wait db mailpit
+      - name: Create test database
+        run: uv run bash scripts/create-test-db.sh
+        working-directory: backend
+      - name: Validate golden, security, schema, and error fixtures
+        run: >-
+          uv run pytest
+          tests/payroll/test_golden_cases_schema.py
+          tests/payroll/test_schemas.py
+          tests/payroll/test_error_model.py
+          tests/payroll/test_access.py
+        working-directory: backend
+      - run: docker compose down -v --remove-orphans
+
+  test-payroll-migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Create CI environment file
+        run: cp .env.example .env
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version-file: .python-version
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "latest-known"
+      - run: docker compose up -d --wait db mailpit
+      - name: Create test database
+        run: uv run bash scripts/create-test-db.sh
+        working-directory: backend
+      - name: Run migration, schema, default, and seed gates
+        run: >-
+          uv run pytest
+          tests/test_migrations.py
+          tests/test_payroll_schema.py
+          tests/scripts/test_initial_data.py
+          tests/scripts/test_seed_dev.py
+          tests/payroll/test_defaults.py
+          tests/payroll/test_worker_skeleton.py
+        working-directory: backend
+      - run: docker compose down -v --remove-orphans
+
+  # Phase 0 covers the foundation paths (defaults seed and the worker queue
+  # count). Calculation, list, summary, cost, and export budgets land with
+  # their slices per spec section 20.
+  test-payroll-performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Create CI environment file
+        run: cp .env.example .env
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version-file: .python-version
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "latest-known"
+      - run: docker compose up -d --wait db mailpit
+      - name: Create test database
+        run: uv run bash scripts/create-test-db.sh
+        working-directory: backend
+      - name: Run payroll foundation performance smoke
+        run: >-
+          uv run pytest
+          tests/payroll/test_performance_smoke.py
+          -m performance
+        working-directory: backend
+      - run: docker compose down -v --remove-orphans

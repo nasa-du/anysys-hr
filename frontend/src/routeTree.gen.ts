@@ -21,6 +21,7 @@ import { Route as LayoutCompaniesRouteImport } from './routes/_layout/companies'
 import { Route as LayoutCostCentersRouteImport } from './routes/_layout/cost-centers'
 import { Route as LayoutDepartmentsRouteImport } from './routes/_layout/departments'
 import { Route as LayoutEmployeesRouteImport } from './routes/_layout/employees'
+import { Route as LayoutPayrollRouteImport } from './routes/_layout/payroll'
 import { Route as LayoutPositionsRouteImport } from './routes/_layout/positions'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutAttendanceIndexRouteImport } from './routes/_layout/attendance/index'
@@ -29,6 +30,20 @@ import { Route as LayoutAttendanceResultsRouteImport } from './routes/_layout/at
 import { Route as LayoutAttendanceRulesRouteImport } from './routes/_layout/attendance/rules'
 import { Route as LayoutAttendanceScheduleRouteImport } from './routes/_layout/attendance/schedule'
 import { Route as LayoutAttendanceShiftsRouteImport } from './routes/_layout/attendance/shifts'
+import { Route as LayoutPayrollIndexRouteImport } from './routes/_layout/payroll/index'
+import { Route as LayoutPayrollCalcRouteImport } from './routes/_layout/payroll/calc'
+import { Route as LayoutPayrollCostStatsRouteImport } from './routes/_layout/payroll/cost-stats'
+import { Route as LayoutPayrollImportsRouteImport } from './routes/_layout/payroll/imports'
+import { Route as LayoutPayrollPayslipsRouteImport } from './routes/_layout/payroll/payslips'
+import { Route as LayoutPayrollResultsRouteImport } from './routes/_layout/payroll/results'
+import { Route as LayoutPayrollConfigCalcSchemesRouteImport } from './routes/_layout/payroll/config/calc-schemes'
+import { Route as LayoutPayrollConfigCompositionsRouteImport } from './routes/_layout/payroll/config/compositions'
+import { Route as LayoutPayrollConfigFieldsRouteImport } from './routes/_layout/payroll/config/fields'
+import { Route as LayoutPayrollConfigGlobalsRouteImport } from './routes/_layout/payroll/config/globals'
+import { Route as LayoutPayrollConfigPositionsRouteImport } from './routes/_layout/payroll/config/positions'
+import { Route as LayoutPayrollConfigWorkdayParamsRouteImport } from './routes/_layout/payroll/config/workday-params'
+import { Route as LayoutPayrollPayslipsIndexRouteImport } from './routes/_layout/payroll/payslips/index'
+import { Route as LayoutPayrollPayslipsEmployeeIdRouteImport } from './routes/_layout/payroll/payslips/$employeeId'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -89,6 +104,11 @@ const LayoutEmployeesRoute = LayoutEmployeesRouteImport.update({
   path: '/employees',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutPayrollRoute = LayoutPayrollRouteImport.update({
+  id: '/payroll',
+  path: '/payroll',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutPositionsRoute = LayoutPositionsRouteImport.update({
   id: '/positions',
   path: '/positions',
@@ -130,6 +150,84 @@ const LayoutAttendanceShiftsRoute = LayoutAttendanceShiftsRouteImport.update({
   path: '/shifts',
   getParentRoute: () => LayoutAttendanceRoute,
 } as any)
+const LayoutPayrollIndexRoute = LayoutPayrollIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LayoutPayrollRoute,
+} as any)
+const LayoutPayrollCalcRoute = LayoutPayrollCalcRouteImport.update({
+  id: '/calc',
+  path: '/calc',
+  getParentRoute: () => LayoutPayrollRoute,
+} as any)
+const LayoutPayrollCostStatsRoute = LayoutPayrollCostStatsRouteImport.update({
+  id: '/cost-stats',
+  path: '/cost-stats',
+  getParentRoute: () => LayoutPayrollRoute,
+} as any)
+const LayoutPayrollImportsRoute = LayoutPayrollImportsRouteImport.update({
+  id: '/imports',
+  path: '/imports',
+  getParentRoute: () => LayoutPayrollRoute,
+} as any)
+const LayoutPayrollPayslipsRoute = LayoutPayrollPayslipsRouteImport.update({
+  id: '/payslips',
+  path: '/payslips',
+  getParentRoute: () => LayoutPayrollRoute,
+} as any)
+const LayoutPayrollResultsRoute = LayoutPayrollResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => LayoutPayrollRoute,
+} as any)
+const LayoutPayrollConfigCalcSchemesRoute =
+  LayoutPayrollConfigCalcSchemesRouteImport.update({
+    id: '/config/calc-schemes',
+    path: '/config/calc-schemes',
+    getParentRoute: () => LayoutPayrollRoute,
+  } as any)
+const LayoutPayrollConfigCompositionsRoute =
+  LayoutPayrollConfigCompositionsRouteImport.update({
+    id: '/config/compositions',
+    path: '/config/compositions',
+    getParentRoute: () => LayoutPayrollRoute,
+  } as any)
+const LayoutPayrollConfigFieldsRoute =
+  LayoutPayrollConfigFieldsRouteImport.update({
+    id: '/config/fields',
+    path: '/config/fields',
+    getParentRoute: () => LayoutPayrollRoute,
+  } as any)
+const LayoutPayrollConfigGlobalsRoute =
+  LayoutPayrollConfigGlobalsRouteImport.update({
+    id: '/config/globals',
+    path: '/config/globals',
+    getParentRoute: () => LayoutPayrollRoute,
+  } as any)
+const LayoutPayrollConfigPositionsRoute =
+  LayoutPayrollConfigPositionsRouteImport.update({
+    id: '/config/positions',
+    path: '/config/positions',
+    getParentRoute: () => LayoutPayrollRoute,
+  } as any)
+const LayoutPayrollConfigWorkdayParamsRoute =
+  LayoutPayrollConfigWorkdayParamsRouteImport.update({
+    id: '/config/workday-params',
+    path: '/config/workday-params',
+    getParentRoute: () => LayoutPayrollRoute,
+  } as any)
+const LayoutPayrollPayslipsIndexRoute =
+  LayoutPayrollPayslipsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => LayoutPayrollPayslipsRoute,
+  } as any)
+const LayoutPayrollPayslipsEmployeeIdRoute =
+  LayoutPayrollPayslipsEmployeeIdRouteImport.update({
+    id: '/$employeeId',
+    path: '/$employeeId',
+    getParentRoute: () => LayoutPayrollPayslipsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -143,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/cost-centers': typeof LayoutCostCentersRoute
   '/departments': typeof LayoutDepartmentsRoute
   '/employees': typeof LayoutEmployeesRoute
+  '/payroll': typeof LayoutPayrollRouteWithChildren
   '/positions': typeof LayoutPositionsRoute
   '/settings': typeof LayoutSettingsRoute
   '/attendance/imports': typeof LayoutAttendanceImportsRoute
@@ -150,7 +249,21 @@ export interface FileRoutesByFullPath {
   '/attendance/rules': typeof LayoutAttendanceRulesRoute
   '/attendance/schedule': typeof LayoutAttendanceScheduleRoute
   '/attendance/shifts': typeof LayoutAttendanceShiftsRoute
+  '/payroll/calc': typeof LayoutPayrollCalcRoute
+  '/payroll/cost-stats': typeof LayoutPayrollCostStatsRoute
+  '/payroll/imports': typeof LayoutPayrollImportsRoute
+  '/payroll/payslips': typeof LayoutPayrollPayslipsRouteWithChildren
+  '/payroll/results': typeof LayoutPayrollResultsRoute
   '/attendance/': typeof LayoutAttendanceIndexRoute
+  '/payroll/': typeof LayoutPayrollIndexRoute
+  '/payroll/config/calc-schemes': typeof LayoutPayrollConfigCalcSchemesRoute
+  '/payroll/config/compositions': typeof LayoutPayrollConfigCompositionsRoute
+  '/payroll/config/fields': typeof LayoutPayrollConfigFieldsRoute
+  '/payroll/config/globals': typeof LayoutPayrollConfigGlobalsRoute
+  '/payroll/config/positions': typeof LayoutPayrollConfigPositionsRoute
+  '/payroll/config/workday-params': typeof LayoutPayrollConfigWorkdayParamsRoute
+  '/payroll/payslips/$employeeId': typeof LayoutPayrollPayslipsEmployeeIdRoute
+  '/payroll/payslips/': typeof LayoutPayrollPayslipsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -170,7 +283,20 @@ export interface FileRoutesByTo {
   '/attendance/rules': typeof LayoutAttendanceRulesRoute
   '/attendance/schedule': typeof LayoutAttendanceScheduleRoute
   '/attendance/shifts': typeof LayoutAttendanceShiftsRoute
+  '/payroll/calc': typeof LayoutPayrollCalcRoute
+  '/payroll/cost-stats': typeof LayoutPayrollCostStatsRoute
+  '/payroll/imports': typeof LayoutPayrollImportsRoute
+  '/payroll/results': typeof LayoutPayrollResultsRoute
   '/attendance': typeof LayoutAttendanceIndexRoute
+  '/payroll': typeof LayoutPayrollIndexRoute
+  '/payroll/config/calc-schemes': typeof LayoutPayrollConfigCalcSchemesRoute
+  '/payroll/config/compositions': typeof LayoutPayrollConfigCompositionsRoute
+  '/payroll/config/fields': typeof LayoutPayrollConfigFieldsRoute
+  '/payroll/config/globals': typeof LayoutPayrollConfigGlobalsRoute
+  '/payroll/config/positions': typeof LayoutPayrollConfigPositionsRoute
+  '/payroll/config/workday-params': typeof LayoutPayrollConfigWorkdayParamsRoute
+  '/payroll/payslips/$employeeId': typeof LayoutPayrollPayslipsEmployeeIdRoute
+  '/payroll/payslips': typeof LayoutPayrollPayslipsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -185,6 +311,7 @@ export interface FileRoutesById {
   '/_layout/cost-centers': typeof LayoutCostCentersRoute
   '/_layout/departments': typeof LayoutDepartmentsRoute
   '/_layout/employees': typeof LayoutEmployeesRoute
+  '/_layout/payroll': typeof LayoutPayrollRouteWithChildren
   '/_layout/positions': typeof LayoutPositionsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -193,7 +320,21 @@ export interface FileRoutesById {
   '/_layout/attendance/rules': typeof LayoutAttendanceRulesRoute
   '/_layout/attendance/schedule': typeof LayoutAttendanceScheduleRoute
   '/_layout/attendance/shifts': typeof LayoutAttendanceShiftsRoute
+  '/_layout/payroll/calc': typeof LayoutPayrollCalcRoute
+  '/_layout/payroll/cost-stats': typeof LayoutPayrollCostStatsRoute
+  '/_layout/payroll/imports': typeof LayoutPayrollImportsRoute
+  '/_layout/payroll/payslips': typeof LayoutPayrollPayslipsRouteWithChildren
+  '/_layout/payroll/results': typeof LayoutPayrollResultsRoute
   '/_layout/attendance/': typeof LayoutAttendanceIndexRoute
+  '/_layout/payroll/': typeof LayoutPayrollIndexRoute
+  '/_layout/payroll/config/calc-schemes': typeof LayoutPayrollConfigCalcSchemesRoute
+  '/_layout/payroll/config/compositions': typeof LayoutPayrollConfigCompositionsRoute
+  '/_layout/payroll/config/fields': typeof LayoutPayrollConfigFieldsRoute
+  '/_layout/payroll/config/globals': typeof LayoutPayrollConfigGlobalsRoute
+  '/_layout/payroll/config/positions': typeof LayoutPayrollConfigPositionsRoute
+  '/_layout/payroll/config/workday-params': typeof LayoutPayrollConfigWorkdayParamsRoute
+  '/_layout/payroll/payslips/$employeeId': typeof LayoutPayrollPayslipsEmployeeIdRoute
+  '/_layout/payroll/payslips/': typeof LayoutPayrollPayslipsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -209,6 +350,7 @@ export interface FileRouteTypes {
     | '/cost-centers'
     | '/departments'
     | '/employees'
+    | '/payroll'
     | '/positions'
     | '/settings'
     | '/attendance/imports'
@@ -216,7 +358,21 @@ export interface FileRouteTypes {
     | '/attendance/rules'
     | '/attendance/schedule'
     | '/attendance/shifts'
+    | '/payroll/calc'
+    | '/payroll/cost-stats'
+    | '/payroll/imports'
+    | '/payroll/payslips'
+    | '/payroll/results'
     | '/attendance/'
+    | '/payroll/'
+    | '/payroll/config/calc-schemes'
+    | '/payroll/config/compositions'
+    | '/payroll/config/fields'
+    | '/payroll/config/globals'
+    | '/payroll/config/positions'
+    | '/payroll/config/workday-params'
+    | '/payroll/payslips/$employeeId'
+    | '/payroll/payslips/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -236,7 +392,20 @@ export interface FileRouteTypes {
     | '/attendance/rules'
     | '/attendance/schedule'
     | '/attendance/shifts'
+    | '/payroll/calc'
+    | '/payroll/cost-stats'
+    | '/payroll/imports'
+    | '/payroll/results'
     | '/attendance'
+    | '/payroll'
+    | '/payroll/config/calc-schemes'
+    | '/payroll/config/compositions'
+    | '/payroll/config/fields'
+    | '/payroll/config/globals'
+    | '/payroll/config/positions'
+    | '/payroll/config/workday-params'
+    | '/payroll/payslips/$employeeId'
+    | '/payroll/payslips'
   id:
     | '__root__'
     | '/_layout'
@@ -250,6 +419,7 @@ export interface FileRouteTypes {
     | '/_layout/cost-centers'
     | '/_layout/departments'
     | '/_layout/employees'
+    | '/_layout/payroll'
     | '/_layout/positions'
     | '/_layout/settings'
     | '/_layout/'
@@ -258,7 +428,21 @@ export interface FileRouteTypes {
     | '/_layout/attendance/rules'
     | '/_layout/attendance/schedule'
     | '/_layout/attendance/shifts'
+    | '/_layout/payroll/calc'
+    | '/_layout/payroll/cost-stats'
+    | '/_layout/payroll/imports'
+    | '/_layout/payroll/payslips'
+    | '/_layout/payroll/results'
     | '/_layout/attendance/'
+    | '/_layout/payroll/'
+    | '/_layout/payroll/config/calc-schemes'
+    | '/_layout/payroll/config/compositions'
+    | '/_layout/payroll/config/fields'
+    | '/_layout/payroll/config/globals'
+    | '/_layout/payroll/config/positions'
+    | '/_layout/payroll/config/workday-params'
+    | '/_layout/payroll/payslips/$employeeId'
+    | '/_layout/payroll/payslips/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -355,6 +539,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutEmployeesRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/payroll': {
+      id: '/_layout/payroll'
+      path: '/payroll'
+      fullPath: '/payroll'
+      preLoaderRoute: typeof LayoutPayrollRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/positions': {
       id: '/_layout/positions'
       path: '/positions'
@@ -411,6 +602,104 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAttendanceShiftsRouteImport
       parentRoute: typeof LayoutAttendanceRoute
     }
+    '/_layout/payroll/': {
+      id: '/_layout/payroll/'
+      path: '/'
+      fullPath: '/payroll/'
+      preLoaderRoute: typeof LayoutPayrollIndexRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/calc': {
+      id: '/_layout/payroll/calc'
+      path: '/calc'
+      fullPath: '/payroll/calc'
+      preLoaderRoute: typeof LayoutPayrollCalcRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/cost-stats': {
+      id: '/_layout/payroll/cost-stats'
+      path: '/cost-stats'
+      fullPath: '/payroll/cost-stats'
+      preLoaderRoute: typeof LayoutPayrollCostStatsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/imports': {
+      id: '/_layout/payroll/imports'
+      path: '/imports'
+      fullPath: '/payroll/imports'
+      preLoaderRoute: typeof LayoutPayrollImportsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/payslips': {
+      id: '/_layout/payroll/payslips'
+      path: '/payslips'
+      fullPath: '/payroll/payslips'
+      preLoaderRoute: typeof LayoutPayrollPayslipsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/results': {
+      id: '/_layout/payroll/results'
+      path: '/results'
+      fullPath: '/payroll/results'
+      preLoaderRoute: typeof LayoutPayrollResultsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/config/calc-schemes': {
+      id: '/_layout/payroll/config/calc-schemes'
+      path: '/config/calc-schemes'
+      fullPath: '/payroll/config/calc-schemes'
+      preLoaderRoute: typeof LayoutPayrollConfigCalcSchemesRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/config/compositions': {
+      id: '/_layout/payroll/config/compositions'
+      path: '/config/compositions'
+      fullPath: '/payroll/config/compositions'
+      preLoaderRoute: typeof LayoutPayrollConfigCompositionsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/config/fields': {
+      id: '/_layout/payroll/config/fields'
+      path: '/config/fields'
+      fullPath: '/payroll/config/fields'
+      preLoaderRoute: typeof LayoutPayrollConfigFieldsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/config/globals': {
+      id: '/_layout/payroll/config/globals'
+      path: '/config/globals'
+      fullPath: '/payroll/config/globals'
+      preLoaderRoute: typeof LayoutPayrollConfigGlobalsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/config/positions': {
+      id: '/_layout/payroll/config/positions'
+      path: '/config/positions'
+      fullPath: '/payroll/config/positions'
+      preLoaderRoute: typeof LayoutPayrollConfigPositionsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/config/workday-params': {
+      id: '/_layout/payroll/config/workday-params'
+      path: '/config/workday-params'
+      fullPath: '/payroll/config/workday-params'
+      preLoaderRoute: typeof LayoutPayrollConfigWorkdayParamsRouteImport
+      parentRoute: typeof LayoutPayrollRoute
+    }
+    '/_layout/payroll/payslips/': {
+      id: '/_layout/payroll/payslips/'
+      path: '/'
+      fullPath: '/payroll/payslips/'
+      preLoaderRoute: typeof LayoutPayrollPayslipsIndexRouteImport
+      parentRoute: typeof LayoutPayrollPayslipsRoute
+    }
+    '/_layout/payroll/payslips/$employeeId': {
+      id: '/_layout/payroll/payslips/$employeeId'
+      path: '/$employeeId'
+      fullPath: '/payroll/payslips/$employeeId'
+      preLoaderRoute: typeof LayoutPayrollPayslipsEmployeeIdRouteImport
+      parentRoute: typeof LayoutPayrollPayslipsRoute
+    }
   }
 }
 
@@ -435,6 +724,55 @@ const LayoutAttendanceRouteChildren: LayoutAttendanceRouteChildren = {
 const LayoutAttendanceRouteWithChildren =
   LayoutAttendanceRoute._addFileChildren(LayoutAttendanceRouteChildren)
 
+interface LayoutPayrollPayslipsRouteChildren {
+  LayoutPayrollPayslipsEmployeeIdRoute: typeof LayoutPayrollPayslipsEmployeeIdRoute
+  LayoutPayrollPayslipsIndexRoute: typeof LayoutPayrollPayslipsIndexRoute
+}
+
+const LayoutPayrollPayslipsRouteChildren: LayoutPayrollPayslipsRouteChildren = {
+  LayoutPayrollPayslipsEmployeeIdRoute: LayoutPayrollPayslipsEmployeeIdRoute,
+  LayoutPayrollPayslipsIndexRoute: LayoutPayrollPayslipsIndexRoute,
+}
+
+const LayoutPayrollPayslipsRouteWithChildren =
+  LayoutPayrollPayslipsRoute._addFileChildren(
+    LayoutPayrollPayslipsRouteChildren,
+  )
+
+interface LayoutPayrollRouteChildren {
+  LayoutPayrollCalcRoute: typeof LayoutPayrollCalcRoute
+  LayoutPayrollCostStatsRoute: typeof LayoutPayrollCostStatsRoute
+  LayoutPayrollImportsRoute: typeof LayoutPayrollImportsRoute
+  LayoutPayrollPayslipsRoute: typeof LayoutPayrollPayslipsRouteWithChildren
+  LayoutPayrollResultsRoute: typeof LayoutPayrollResultsRoute
+  LayoutPayrollIndexRoute: typeof LayoutPayrollIndexRoute
+  LayoutPayrollConfigCalcSchemesRoute: typeof LayoutPayrollConfigCalcSchemesRoute
+  LayoutPayrollConfigCompositionsRoute: typeof LayoutPayrollConfigCompositionsRoute
+  LayoutPayrollConfigFieldsRoute: typeof LayoutPayrollConfigFieldsRoute
+  LayoutPayrollConfigGlobalsRoute: typeof LayoutPayrollConfigGlobalsRoute
+  LayoutPayrollConfigPositionsRoute: typeof LayoutPayrollConfigPositionsRoute
+  LayoutPayrollConfigWorkdayParamsRoute: typeof LayoutPayrollConfigWorkdayParamsRoute
+}
+
+const LayoutPayrollRouteChildren: LayoutPayrollRouteChildren = {
+  LayoutPayrollCalcRoute: LayoutPayrollCalcRoute,
+  LayoutPayrollCostStatsRoute: LayoutPayrollCostStatsRoute,
+  LayoutPayrollImportsRoute: LayoutPayrollImportsRoute,
+  LayoutPayrollPayslipsRoute: LayoutPayrollPayslipsRouteWithChildren,
+  LayoutPayrollResultsRoute: LayoutPayrollResultsRoute,
+  LayoutPayrollIndexRoute: LayoutPayrollIndexRoute,
+  LayoutPayrollConfigCalcSchemesRoute: LayoutPayrollConfigCalcSchemesRoute,
+  LayoutPayrollConfigCompositionsRoute: LayoutPayrollConfigCompositionsRoute,
+  LayoutPayrollConfigFieldsRoute: LayoutPayrollConfigFieldsRoute,
+  LayoutPayrollConfigGlobalsRoute: LayoutPayrollConfigGlobalsRoute,
+  LayoutPayrollConfigPositionsRoute: LayoutPayrollConfigPositionsRoute,
+  LayoutPayrollConfigWorkdayParamsRoute: LayoutPayrollConfigWorkdayParamsRoute,
+}
+
+const LayoutPayrollRouteWithChildren = LayoutPayrollRoute._addFileChildren(
+  LayoutPayrollRouteChildren,
+)
+
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutAttendanceRoute: typeof LayoutAttendanceRouteWithChildren
@@ -442,6 +780,7 @@ interface LayoutRouteChildren {
   LayoutCostCentersRoute: typeof LayoutCostCentersRoute
   LayoutDepartmentsRoute: typeof LayoutDepartmentsRoute
   LayoutEmployeesRoute: typeof LayoutEmployeesRoute
+  LayoutPayrollRoute: typeof LayoutPayrollRouteWithChildren
   LayoutPositionsRoute: typeof LayoutPositionsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -454,6 +793,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutCostCentersRoute: LayoutCostCentersRoute,
   LayoutDepartmentsRoute: LayoutDepartmentsRoute,
   LayoutEmployeesRoute: LayoutEmployeesRoute,
+  LayoutPayrollRoute: LayoutPayrollRouteWithChildren,
   LayoutPositionsRoute: LayoutPositionsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,

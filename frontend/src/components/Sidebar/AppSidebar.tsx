@@ -1,11 +1,20 @@
 import {
   Briefcase,
   Building2,
+  Calculator,
   CalendarClock,
+  CalendarDays,
+  ChartColumn,
   ClipboardCheck,
   Clock3,
+  FileSpreadsheet,
   Home,
+  Layers,
+  ListTree,
   Network,
+  ReceiptText,
+  Settings2,
+  Sigma,
   SlidersHorizontal,
   Upload,
   UserRound,
@@ -60,6 +69,55 @@ export function AppSidebar() {
           path: "/attendance/rules",
         },
         { icon: Clock3, title: "班次", path: "/attendance/shifts" },
+      ],
+    },
+    {
+      label: "薪资月度",
+      items: [
+        {
+          icon: FileSpreadsheet,
+          title: "工资列表",
+          path: "/payroll/results",
+        },
+        { icon: Upload, title: "月度导入", path: "/payroll/imports" },
+        { icon: Calculator, title: "核算与确认", path: "/payroll/calc" },
+        { icon: ReceiptText, title: "工资条", path: "/payroll/payslips" },
+        { icon: ChartColumn, title: "成本统计", path: "/payroll/cost-stats" },
+      ],
+    },
+    {
+      label: "薪资配置",
+      items: [
+        {
+          icon: Layers,
+          title: "薪资构成",
+          path: "/payroll/config/compositions",
+        },
+        {
+          icon: Sigma,
+          title: "计算方案",
+          path: "/payroll/config/calc-schemes",
+        },
+        {
+          icon: CalendarDays,
+          title: "工作日参数",
+          path: "/payroll/config/workday-params",
+        },
+        {
+          icon: Briefcase,
+          title: "岗位装配",
+          path: "/payroll/config/positions",
+        },
+        {
+          icon: ListTree,
+          title: "字段与公式",
+          path: "/payroll/config/fields",
+        },
+        {
+          icon: Settings2,
+          title: "全局参数",
+          path: "/payroll/config/globals",
+        },
       ],
     },
   ]

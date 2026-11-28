@@ -12,7 +12,7 @@ jobs:
 
   test-docker-compose:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -23,9 +23,36 @@ jobs:
       - run: docker compose build
       - run: docker compose down -v --remove-orphans
       - run: docker compose run --rm backend bash scripts/prestart.sh
-      - run: docker compose up -d --wait backend adminer
+      - run: docker compose up -d --wait backend adminer worker
       - name: Test backend is up
         run: curl http://localhost:8000/api/v1/utils/health-check
       - name: Test frontend is up
         run: curl http://localhost:8000
+      - name: Test worker is running and polling
+        run: |
+          docker compose ps --status running worker | grep -q worker
+          docker compose logs worker | grep -q "Payroll worker skeleton started"
+          timeout 20 sh -c 'until docker compose logs worker | grep -q "Payroll worker poll:"; do sleep 1; done'
+      - name: Test the shared export volume is read-write in the worker and read-only in the backend
+        run: |
+          docker compose exec -T worker test -d /app/exports
+          docker compose exec -T backend sh -c 'touch /app/exports/probe 2>/dev/null && exit 1 || exit 0'
+      - name: Test the image contains the approved rendering stack
+        run: |
+          docker compose exec -T worker python -c "import weasyprint, jinja2"
+          docker compose exec -T worker sh -c 'fc-list | grep -qi "Noto Sans SC"'
+          docker compose exec -T worker sh -c 'ldconfig -p | grep -qi pango'
+          docker compose exec -T worker sh -c 'ldconfig -p | grep -qi harfbuzz'
+      # Page-count and export-audit assertions arrive with the payslip slice;
+      # this proves the Phase 0 stack can render Chinese text to a PDF.
+      - name: Render a Chinese PDF smoke
+        run: |
+          docker compose exec -T worker python - <<'PY'
+          from weasyprint import HTML
+          pdf = HTML(
+              string="""<html><body><p style="font-family: 'Noto Sans SC'">薪资工资条 2026-09</p></body></html>"""
+          ).write_pdf()
+          assert pdf.startswith(b"%PDF-"), pdf[:5]
+          print(f"rendered {len(pdf)} bytes")
+          PY
       - run: docker compose down -v --remove-orphans

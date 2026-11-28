@@ -1,3 +1,15 @@
+x-backend-environment: &backend-environment
+  PROJECT_NAME: ${PROJECT_NAME:?Variable not set}
+  SECRET_KEY: ${SECRET_KEY:?Variable not set}
+  FIRST_SUPERUSER: ${FIRST_SUPERUSER:?Variable not set}
+  FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:?Variable not set}
+  SMTP_HOST: ${SMTP_HOST}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL}
+  DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
+  SENTRY_DSN: ${SENTRY_DSN:-}
+
 services:
 
   proxy:
@@ -52,23 +64,18 @@ services:
       db:
         condition: service_healthy
         restart: true
-    environment:
-      PROJECT_NAME: ${PROJECT_NAME:?Variable not set}
-      SECRET_KEY: ${SECRET_KEY:?Variable not set}
-      FIRST_SUPERUSER: ${FIRST_SUPERUSER:?Variable not set}
-      FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:?Variable not set}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL}
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
-      SENTRY_DSN: ${SENTRY_DSN:-}
+    environment: *backend-environment
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+    volumes:
+      # Export artifacts are written by the worker and read here; never a
+      # static directory, downloads go through authenticated endpoints.
+      - payroll-exports:/app/exports:ro
 
     build:
       context: .
@@ -84,5 +91,22 @@ services:
       - traefik.http.routers.backend-http.rule=Host(`${DOMAIN:-localhost}`)
       - traefik.http.routers.backend-http.entrypoints=http
 
+  worker:
+    image: backend:latest
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    environment:
+      <<: *backend-environment
+      PAYROLL_EXPORTS_DIR: /app/exports
+    command: ["python", "-m", "app.worker.main"]
+    volumes:
+      - payroll-exports:/app/exports
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+
 volumes:
   app-db-data:
+  payroll-exports:

@@ -1,2 +1,4 @@
 * text=auto
 *.sh text eol=lf
+# Vendored static TrueType fonts for server-side payslip rendering.
+*.ttf binary

@@ -56,7 +56,11 @@ export function Main({ groups }: MainProps) {
                     isActive={isItemActive(currentPath, item.path)}
                     asChild
                   >
-                    <RouterLink to={item.path} onClick={handleMenuClick}>
+                    <RouterLink
+                      to={item.path}
+                      search={{}}
+                      onClick={handleMenuClick}
+                    >
                       <item.icon />
                       <span>{item.title}</span>
                     </RouterLink>

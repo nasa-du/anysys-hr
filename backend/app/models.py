@@ -27,10 +27,25 @@ from app.enums import (
     ImportSeverity,
     ImportSource,
     LeaveKind,
+    PayrollCalcRunStatus,
+    PayrollCalcRunTrigger,
+    PayrollConfigEntityType,
+    PayrollExportStatus,
+    PayrollExportType,
+    PayrollGlobalParamType,
+    PayrollImportBatchSource,
+    PayrollImportBatchStatus,
+    PayrollImportRowStatus,
+    PayrollInputSource,
+    PayrollMonthEventType,
+    PayrollMonthStatus,
+    PayrollResultSource,
     PlanStatus,
     ResultRosterState,
     RosterSource,
     RosterState,
+    SalaryFieldCalcMode,
+    SalaryFieldCategory,
     ScheduleScopeType,
     TripKind,
 )
@@ -45,7 +60,11 @@ def _uuid_column(*constraints: Any, nullable: bool) -> Column[Any]:
 
 
 def _enum_column(
-    enum_type: type[StrEnum], constraint_name: str, *, nullable: bool
+    enum_type: type[StrEnum],
+    constraint_name: str,
+    *,
+    nullable: bool,
+    length: int | None = None,
 ) -> Column[Any]:
     return Column(
         SAEnum(
@@ -53,6 +72,7 @@ def _enum_column(
             native_enum=False,
             create_constraint=True,
             name=constraint_name,
+            length=length,
             values_callable=lambda enum_class: [member.value for member in enum_class],
         ),
         nullable=nullable,
@@ -63,7 +83,9 @@ def _jsonb_column(*, nullable: bool, default: Any = None) -> Column[Any]:
     kwargs: dict[str, Any] = {"nullable": nullable}
     if default is not None:
         kwargs["default"] = default
-    return Column(JSONB, **kwargs)
+    # ``none_as_null`` persists Python ``None`` as SQL NULL instead of JSON
+    # ``null``, so retention and cleanup predicates can use ``IS NULL``.
+    return Column(JSONB(none_as_null=True), **kwargs)
 
 
 # Shared properties
@@ -2108,4 +2130,1468 @@ class AttendanceResultAdjustment(SQLModel, table=True):
             ),
             nullable=False,
         )
+    )
+
+
+# Payroll models. These are table-only: every reference is an explicit
+# foreign-key column and the service layer composes queries. Primary keys are
+# UUID v7 generated in Python, enum columns are VARCHAR + CHECK via non-native
+# ``SAEnum``, and timestamps are TIMESTAMPTZ generated in Python. Migrations
+# are the contract; see docs/specs/payroll-management.md sections 4 and 16.
+
+_COMPOSITION_AMOUNT_FIELDS: tuple[str, ...] = (
+    "base_salary",
+    "hightemp_subsidy",
+    "performance_salary",
+    "overtime_pay",
+    "confidentiality_allowance",
+    "social_subsidy",
+    "noncompete_subsidy",
+)
+_COMPOSITION_TOTAL_EXPRESSION = "total_package = " + " + ".join(
+    _COMPOSITION_AMOUNT_FIELDS
+)
+
+
+class SalaryFieldDef(SQLModel, table=True):
+    __tablename__ = "salary_field_def"
+    __table_args__ = (
+        UniqueConstraint("field_key", name="uq_salary_field_def_field_key"),
+        UniqueConstraint("label", name="uq_salary_field_def_label"),
+        Index(
+            "uq_salary_field_def_source_key",
+            "source_key",
+            unique=True,
+            postgresql_where=sa.text("source_key IS NOT NULL"),
+        ),
+        Index(
+            "ix_salary_field_def_category_display_order",
+            "category",
+            "display_order",
+        ),
+        sa.CheckConstraint(
+            "field_key ~ '^[a-z][a-z0-9_]{0,63}$'",
+            name="ck_salary_field_def_field_key_pattern",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    field_key: str = Field(max_length=64)
+    label: str = Field(max_length=100)
+    category: SalaryFieldCategory = Field(
+        sa_column=_enum_column(
+            SalaryFieldCategory,
+            "ck_salary_field_def_category",
+            nullable=False,
+            length=16,
+        )
+    )
+    calc_mode: SalaryFieldCalcMode = Field(
+        sa_column=_enum_column(
+            SalaryFieldCalcMode,
+            "ck_salary_field_def_calc_mode",
+            nullable=False,
+            length=16,
+        )
+    )
+    source_key: str | None = Field(default=None, max_length=64)
+    fixed_value: Decimal | None = Field(default=None, max_digits=18, decimal_places=4)
+    default_formula: str | None = Field(default=None, sa_type=sa.Text())
+    display_order: int = Field(default=0)
+    visible: bool = Field(default=True)
+    is_system: bool = Field(default=False)
+    is_active: bool = Field(default=True)
+    note: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class CompensationComposition(SQLModel, table=True):
+    __tablename__ = "compensation_composition"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "comp_code",
+            name="uq_compensation_composition_company_comp_code",
+        ),
+        Index(
+            "ix_compensation_composition_company_active",
+            "company_id",
+            "is_active",
+        ),
+        sa.CheckConstraint(
+            "comp_code ~ '^[A-Z0-9_-]{1,32}$'",
+            name="ck_compensation_composition_comp_code_pattern",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    company_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "company.id",
+                ondelete="RESTRICT",
+                name="fk_compensation_composition_company_id_company",
+            ),
+            nullable=False,
+        )
+    )
+    comp_code: str = Field(max_length=32)
+    comp_name: str = Field(max_length=100)
+    is_active: bool = Field(default=True)
+    note: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class CompensationCompositionVersion(SQLModel, table=True):
+    __tablename__ = "compensation_composition_version"
+    __table_args__ = (
+        UniqueConstraint(
+            "comp_id",
+            "version_no",
+            name="uq_compensation_composition_version_comp_version",
+        ),
+        sa.CheckConstraint("version_no >= 1", name="ck_comp_ver_version_positive"),
+        *(
+            sa.CheckConstraint(
+                f"{field} >= 0", name=f"ck_comp_ver_{field}_non_negative"
+            )
+            for field in _COMPOSITION_AMOUNT_FIELDS
+        ),
+        sa.CheckConstraint(
+            _COMPOSITION_TOTAL_EXPRESSION, name="ck_comp_ver_total_package_sum"
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    comp_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "compensation_composition.id",
+                ondelete="RESTRICT",
+                name="fk_comp_version_comp_id_compensation_composition",
+            ),
+            nullable=False,
+        )
+    )
+    version_no: int
+    base_salary: Decimal = Field(default=Decimal("0"), max_digits=14, decimal_places=2)
+    hightemp_subsidy: Decimal = Field(
+        default=Decimal("0"), max_digits=14, decimal_places=2
+    )
+    performance_salary: Decimal = Field(
+        default=Decimal("0"), max_digits=14, decimal_places=2
+    )
+    overtime_pay: Decimal = Field(default=Decimal("0"), max_digits=14, decimal_places=2)
+    confidentiality_allowance: Decimal = Field(
+        default=Decimal("0"), max_digits=14, decimal_places=2
+    )
+    social_subsidy: Decimal = Field(
+        default=Decimal("0"), max_digits=14, decimal_places=2
+    )
+    noncompete_subsidy: Decimal = Field(
+        default=Decimal("0"), max_digits=14, decimal_places=2
+    )
+    total_package: Decimal = Field(max_digits=14, decimal_places=2)
+    change_note: str | None = Field(default=None, max_length=500)
+    created_by: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_compensation_composition_version_created_by_user",
+            ),
+            nullable=True,
+        ),
+    )
+    created_by_name: str | None = Field(default=None, max_length=100)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class WorkdayParam(SQLModel, table=True):
+    __tablename__ = "workday_param"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "workday_code",
+            name="uq_workday_param_company_workday_code",
+        ),
+        sa.CheckConstraint(
+            "workday_code ~ '^[A-Z0-9_-]{1,32}$'",
+            name="ck_workday_param_workday_code_pattern",
+        ),
+        sa.CheckConstraint(
+            "avg_pay_days > 0", name="ck_workday_param_avg_pay_days_positive"
+        ),
+        sa.CheckConstraint(
+            "work_hours > 0", name="ck_workday_param_work_hours_positive"
+        ),
+        sa.CheckConstraint(
+            "ot_mult_weekday >= 1", name="ck_workday_param_ot_mult_weekday_min"
+        ),
+        sa.CheckConstraint(
+            "ot_mult_weekend >= 1", name="ck_workday_param_ot_mult_weekend_min"
+        ),
+        sa.CheckConstraint(
+            "ot_mult_holiday >= 1", name="ck_workday_param_ot_mult_holiday_min"
+        ),
+        sa.CheckConstraint(
+            "min_wage >= 0", name="ck_workday_param_min_wage_non_negative"
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    company_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "company.id",
+                ondelete="RESTRICT",
+                name="fk_workday_param_company_id_company",
+            ),
+            nullable=False,
+        )
+    )
+    workday_code: str = Field(max_length=32)
+    workday_name: str = Field(max_length=100)
+    avg_pay_days: Decimal = Field(
+        default=Decimal("21.75"), max_digits=5, decimal_places=2
+    )
+    work_hours: Decimal = Field(max_digits=4, decimal_places=2)
+    ot_mult_weekday: Decimal = Field(
+        default=Decimal("1.5"), max_digits=4, decimal_places=2
+    )
+    ot_mult_weekend: Decimal = Field(
+        default=Decimal("2.0"), max_digits=4, decimal_places=2
+    )
+    ot_mult_holiday: Decimal = Field(
+        default=Decimal("3.0"), max_digits=4, decimal_places=2
+    )
+    min_wage: Decimal = Field(max_digits=14, decimal_places=2)
+    min_wage_note: str | None = Field(default=None, max_length=500)
+    is_active: bool = Field(default=True)
+    note: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class CalcScheme(SQLModel, table=True):
+    __tablename__ = "calc_scheme"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id", "calc_code", name="uq_calc_scheme_company_calc_code"
+        ),
+        sa.CheckConstraint(
+            "calc_code ~ '^[A-Z0-9_-]{1,32}$'",
+            name="ck_calc_scheme_calc_code_pattern",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    company_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "company.id",
+                ondelete="RESTRICT",
+                name="fk_calc_scheme_company_id_company",
+            ),
+            nullable=False,
+        )
+    )
+    calc_code: str = Field(max_length=32)
+    calc_name: str = Field(max_length=100)
+    is_active: bool = Field(default=True)
+    note: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class CalcSchemeFormula(SQLModel, table=True):
+    __tablename__ = "calc_scheme_formula"
+    __table_args__ = (
+        UniqueConstraint(
+            "calc_scheme_id",
+            "field_def_id",
+            name="uq_calc_scheme_formula_scheme_field",
+        ),
+        Index("ix_calc_scheme_formula_field_def_id", "field_def_id"),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    calc_scheme_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "calc_scheme.id",
+                ondelete="CASCADE",
+                name="fk_calc_scheme_formula_calc_scheme_id_calc_scheme",
+            ),
+            nullable=False,
+        )
+    )
+    field_def_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "salary_field_def.id",
+                ondelete="RESTRICT",
+                name="fk_calc_scheme_formula_field_def_id_salary_field_def",
+            ),
+            nullable=False,
+        )
+    )
+    formula_expr: str = Field(sa_type=sa.Text())
+    note: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PositionPayrollConfig(SQLModel, table=True):
+    __tablename__ = "position_payroll_config"
+    __table_args__ = (
+        UniqueConstraint("position_id", name="uq_position_payroll_config_position_id"),
+        Index("ix_position_payroll_config_comp_id", "comp_id"),
+        Index("ix_position_payroll_config_calc_scheme_id", "calc_scheme_id"),
+        Index("ix_position_payroll_config_workday_param_id", "workday_param_id"),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    position_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "position.id",
+                ondelete="CASCADE",
+                name="fk_position_payroll_config_position_id_position",
+            ),
+            nullable=False,
+        )
+    )
+    comp_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "compensation_composition.id",
+                ondelete="RESTRICT",
+                name="fk_position_payroll_config_comp_id_compensation_composition",
+            ),
+            nullable=False,
+        )
+    )
+    calc_scheme_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "calc_scheme.id",
+                ondelete="RESTRICT",
+                name="fk_position_payroll_config_calc_scheme_id_calc_scheme",
+            ),
+            nullable=False,
+        )
+    )
+    workday_param_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "workday_param.id",
+                ondelete="RESTRICT",
+                name="fk_position_payroll_config_workday_param_id_workday_param",
+            ),
+            nullable=False,
+        )
+    )
+    note: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PayrollGlobalParam(SQLModel, table=True):
+    __tablename__ = "payroll_global_param"
+    __table_args__ = (
+        UniqueConstraint("key", name="uq_payroll_global_param_key"),
+        sa.CheckConstraint(
+            "(value_type = 'number' AND numeric_value IS NOT NULL "
+            "AND json_value IS NULL) "
+            "OR (value_type = 'json' AND numeric_value IS NULL "
+            "AND json_value IS NOT NULL)",
+            name="ck_payroll_global_param_value_exclusive",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    key: str = Field(max_length=64)
+    label: str = Field(max_length=100)
+    category: str = Field(max_length=32)
+    value_type: PayrollGlobalParamType = Field(
+        sa_column=_enum_column(
+            PayrollGlobalParamType,
+            "ck_payroll_global_param_value_type",
+            nullable=False,
+            length=16,
+        )
+    )
+    numeric_value: Decimal | None = Field(default=None, max_digits=18, decimal_places=6)
+    json_value: Any = Field(default=None, sa_column=_jsonb_column(nullable=True))
+    display_order: int = Field(default=0)
+    is_active: bool = Field(default=True)
+    note: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PayrollConfigRevision(SQLModel, table=True):
+    __tablename__ = "payroll_config_revision"
+    __table_args__ = (
+        UniqueConstraint(
+            "entity_type",
+            "entity_id",
+            "version_no",
+            name="uq_payroll_config_revision_entity_version",
+        ),
+        Index(
+            "ix_payroll_config_revision_entity",
+            "entity_type",
+            "entity_id",
+            sa.desc("changed_at"),
+        ),
+        sa.CheckConstraint(
+            "version_no >= 1", name="ck_payroll_config_revision_version_positive"
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    entity_type: PayrollConfigEntityType = Field(
+        sa_column=_enum_column(
+            PayrollConfigEntityType,
+            "ck_payroll_config_revision_entity_type",
+            nullable=False,
+            length=32,
+        )
+    )
+    entity_id: uuid.UUID = Field(sa_type=sa.UUID(as_uuid=True))
+    version_no: int
+    snapshot: dict[str, Any] = Field(sa_column=_jsonb_column(nullable=False))
+    change_note: str | None = Field(default=None, max_length=500)
+    changed_by: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_config_revision_changed_by_user",
+            ),
+            nullable=True,
+        ),
+    )
+    changed_by_name: str | None = Field(default=None, max_length=100)
+    changed_at: datetime = Field(sa_type=sa.DateTime(timezone=True))
+
+
+class PayrollMonth(SQLModel, table=True):
+    __tablename__ = "payroll_month"
+    __table_args__ = (
+        UniqueConstraint("company_id", "month", name="uq_payroll_month_company_month"),
+        sa.CheckConstraint(
+            "EXTRACT(DAY FROM month) = 1", name="ck_payroll_month_first_day"
+        ),
+        sa.CheckConstraint(
+            "input_version >= 0", name="ck_payroll_month_input_version_non_negative"
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    company_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "company.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_month_company_id_company",
+            ),
+            nullable=False,
+        )
+    )
+    month: date
+    status: PayrollMonthStatus = Field(
+        default=PayrollMonthStatus.DRAFT,
+        sa_column=_enum_column(
+            PayrollMonthStatus,
+            "ck_payroll_month_status",
+            nullable=False,
+            length=16,
+        ),
+    )
+    input_version: int = Field(default=0)
+    config_stale: bool = Field(default=False)
+    config_stale_detail: dict[str, Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+    calculated_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    confirmed_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    paid_at: datetime | None = Field(default=None, sa_type=sa.DateTime(timezone=True))
+    unlock_reason: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PayrollCalcRun(SQLModel, table=True):
+    __tablename__ = "payroll_calc_run"
+    __table_args__ = (
+        Index(
+            "ix_payroll_calc_run_month_started_at",
+            "payroll_month_id",
+            sa.desc("started_at"),
+        ),
+        Index("ix_payroll_calc_run_status", "status"),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    payroll_month_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month.id",
+                ondelete="CASCADE",
+                name="fk_payroll_calc_run_payroll_month_id_payroll_month",
+            ),
+            nullable=False,
+        )
+    )
+    trigger: PayrollCalcRunTrigger = Field(
+        sa_column=_enum_column(
+            PayrollCalcRunTrigger,
+            "ck_payroll_calc_run_trigger",
+            nullable=False,
+            length=24,
+        )
+    )
+    status: PayrollCalcRunStatus = Field(
+        sa_column=_enum_column(
+            PayrollCalcRunStatus,
+            "ck_payroll_calc_run_status",
+            nullable=False,
+            length=16,
+        )
+    )
+    config_snapshot_version: int
+    config_snapshot: dict[str, Any] = Field(sa_column=_jsonb_column(nullable=False))
+    input_version: int
+    input_snapshot: dict[str, Any] = Field(sa_column=_jsonb_column(nullable=False))
+    attendance_month_id: uuid.UUID | None = Field(
+        default=None, sa_type=sa.UUID(as_uuid=True)
+    )
+    attendance_snapshot_id: uuid.UUID | None = Field(
+        default=None, sa_type=sa.UUID(as_uuid=True)
+    )
+    attendance_snapshot_version: int | None = Field(default=None)
+    attendance_calc_run_id: uuid.UUID | None = Field(
+        default=None, sa_type=sa.UUID(as_uuid=True)
+    )
+    calc_version: str | None = Field(default=None, max_length=32)
+    rules_version: str | None = Field(default=None, max_length=64)
+    attendance_locked_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    summary: dict[str, Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+    error_code: str | None = Field(default=None, max_length=50)
+    error_message: str | None = Field(default=None, max_length=500)
+    triggered_by: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_calc_run_triggered_by_user",
+            ),
+            nullable=True,
+        ),
+    )
+    triggered_by_name: str | None = Field(default=None, max_length=100)
+    started_at: datetime = Field(sa_type=sa.DateTime(timezone=True))
+    finished_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PayrollResult(SQLModel, table=True):
+    __tablename__ = "payroll_result"
+    __table_args__ = (
+        UniqueConstraint(
+            "payroll_month_id",
+            "employee_id",
+            name="uq_payroll_result_month_employee",
+        ),
+        Index("ix_payroll_result_month_dept_id", "payroll_month_id", "dept_id"),
+        Index(
+            "ix_payroll_result_month_position_id",
+            "payroll_month_id",
+            "position_id",
+        ),
+        Index(
+            "ix_payroll_result_month_cost_org_id",
+            "payroll_month_id",
+            "cost_org_id",
+        ),
+        Index(
+            "ix_payroll_result_month_cost_org_code",
+            "payroll_month_id",
+            "cost_org_code",
+        ),
+        Index("ix_payroll_result_company_dept_code", "company_id", "dept_code"),
+        Index(
+            "ix_payroll_result_company_cost_org_code",
+            "company_id",
+            "cost_org_code",
+        ),
+        Index("ix_payroll_result_dept_path_gin", "dept_path", postgresql_using="gin"),
+        Index(
+            "ix_payroll_result_cost_org_path_gin",
+            "cost_org_path",
+            postgresql_using="gin",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    payroll_month_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month.id",
+                ondelete="CASCADE",
+                name="fk_payroll_result_payroll_month_id_payroll_month",
+            ),
+            nullable=False,
+        )
+    )
+    calc_run_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_calc_run.id",
+                ondelete="CASCADE",
+                name="fk_payroll_result_calc_run_id_payroll_calc_run",
+            ),
+            nullable=False,
+        )
+    )
+    company_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "company.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_result_company_id_company",
+            ),
+            nullable=False,
+        )
+    )
+    employee_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "employee.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_result_employee_id_employee",
+            ),
+            nullable=False,
+        )
+    )
+    position_id: uuid.UUID = Field(sa_type=sa.UUID(as_uuid=True))
+    dept_id: uuid.UUID = Field(sa_type=sa.UUID(as_uuid=True))
+    cost_org_id: uuid.UUID | None = Field(default=None, sa_type=sa.UUID(as_uuid=True))
+    calc_scheme_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "calc_scheme.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_result_calc_scheme_id_calc_scheme",
+            ),
+            nullable=False,
+        )
+    )
+    position_code: str = Field(max_length=32)
+    position_name: str = Field(max_length=100)
+    dept_code: str = Field(max_length=32)
+    dept_name: str = Field(max_length=100)
+    cost_org_code: str | None = Field(default=None, max_length=32)
+    cost_org_name: str | None = Field(default=None, max_length=100)
+    dept_path: list[Any] = Field(sa_column=_jsonb_column(nullable=False))
+    cost_org_path: list[Any] = Field(sa_column=_jsonb_column(nullable=False))
+    attendance_source: dict[str, Any] = Field(sa_column=_jsonb_column(nullable=False))
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PayrollResultValue(SQLModel, table=True):
+    __tablename__ = "payroll_result_value"
+    __table_args__ = (
+        UniqueConstraint(
+            "result_id",
+            "field_def_id",
+            name="uq_payroll_result_value_result_field",
+        ),
+        Index("ix_payroll_result_value_field_def_id", "field_def_id"),
+        Index("ix_payroll_result_value_produced_by_run_id", "produced_by_run_id"),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    result_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_result.id",
+                ondelete="CASCADE",
+                name="fk_payroll_result_value_result_id_payroll_result",
+            ),
+            nullable=False,
+        )
+    )
+    field_def_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "salary_field_def.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_result_value_field_def_id_salary_field_def",
+            ),
+            nullable=False,
+        )
+    )
+    value: Decimal = Field(max_digits=18, decimal_places=4)
+    source: PayrollResultSource = Field(
+        sa_column=_enum_column(
+            PayrollResultSource,
+            "ck_payroll_result_value_source",
+            nullable=False,
+            length=16,
+        )
+    )
+    produced_by_run_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_calc_run.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_result_value_produced_by_run_id_payroll_calc_run",
+            ),
+            nullable=False,
+        )
+    )
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PayrollMonthSnapshot(SQLModel, table=True):
+    __tablename__ = "payroll_month_snapshot"
+    __table_args__ = (
+        UniqueConstraint(
+            "payroll_month_id",
+            "version",
+            name="uq_payroll_month_snapshot_month_version",
+        ),
+        sa.CheckConstraint(
+            "version >= 1",
+            name="ck_payroll_month_snapshot_version_positive",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    payroll_month_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month.id",
+                ondelete="CASCADE",
+                name="fk_payroll_month_snapshot_payroll_month_id_payroll_month",
+            ),
+            nullable=False,
+        )
+    )
+    calc_run_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_calc_run.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_month_snapshot_calc_run_id_payroll_calc_run",
+            ),
+            nullable=False,
+        )
+    )
+    version: int
+    paid_at: datetime = Field(sa_type=sa.DateTime(timezone=True))
+    paid_by: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_month_snapshot_paid_by_user",
+            ),
+            nullable=False,
+        )
+    )
+    paid_by_name: str = Field(max_length=100)
+    payload: dict[str, Any] = Field(sa_column=_jsonb_column(nullable=False))
+
+
+class PayrollMonthEvent(SQLModel, table=True):
+    __tablename__ = "payroll_month_event"
+    __table_args__ = (
+        Index(
+            "ix_payroll_month_event_month_created_at",
+            "payroll_month_id",
+            sa.desc("created_at"),
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    payroll_month_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month.id",
+                ondelete="CASCADE",
+                name="fk_payroll_month_event_payroll_month_id_payroll_month",
+            ),
+            nullable=False,
+        )
+    )
+    event: PayrollMonthEventType = Field(
+        sa_column=_enum_column(
+            PayrollMonthEventType,
+            "ck_payroll_month_event_event",
+            nullable=False,
+            length=16,
+        )
+    )
+    from_status: str = Field(max_length=16)
+    to_status: str = Field(max_length=16)
+    calc_run_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_calc_run.id",
+                ondelete="SET NULL",
+                name="fk_payroll_month_event_calc_run_id_payroll_calc_run",
+            ),
+            nullable=True,
+        ),
+    )
+    snapshot_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month_snapshot.id",
+                ondelete="SET NULL",
+                name="fk_payroll_month_event_snapshot_id_payroll_month_snapshot",
+            ),
+            nullable=True,
+        ),
+    )
+    reason: str | None = Field(default=None, max_length=500)
+    operator_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_month_event_operator_id_user",
+            ),
+            nullable=True,
+        ),
+    )
+    operator_name: str | None = Field(default=None, max_length=100)
+    created_at: datetime = Field(sa_type=sa.DateTime(timezone=True))
+
+
+class PayrollMonthInput(SQLModel, table=True):
+    __tablename__ = "payroll_month_input"
+    __table_args__ = (
+        UniqueConstraint(
+            "payroll_month_id",
+            "employee_id",
+            name="uq_payroll_month_input_month_employee",
+        ),
+        Index("ix_payroll_month_input_employee_id", "employee_id"),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    payroll_month_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month.id",
+                ondelete="CASCADE",
+                name="fk_payroll_month_input_payroll_month_id_payroll_month",
+            ),
+            nullable=False,
+        )
+    )
+    employee_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "employee.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_month_input_employee_id_employee",
+            ),
+            nullable=False,
+        )
+    )
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PayrollInputValue(SQLModel, table=True):
+    __tablename__ = "payroll_input_value"
+    __table_args__ = (
+        UniqueConstraint(
+            "input_id",
+            "field_def_id",
+            name="uq_payroll_input_value_input_field",
+        ),
+        Index("ix_payroll_input_value_field_def_id", "field_def_id"),
+        Index("ix_payroll_input_value_source_batch_id", "source_batch_id"),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    input_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month_input.id",
+                ondelete="CASCADE",
+                name="fk_payroll_input_value_input_id_payroll_month_input",
+            ),
+            nullable=False,
+        )
+    )
+    field_def_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "salary_field_def.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_input_value_field_def_id_salary_field_def",
+            ),
+            nullable=False,
+        )
+    )
+    value: Decimal = Field(default=Decimal("0"), max_digits=18, decimal_places=4)
+    source: PayrollInputSource = Field(
+        sa_column=_enum_column(
+            PayrollInputSource,
+            "ck_payroll_input_value_source",
+            nullable=False,
+            length=16,
+        )
+    )
+    source_batch_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_import_batch.id",
+                ondelete="SET NULL",
+                name="fk_payroll_input_value_source_batch_id_payroll_import_batch",
+            ),
+            nullable=True,
+        ),
+    )
+    updated_by: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_input_value_updated_by_user",
+            ),
+            nullable=True,
+        ),
+    )
+    updated_by_name: str | None = Field(default=None, max_length=100)
+    updated_at: datetime = Field(sa_type=sa.DateTime(timezone=True))
+
+
+class PayrollImportBatch(SQLModel, table=True):
+    __tablename__ = "payroll_import_batch"
+    __table_args__ = (
+        Index(
+            "ix_payroll_import_batch_company_month_status_created_at",
+            "company_id",
+            "month",
+            "status",
+            sa.desc("created_at"),
+        ),
+        Index(
+            "uq_payroll_import_batch_company_month_committed",
+            "company_id",
+            "month",
+            unique=True,
+            postgresql_where=sa.text("status = 'committed'"),
+        ),
+        sa.CheckConstraint(
+            "EXTRACT(DAY FROM month) = 1",
+            name="ck_payroll_import_batch_month_first_day",
+        ),
+        sa.CheckConstraint(
+            "source_rows >= 0",
+            name="ck_payroll_import_batch_source_rows_non_negative",
+        ),
+        sa.CheckConstraint(
+            "valid_records >= 0",
+            name="ck_payroll_import_batch_valid_records_non_negative",
+        ),
+        sa.CheckConstraint(
+            "error_records >= 0",
+            name="ck_payroll_import_batch_error_records_non_negative",
+        ),
+        sa.CheckConstraint(
+            "warning_records >= 0",
+            name="ck_payroll_import_batch_warning_records_non_negative",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    company_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "company.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_import_batch_company_id_company",
+            ),
+            nullable=False,
+        )
+    )
+    month: date
+    status: PayrollImportBatchStatus = Field(
+        sa_column=_enum_column(
+            PayrollImportBatchStatus,
+            "ck_payroll_import_batch_status",
+            nullable=False,
+            length=16,
+        )
+    )
+    source: PayrollImportBatchSource = Field(
+        sa_column=_enum_column(
+            PayrollImportBatchSource,
+            "ck_payroll_import_batch_source",
+            nullable=False,
+            length=16,
+        )
+    )
+    file_name: str | None = Field(default=None, max_length=255)
+    file_size: int | None = Field(default=None)
+    file_sha256: str | None = Field(default=None, max_length=64)
+    sheet_name: str | None = Field(default=None, max_length=100)
+    header_row_number: int | None = Field(default=None)
+    header_columns: list[Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+    column_mapping: dict[str, Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+    parser_version: str = Field(max_length=32)
+    source_rows: int = Field(default=0)
+    valid_records: int = Field(default=0)
+    error_records: int = Field(default=0)
+    warning_records: int = Field(default=0)
+    warning_counts: dict[str, Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+    operator_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_import_batch_operator_id_user",
+            ),
+            nullable=True,
+        ),
+    )
+    operator_name: str | None = Field(default=None, max_length=100)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    committed_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    superseded_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    discarded_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    expires_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    superseded_by_batch_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_import_batch.id",
+                ondelete="SET NULL",
+                name="fk_payroll_import_batch_superseded_by_batch_id",
+            ),
+            nullable=True,
+        ),
+    )
+    discard_reason: str | None = Field(default=None, max_length=500)
+    payroll_month_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month.id",
+                ondelete="SET NULL",
+                name="fk_payroll_import_batch_payroll_month_id_payroll_month",
+            ),
+            nullable=True,
+        ),
+    )
+
+
+class PayrollImportBatchRow(SQLModel, table=True):
+    __tablename__ = "payroll_import_batch_row"
+    __table_args__ = (
+        Index("ix_payroll_import_batch_row_batch_status", "batch_id", "status"),
+        Index(
+            "ix_payroll_import_batch_row_batch_row",
+            "batch_id",
+            "source_row_number",
+        ),
+        sa.CheckConstraint(
+            "source_row_number >= 1",
+            name="ck_payroll_import_batch_row_source_row_number_positive",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    batch_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_import_batch.id",
+                ondelete="CASCADE",
+                name="fk_payroll_import_batch_row_batch_id_payroll_import_batch",
+            ),
+            nullable=False,
+        )
+    )
+    source_row_number: int
+    employee_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "employee.id",
+                ondelete="SET NULL",
+                name="fk_payroll_import_batch_row_employee_id_employee",
+            ),
+            nullable=True,
+        ),
+    )
+    employee_no_raw: str | None = Field(default=None, max_length=64)
+    values: dict[str, Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+    status: PayrollImportRowStatus = Field(
+        sa_column=_enum_column(
+            PayrollImportRowStatus,
+            "ck_payroll_import_batch_row_status",
+            nullable=False,
+            length=16,
+        )
+    )
+    error_code: str | None = Field(default=None, max_length=50)
+    error_message: str | None = Field(default=None, max_length=500)
+    warnings: list[Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+    raw_row: dict[str, Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+
+
+class PayrollImportMappingTemplate(SQLModel, table=True):
+    __tablename__ = "payroll_import_mapping_template"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id", name="uq_payroll_import_mapping_template_company"
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    company_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "company.id",
+                ondelete="CASCADE",
+                name="fk_payroll_import_mapping_template_company_id_company",
+            ),
+            nullable=False,
+        )
+    )
+    column_mapping: dict[str, Any] = Field(sa_column=_jsonb_column(nullable=False))
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
+class PayrollExport(SQLModel, table=True):
+    __tablename__ = "payroll_export"
+    __table_args__ = (
+        Index(
+            "ix_payroll_export_company_month_created_at",
+            "company_id",
+            "month",
+            sa.desc("created_at"),
+        ),
+        Index("ix_payroll_export_status_created_at", "status", "created_at"),
+        Index("ix_payroll_export_expires_at", "expires_at"),
+        sa.CheckConstraint(
+            "EXTRACT(DAY FROM month) = 1",
+            name="ck_payroll_export_month_first_day",
+        ),
+        sa.CheckConstraint(
+            "employee_count >= 0",
+            name="ck_payroll_export_employee_count_non_negative",
+        ),
+        sa.CheckConstraint(
+            "progress_done >= 0",
+            name="ck_payroll_export_progress_done_non_negative",
+        ),
+        sa.CheckConstraint(
+            "progress_total >= 0",
+            name="ck_payroll_export_progress_total_non_negative",
+        ),
+        sa.CheckConstraint(
+            "download_count >= 0",
+            name="ck_payroll_export_download_count_non_negative",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid7,
+        primary_key=True,
+        sa_type=sa.UUID(as_uuid=True),
+    )
+    company_id: uuid.UUID = Field(
+        sa_column=_uuid_column(
+            ForeignKey(
+                "company.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_export_company_id_company",
+            ),
+            nullable=False,
+        )
+    )
+    month: date
+    export_type: PayrollExportType = Field(
+        sa_column=_enum_column(
+            PayrollExportType,
+            "ck_payroll_export_export_type",
+            nullable=False,
+            length=32,
+        )
+    )
+    format: str = Field(max_length=8)
+    mode: str | None = Field(default=None, max_length=16)
+    snapshot_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_month_snapshot.id",
+                ondelete="SET NULL",
+                name="fk_payroll_export_snapshot_id_payroll_month_snapshot",
+            ),
+            nullable=True,
+        ),
+    )
+    snapshot_version: int | None = Field(default=None)
+    calc_run_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "payroll_calc_run.id",
+                ondelete="SET NULL",
+                name="fk_payroll_export_calc_run_id_payroll_calc_run",
+            ),
+            nullable=True,
+        ),
+    )
+    month_status_at_creation: str | None = Field(default=None, max_length=16)
+    filter: dict[str, Any] | None = Field(
+        default=None, sa_column=_jsonb_column(nullable=True)
+    )
+    filter_hash: str | None = Field(default=None, max_length=64)
+    employee_count: int = Field(default=0)
+    status: PayrollExportStatus = Field(
+        sa_column=_enum_column(
+            PayrollExportStatus,
+            "ck_payroll_export_status",
+            nullable=False,
+            length=16,
+        )
+    )
+    progress_done: int = Field(default=0)
+    progress_total: int = Field(default=0)
+    error_code: str | None = Field(default=None, max_length=50)
+    error_message: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+    started_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    finished_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    artifact_path: str | None = Field(default=None, max_length=500)
+    artifact_size: int | None = Field(default=None, sa_type=sa.BigInteger())
+    expires_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    artifact_deleted_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
+    )
+    operator_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_export_operator_id_user",
+            ),
+            nullable=True,
+        ),
+    )
+    operator_name: str | None = Field(default=None, max_length=100)
+    template_version: str | None = Field(default=None, max_length=32)
+    download_count: int = Field(default=0)
+    last_downloaded_by: uuid.UUID | None = Field(
+        default=None,
+        sa_column=_uuid_column(
+            ForeignKey(
+                "user.id",
+                ondelete="RESTRICT",
+                name="fk_payroll_export_last_downloaded_by_user",
+            ),
+            nullable=True,
+        ),
+    )
+    last_downloaded_by_name: str | None = Field(default=None, max_length=100)
+    last_downloaded_at: datetime | None = Field(
+        default=None, sa_type=sa.DateTime(timezone=True)
     )

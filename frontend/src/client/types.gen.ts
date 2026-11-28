@@ -952,7 +952,7 @@ export type Blocker = {
     /**
      * Type
      */
-    type: 'company' | 'department' | 'position' | 'cost_center' | 'employee' | 'shift' | 'schedule_plan' | 'roster_entry';
+    type: 'company' | 'department' | 'position' | 'cost_center' | 'employee' | 'shift' | 'schedule_plan' | 'roster_entry' | 'compensation_composition' | 'calc_scheme' | 'workday_param' | 'salary_field_def' | 'payroll_global_param' | 'payroll_month' | 'payroll_import_batch';
     /**
      * Id
      */
@@ -1269,6 +1269,42 @@ export type CompanyUpdate = {
      * Note
      */
     note?: string | null;
+};
+
+/**
+ * ConsistencyViolationPublic
+ *
+ * One failed category-anchored consistency check.
+ */
+export type ConsistencyViolationPublic = {
+    /**
+     * Employee Id
+     */
+    employee_id: string;
+    /**
+     * Employee No
+     */
+    employee_no: string;
+    /**
+     * Employee Name
+     */
+    employee_name?: string | null;
+    /**
+     * Field Key
+     */
+    field_key: string;
+    /**
+     * Check
+     */
+    check: string;
+    /**
+     * Expected
+     */
+    expected: string;
+    /**
+     * Actual
+     */
+    actual: string;
 };
 
 /**
@@ -2068,6 +2104,14 @@ export type ErrorDetail = {
      * Calc Run Id
      */
     calc_run_id?: string | null;
+    /**
+     * Formula Errors
+     */
+    formula_errors?: Array<FormulaErrorPublic>;
+    /**
+     * Violations
+     */
+    violations?: Array<ConsistencyViolationPublic>;
 };
 
 /**
@@ -2075,6 +2119,36 @@ export type ErrorDetail = {
  */
 export type ErrorResponse = {
     detail: ErrorDetail;
+};
+
+/**
+ * FormulaErrorPublic
+ *
+ * A formula detail error, carried only inside ``formula_errors[]``.
+ */
+export type FormulaErrorPublic = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Field Key
+     */
+    field_key?: string | null;
+    /**
+     * Position
+     */
+    position?: number | null;
+    /**
+     * Params
+     */
+    params?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**

@@ -8,6 +8,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from app.schemas_payroll.common import (
+    ConsistencyViolationPublic,
+    FormulaErrorPublic,
+)
+
 logger = logging.getLogger(__name__)
 
 BlockerType = Literal[
@@ -19,12 +24,22 @@ BlockerType = Literal[
     "shift",
     "schedule_plan",
     "roster_entry",
+    "compensation_composition",
+    "calc_scheme",
+    "workday_param",
+    "salary_field_def",
+    "payroll_global_param",
+    "payroll_month",
+    "payroll_import_batch",
 ]
 
-# ``not_found`` is the only 404 domain error; upload limits use the standard
-# 413/415 statuses; every other business-rule violation is a 409.
+# ``not_found`` is a 404 domain error; upload limits use the standard 413/415
+# statuses; expired export artifacts use 410 and missing export jobs 404; every
+# other business-rule violation is a 409.
 DOMAIN_STATUS_CODES: dict[str, int] = {
     "not_found": 404,
+    "export_job_not_found": 404,
+    "export_expired": 410,
     "file_too_large": 413,
     "unsupported_file_type": 415,
 }
@@ -46,6 +61,8 @@ class ErrorDetail(BaseModel):
     blockers: list[Blocker] = []
     blocker_count: int = 0
     calc_run_id: uuid.UUID | None = None
+    formula_errors: list[FormulaErrorPublic] = []
+    violations: list[ConsistencyViolationPublic] = []
 
 
 class ErrorResponse(BaseModel):
@@ -55,11 +72,13 @@ class ErrorResponse(BaseModel):
 class DomainError(Exception):
     """A business-rule violation with a Chinese, client-safe message.
 
-    ``not_found`` maps to HTTP 404, ``file_too_large`` to 413,
+    ``not_found`` and ``export_job_not_found`` map to HTTP 404,
+    ``export_expired`` to 410, ``file_too_large`` to 413,
     ``unsupported_file_type`` to 415, and every other domain code to 409.
     Blockers are only attached to reference and deactivation errors;
     ``blocker_count`` is None for other codes so the envelope omits them.
-    ``calc_run_id`` is only present on ``calc_run_failed``.
+    ``calc_run_id`` is only present on ``calc_run_failed``. Formula detail
+    errors and consistency violations are emitted only when non-empty.
     """
 
     def __init__(
@@ -71,6 +90,8 @@ class DomainError(Exception):
         blockers: list[Blocker] | None = None,
         blocker_count: int | None = None,
         calc_run_id: uuid.UUID | None = None,
+        formula_errors: list[FormulaErrorPublic] | None = None,
+        violations: list[ConsistencyViolationPublic] | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
@@ -79,6 +100,8 @@ class DomainError(Exception):
         self.blockers = blockers
         self.blocker_count = blocker_count
         self.calc_run_id = calc_run_id
+        self.formula_errors = formula_errors or []
+        self.violations = violations or []
 
     @property
     def status_code(self) -> int:
@@ -185,6 +208,14 @@ async def domain_error_handler(request: Request, exc: Exception) -> JSONResponse
         detail["blocker_count"] = exc.blocker_count or 0
     if exc.calc_run_id is not None:
         detail["calc_run_id"] = str(exc.calc_run_id)
+    if exc.formula_errors:
+        detail["formula_errors"] = [
+            error.model_dump(mode="json") for error in exc.formula_errors
+        ]
+    if exc.violations:
+        detail["violations"] = [
+            violation.model_dump(mode="json") for violation in exc.violations
+        ]
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": detail},

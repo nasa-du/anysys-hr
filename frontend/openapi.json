@@ -8444,7 +8444,14 @@
               "employee",
               "shift",
               "schedule_plan",
-              "roster_entry"
+              "roster_entry",
+              "compensation_composition",
+              "calc_scheme",
+              "workday_param",
+              "salary_field_def",
+              "payroll_global_param",
+              "payroll_month",
+              "payroll_import_batch"
             ],
             "title": "Type"
           },
@@ -8810,6 +8817,35 @@
         "additionalProperties": false,
         "type": "object",
         "title": "CompanyUpdate"
+      },
+      "ConsistencyViolationPublic": {
+        "properties": {
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Employee Id"
+          },
+          "employee_no": { "type": "string", "title": "Employee No" },
+          "employee_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Employee Name"
+          },
+          "field_key": { "type": "string", "title": "Field Key" },
+          "check": { "type": "string", "title": "Check" },
+          "expected": { "type": "string", "title": "Expected" },
+          "actual": { "type": "string", "title": "Actual" }
+        },
+        "type": "object",
+        "required": [
+          "employee_id",
+          "employee_no",
+          "field_key",
+          "check",
+          "expected",
+          "actual"
+        ],
+        "title": "ConsistencyViolationPublic",
+        "description": "One failed category-anchored consistency check."
       },
       "ContractType": {
         "type": "string",
@@ -9848,6 +9884,20 @@
               { "type": "null" }
             ],
             "title": "Calc Run Id"
+          },
+          "formula_errors": {
+            "items": { "$ref": "#/components/schemas/FormulaErrorPublic" },
+            "type": "array",
+            "title": "Formula Errors",
+            "default": []
+          },
+          "violations": {
+            "items": {
+              "$ref": "#/components/schemas/ConsistencyViolationPublic"
+            },
+            "type": "array",
+            "title": "Violations",
+            "default": []
           }
         },
         "type": "object",
@@ -9861,6 +9911,31 @@
         "type": "object",
         "required": ["detail"],
         "title": "ErrorResponse"
+      },
+      "FormulaErrorPublic": {
+        "properties": {
+          "code": { "type": "string", "title": "Code" },
+          "message": { "type": "string", "title": "Message" },
+          "field_key": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Field Key"
+          },
+          "position": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Position"
+          },
+          "params": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "title": "Params"
+          }
+        },
+        "type": "object",
+        "required": ["code", "message"],
+        "title": "FormulaErrorPublic",
+        "description": "A formula detail error, carried only inside ``formula_errors[]``."
       },
       "Gender": {
         "type": "string",

@@ -10,6 +10,8 @@ from app.core.errors import Blocker, BlockerType
 from app.enums import EmployeeStatus
 
 MAX_BLOCKERS = 20
+# Payroll lists unconfigured or out-of-scope employees in full detail.
+PAYROLL_MAX_BLOCKERS = 100
 
 # Employees in these states block deactivation and may be assigned as managers;
 # resigned employees never block and cannot be newly assigned.
@@ -30,18 +32,22 @@ class BlockerQuery:
 
 
 def collect_blockers(
-    session: Session, queries: list[BlockerQuery]
+    session: Session,
+    queries: list[BlockerQuery],
+    *,
+    max_entries: int = MAX_BLOCKERS,
 ) -> tuple[int, list[Blocker]]:
-    """Return the total blocker count and at most ``MAX_BLOCKERS`` entries.
+    """Return the total blocker count and at most ``max_entries`` entries.
 
     Entries keep the fixed type order of ``queries`` and are ordered by business
-    code within a type. ``rows_statement`` must already sort by code.
+    code within a type. ``rows_statement`` must already sort by code. Payroll
+    passes ``PAYROLL_MAX_BLOCKERS`` (100); the default stays 20.
     """
     total = sum(session.exec(query.count_statement).one() for query in queries)
 
     blockers: list[Blocker] = []
     for query in queries:
-        remaining = MAX_BLOCKERS - len(blockers)
+        remaining = max_entries - len(blockers)
         if remaining <= 0:
             break
         rows = session.exec(query.rows_statement.limit(remaining)).all()

@@ -21,6 +21,13 @@ const BLOCKER_TYPE_LABELS: Record<Blocker["type"], string> = {
   shift: "班次",
   schedule_plan: "排班方案",
   roster_entry: "排班明细",
+  compensation_composition: "薪资构成",
+  calc_scheme: "计算方案",
+  workday_param: "工作日参数",
+  salary_field_def: "薪资字段定义",
+  payroll_global_param: "全局法定参数",
+  payroll_month: "薪资月",
+  payroll_import_batch: "薪资导入批次",
 }
 
 interface DeleteBlockedDialogProps {

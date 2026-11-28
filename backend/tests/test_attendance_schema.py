@@ -24,6 +24,7 @@ from app.core.config import settings
 from app.core.db import engine
 from app.models import User
 from tests.utils.attendance_tables import ATTENDANCE_TABLES
+from tests.utils.payroll_tables import PAYROLL_TABLES
 
 ColumnCheck = tuple[Callable[[sa.types.TypeEngine[Any]], bool], bool]
 
@@ -1262,12 +1263,15 @@ def test_all_attendance_tables_exist(inspector: sa.Inspector) -> None:
     assert set(ATTENDANCE_TABLES) <= tables
 
 
-def test_this_effort_adds_no_payroll_table(inspector: sa.Inspector) -> None:
-    # Payroll reads attendance through the query/export contract only and may
-    # own snapshot tables in a future effort; this effort must add none.
-    tables = inspector.get_table_names()
+def test_payroll_tables_do_not_join_the_attendance_registry(
+    inspector: sa.Inspector,
+) -> None:
+    # Payroll reads attendance through the read contract only; the two modules
+    # share no table and no foreign key.
+    tables = set(inspector.get_table_names())
 
-    assert [table for table in tables if "payroll" in table.lower()] == []
+    assert set(PAYROLL_TABLES) <= tables
+    assert set(PAYROLL_TABLES).isdisjoint(ATTENDANCE_TABLES)
 
 
 @pytest.mark.parametrize("table_name", ATTENDANCE_TABLES)

@@ -13,6 +13,7 @@ from sqlmodel import Session, delete
 from app.core.config import settings
 from tests.utils.attendance_tables import ATTENDANCE_TABLES
 from tests.utils.database import ensure_test_database
+from tests.utils.payroll_tables import PAYROLL_SYSTEM_TABLES, PAYROLL_TABLES
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -55,9 +56,12 @@ def db() -> Generator[Session]:
     with Session(engine) as session:
         init_db(session)
         yield session
-        # Attendance rows can block user deletion through RESTRICT audit
-        # references; clear them before the final user cleanup.
+        # Attendance and payroll rows can block user deletion through RESTRICT
+        # audit references; clear them before the final user cleanup.
         session.execute(text("TRUNCATE TABLE company CASCADE"))
+        session.execute(
+            text("TRUNCATE TABLE " + ", ".join(PAYROLL_SYSTEM_TABLES) + " CASCADE")
+        )
         statement = delete(User)
         session.execute(statement)
         session.commit()
@@ -68,23 +72,29 @@ def _clean_database(db: Session) -> Generator[None]:
     """Start every test with empty organizations and only the first superuser.
 
     ``TRUNCATE company CASCADE`` also empties department, position,
-    cost_center, employee, and every attendance table that reaches ``company``
-    through a foreign key. The first superuser is retained so login fixtures
-    keep working.
+    cost_center, employee, and every attendance and payroll table that reaches
+    ``company`` through a foreign key. Payroll's system-owned tables have no
+    company foreign key and are truncated explicitly. The first superuser is
+    retained so login fixtures keep working.
     """
     db.execute(text("TRUNCATE TABLE company CASCADE"))
+    # ``TRUNCATE company CASCADE`` already clears every company-scoped payroll
+    # table; the system-owned tables have no company foreign key and need an
+    # explicit truncate.
+    db.execute(text("TRUNCATE TABLE " + ", ".join(PAYROLL_SYSTEM_TABLES) + " CASCADE"))
     db.execute(delete(User).where(User.email != settings.FIRST_SUPERUSER))
     db.commit()
+    checked_tables = (*ATTENDANCE_TABLES, *PAYROLL_TABLES)
     counts_sql = " UNION ALL ".join(
         f'SELECT {index} AS table_index, count(*) AS row_count FROM "{table}"'
-        for index, table in enumerate(ATTENDANCE_TABLES)
+        for index, table in enumerate(checked_tables)
     )
     non_empty = {
-        ATTENDANCE_TABLES[index]: row_count
+        checked_tables[index]: row_count
         for index, row_count in db.execute(text(counts_sql)).all()
         if row_count
     }
-    assert not non_empty, f"Attendance tables not empty after TRUNCATE: {non_empty}"
+    assert not non_empty, f"Tables not empty after TRUNCATE: {non_empty}"
     yield
 
 

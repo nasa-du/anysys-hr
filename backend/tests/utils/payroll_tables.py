@@ -4,6 +4,9 @@ Tests keep their own copy so a missing model or migration cannot silently
 shorten the isolation, schema, and migration assertions.
 """
 
+from sqlalchemy import text
+from sqlmodel import Session
+
 PAYROLL_CONFIG_TABLES: tuple[str, ...] = (
     "salary_field_def",
     "compensation_composition",
@@ -49,3 +52,15 @@ PAYROLL_SYSTEM_TABLES: tuple[str, ...] = (
     "payroll_global_param",
     "payroll_config_revision",
 )
+
+# Row counts every test starts with once isolation has cleared company data,
+# truncated the system tables, and re-run ``ensure_payroll_defaults``.
+PAYROLL_STARTING_COUNTS: dict[str, int] = {
+    **dict.fromkeys(PAYROLL_TABLES, 0),
+    "salary_field_def": 32,
+    "payroll_global_param": 6,
+}
+
+
+def truncate_payroll_system_tables(db: Session) -> None:
+    db.execute(text("TRUNCATE TABLE " + ", ".join(PAYROLL_SYSTEM_TABLES) + " CASCADE"))

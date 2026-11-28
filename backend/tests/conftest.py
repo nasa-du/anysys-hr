@@ -13,7 +13,11 @@ from sqlmodel import Session, delete
 from app.core.config import settings
 from tests.utils.attendance_tables import ATTENDANCE_TABLES
 from tests.utils.database import ensure_test_database
-from tests.utils.payroll_tables import PAYROLL_SYSTEM_TABLES, PAYROLL_TABLES
+from tests.utils.payroll_tables import (
+    PAYROLL_STARTING_COUNTS,
+    PAYROLL_TABLES,
+    truncate_payroll_system_tables,
+)
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -30,6 +34,7 @@ settings.DATABASE_URL = test_database_url
 from app.core.db import engine, init_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import User  # noqa: E402
+from app.services.payroll.defaults import ensure_payroll_defaults  # noqa: E402
 from tests.utils.user import authentication_token_from_email  # noqa: E402
 from tests.utils.utils import get_superuser_token_headers  # noqa: E402
 
@@ -59,9 +64,7 @@ def db() -> Generator[Session]:
         # Attendance and payroll rows can block user deletion through RESTRICT
         # audit references; clear them before the final user cleanup.
         session.execute(text("TRUNCATE TABLE company CASCADE"))
-        session.execute(
-            text("TRUNCATE TABLE " + ", ".join(PAYROLL_SYSTEM_TABLES) + " CASCADE")
-        )
+        truncate_payroll_system_tables(session)
         statement = delete(User)
         session.execute(statement)
         session.commit()
@@ -69,32 +72,47 @@ def db() -> Generator[Session]:
 
 @pytest.fixture(autouse=True)
 def _clean_database(db: Session) -> Generator[None]:
-    """Start every test with empty organizations and only the first superuser.
+    """Start every test with empty organizations, the seeded payroll defaults,
+    and only the first superuser.
 
     ``TRUNCATE company CASCADE`` also empties department, position,
     cost_center, employee, and every attendance and payroll table that reaches
     ``company`` through a foreign key. Payroll's system-owned tables have no
-    company foreign key and are truncated explicitly. The first superuser is
-    retained so login fixtures keep working.
+    company foreign key and are truncated explicitly, then
+    ``ensure_payroll_defaults`` restores the 32 system fields and 6 global
+    parameters. The first superuser is retained so login fixtures keep
+    working.
     """
     db.execute(text("TRUNCATE TABLE company CASCADE"))
     # ``TRUNCATE company CASCADE`` already clears every company-scoped payroll
     # table; the system-owned tables have no company foreign key and need an
     # explicit truncate.
-    db.execute(text("TRUNCATE TABLE " + ", ".join(PAYROLL_SYSTEM_TABLES) + " CASCADE"))
+    truncate_payroll_system_tables(db)
     db.execute(delete(User).where(User.email != settings.FIRST_SUPERUSER))
     db.commit()
+    ensure_payroll_defaults(db)
+
     checked_tables = (*ATTENDANCE_TABLES, *PAYROLL_TABLES)
     counts_sql = " UNION ALL ".join(
         f'SELECT {index} AS table_index, count(*) AS row_count FROM "{table}"'
         for index, table in enumerate(checked_tables)
     )
-    non_empty = {
+    counts = {
         checked_tables[index]: row_count
         for index, row_count in db.execute(text(counts_sql)).all()
-        if row_count
     }
-    assert not non_empty, f"Tables not empty after TRUNCATE: {non_empty}"
+    expected_counts = {
+        **dict.fromkeys(ATTENDANCE_TABLES, 0),
+        **PAYROLL_STARTING_COUNTS,
+    }
+    unexpected = {
+        table: (counts[table], expected_counts[table])
+        for table in checked_tables
+        if counts[table] != expected_counts[table]
+    }
+    assert not unexpected, (
+        f"Unexpected row counts after isolation (actual, expected): {unexpected}"
+    )
     yield
 
 

@@ -1756,7 +1756,7 @@ def test_global_statutory_parameter_value_type_is_exclusive(
         tables,
         "payroll_global_param",
         row(
-            key="tax_threshold",
+            key="schema_number_param",
             value_type="number",
             numeric_value=Decimal("5000"),
             json_value=None,
@@ -1767,7 +1767,7 @@ def test_global_statutory_parameter_value_type_is_exclusive(
         tables,
         "payroll_global_param",
         row(
-            key="confidentiality_tier",
+            key="schema_json_param",
             value_type="json",
             numeric_value=None,
             json_value=[],
@@ -1814,8 +1814,8 @@ def test_global_statutory_parameter_value_type_is_exclusive(
 
 def test_model_writes_nullable_jsonb_none_as_sql_null(db: Session) -> None:
     param = PayrollGlobalParam(
-        key="tax_rate",
-        label="税率",
+        key="schema_json_null_param",
+        label="JSON 空值参数",
         category="tax",
         value_type=PayrollGlobalParamType.NUMBER,
         numeric_value=Decimal("0.03"),
@@ -2125,11 +2125,11 @@ def test_input_value_source_batch_is_nulled_when_the_batch_is_deleted(
     field_id = _create_field_def(
         db,
         tables,
-        field_key="phone_allowance",
-        label="话费补贴",
+        field_key="schema_phone_allowance",
+        label="话费补贴（测试）",
         category="addon",
         calc_mode="import",
-        source_key="phone_allowance",
+        source_key="schema_phone_allowance",
     )
     month_id = _create_month(db, tables, company.id)
     batch_id = _create_import_batch(

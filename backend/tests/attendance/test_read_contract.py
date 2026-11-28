@@ -217,7 +217,7 @@ def test_summary_run_mismatch_fails_with_the_contract_code(db: Session) -> None:
     )
 
 
-def test_another_companys_locked_month_is_not_readable(db: Session) -> None:
+def test_another_company_locked_month_is_not_readable(db: Session) -> None:
     locked = _locked_month(db)
     other_company = create_company(db)
 
